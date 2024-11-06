@@ -29,7 +29,7 @@ export default function Login() {
           <div className="flex justify-center mb-4">
             <DumbbellIcon className="h-16 w-16 text-blue-500" />
           </div>
-          <h1 className="text-xl font-semibold text-center mb-6 text-black">Welcome to Rec-It</h1>
+          <h1 className="text-xl font-bold text-center mb-6 text-black">Welcome to Rec-It</h1>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -61,7 +61,7 @@ export default function Login() {
                 id="remember" 
                 checked={rememberMe} 
                 onChange={(e) => setRememberMe(e.target.checked)} 
-                label="Remember me" 
+                label={<span className="font-bold">Remember me</span>} 
               />
               <a href="#" className="text-sm text-blue-600 hover:text-blue-500">Forgot password?</a>
             </div>
