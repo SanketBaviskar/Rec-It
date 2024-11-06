@@ -1,23 +1,17 @@
+// components/Button.tsx
 import React from 'react';
 
 interface ButtonProps {
-  variant?: 'default' | 'ghost';
-  size?: 'small' | 'medium' | 'large' | 'icon';
+  type?: 'button' | 'submit' | 'reset';
+  children: React.ReactNode;
   onClick?: () => void;
   className?: string;
-  children?: React.ReactNode;
-  type?:string;
 }
 
-const Button: React.FC<ButtonProps> = ({ variant = 'default', size = 'medium', onClick, className, children }) => {
-  return (
-    <button
-      className={`btn ${variant} ${size} ${className}`}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-};
+const Button: React.FC<ButtonProps> = ({ type = 'button', children, onClick, className }) => (
+  <button type={type} onClick={onClick} className={className}>
+    {children}
+  </button>
+);
 
 export default Button;

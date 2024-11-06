@@ -1,17 +1,14 @@
-// src/components/ui/label.tsx
+// components/Label.tsx
 import React from 'react';
 
 interface LabelProps {
   htmlFor: string;
   children: React.ReactNode;
+  className?: string;
 }
 
-const Label: React.FC<LabelProps> = ({ htmlFor, children }) => {
-  return (
-    <label htmlFor={htmlFor} className="font-medium text-gray-700">
-      {children}
-    </label>
-  );
-};
+const Label: React.FC<LabelProps> = ({ htmlFor, children, className }) => (
+  <label htmlFor={htmlFor} className={className}>{children}</label>
+);
 
 export default Label;
