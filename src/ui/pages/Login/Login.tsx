@@ -81,11 +81,13 @@ export default function Login() {
             </a>
           </p>
 
-          <Separator />
+          <div className="mt-6">
+            <Separator />
+          </div>
           
-          <p className="mt-6 mb-4 text-sm text-center text-gray-600">Or continue with</p>
+          <p className="mt-6 text-center text-sm text-gray-600">Or continue with</p>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="mt-6 grid grid-cols-3 gap-3">
             {/* Google Button */}
             <Button className="w-full flex justify-center py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
               <span className="sr-only">Sign in with Google</span>
