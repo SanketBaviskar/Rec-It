@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Separator = () => {
   return (
     <div className="relative h-px my-6">
