@@ -1,42 +1,263 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.app {
+  display: flex;
+  min-height: 100vh;
+  background-color: #111827;
+}
+
+.left-section {
+  display: none;
+  position: relative;
+  background-color: #6d28d9;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+}
+
+.left-content {
+  position: relative;
+  z-index: 10;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.tagline {
+  margin-bottom: 6rem;
+}
+
+.tagline h1 {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+.dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dots span {
+  width: 2rem;
+  height: 0.25rem;
+  background-color: #9ca3af;
+  border-radius: 0.25rem;
+}
+
+.dots span.active {
+  background-color: white;
+}
+
+.right-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.form-container {
+  max-width: 28rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header h2 {
+  color: white;
+  font-size: 1.875rem;
+  font-weight: 600;
+}
+
+.back-link {
+  color: #a78bfa;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.back-link:hover {
+  color: #c4b5fd;
+}
+
+.login-link {
+  color: #9ca3af;
+  margin-bottom: 1.5rem;
+}
+
+.login-link a {
+  color: #a78bfa;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  color: #c4b5fd;
+}
+
+.name-fields {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  color: white;
+  font-size: 0.875rem;
+}
+
+input::placeholder {
+  color: #9ca3af;
+}
+
+input:focus {
+  outline: none;
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
+}
+
+.password-group {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0;
+}
+
+.terms-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.terms-group label {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.terms-group a {
+  color: #a78bfa;
+  text-decoration: none;
+}
+
+.submit-button {
+  width: 100%;
+  background-color: #7c3aed;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+}
+
+.submit-button:hover {
+  background-color: #6d28d9;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+  background-color: #374151;
+}
+
+.divider span {
+  position: relative;
+  background-color: #111827;
+  padding: 0 0.75rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.social-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.social-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  background: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.social-button:hover {
+  border-color: #6b7280;
+}
+
+.social-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+
+@media (min-width: 1024px) {
+  .left-section {
+    display: flex;
+    width: 50%;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .right-section {
+    padding: 2rem 5rem;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }
