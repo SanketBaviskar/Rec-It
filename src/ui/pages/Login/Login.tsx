@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DumbbellIcon } from 'lucide-react';
-import Button from '../../../components/Button/Button';
+import { BaseButton } from '../../../components/Button/index';
 import Checkbox from '../../../components/CheckBox/CheckBox';
 import Input from '../../../components/Input/Input';
 import Label from '../../../components/Label/Label';
@@ -66,12 +66,12 @@ export default function Login() {
               <a href="#" className="text-sm text-blue-600 hover:text-blue-500">Forgot password?</a>
             </div>
 
-            <Button 
+            <BaseButton 
               type="submit" 
               className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
             >
               Sign in
-            </Button>
+            </BaseButton>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600">
@@ -89,7 +89,7 @@ export default function Login() {
 
           <div className="mt-6 grid grid-cols-3 gap-3">
             {/* Google Button */}
-            <Button className="w-full flex justify-center py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+            <BaseButton className="w-full flex justify-center py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
               <span className="sr-only">Sign in with Google</span>
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -97,10 +97,10 @@ export default function Login() {
                   fill="#000"
                 />
               </svg>
-            </Button>
+            </BaseButton>
 
             {/* LinkedIn Button */}
-            <Button className="w-full flex justify-center py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+            <BaseButton className="w-full flex justify-center py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
               <span className="sr-only">Sign in with LinkedIn</span>
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -108,10 +108,10 @@ export default function Login() {
                   fill="#000"
                 />
               </svg>
-            </Button>
+            </BaseButton>
 
             {/* GitHub Button */}
-            <Button className="w-full flex justify-center py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+            <BaseButton className="w-full flex justify-center py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
               <span className="sr-only">Sign in with GitHub</span>
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -119,7 +119,7 @@ export default function Login() {
                   fill="#000"
                 />
               </svg>
-            </Button>
+            </BaseButton>
           </div>
 
           <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm">

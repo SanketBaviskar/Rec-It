@@ -1,5 +1,5 @@
 // src/pages/Dashboard/Navbar.tsx
-import  Button  from "../../../components/Button/Button"
+import  {BaseButton}  from "../../../components/Button/BaseButton"
 import { LayoutDashboard, Search, Clipboard, DollarSign, Users, Building2, FileBarChart, Settings } from 'lucide-react'
 
 export default function Navbar({ activeTab, setActiveTab }) {
@@ -19,13 +19,13 @@ export default function Navbar({ activeTab, setActiveTab }) {
       <div className="flex items-center">
       <h2>Rect-It</h2>
         {tabs.map(({ name, icon: Icon }) => (
-          <Button
+          <BaseButton
             key={name}
             className={activeTab === name ? 'secondary' : 'ghost'}
             onClick={() => setActiveTab(name)}
           >
             <Icon className="mr-2 h-4 w-4" /> {name.charAt(0).toUpperCase() + name.slice(1)}
-          </Button>
+          </BaseButton>
         ))}
       </div>
     </nav>
