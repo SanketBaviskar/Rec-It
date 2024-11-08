@@ -1,6 +1,6 @@
 // src/components/ui/card/CardHeader.tsx
 
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 interface CardHeaderProps {
   children: ReactNode

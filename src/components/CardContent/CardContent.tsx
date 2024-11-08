@@ -1,6 +1,6 @@
 // src/components/ui/card/CardContent.tsx
 
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 interface CardContentProps {
   children: ReactNode
