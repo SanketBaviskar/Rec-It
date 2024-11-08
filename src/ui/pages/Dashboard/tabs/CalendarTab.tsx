@@ -1,7 +1,7 @@
 // src/pages/Dashboard/tabs/FacilitiesTab.tsx
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../../../components/index"
-import  Button  from "../../../../components/Button/Button"
+import  {BaseButton}  from "../../../../components/Button/BaseButton"
 
 export default function FacilitiesTab() {
   return (
@@ -11,7 +11,7 @@ export default function FacilitiesTab() {
         <CardDescription>Manage and maintain recreational facilities</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button>Add New Facility</Button>
+        <BaseButton>Add New Facility</BaseButton>
       </CardContent>
     </Card>
   )

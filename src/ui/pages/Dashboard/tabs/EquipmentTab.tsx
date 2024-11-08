@@ -1,7 +1,7 @@
 // src/pages/Dashboard/tabs/ManageTab.tsx
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../../../components/index"
-import  Button  from "../../../../components/Button/Button"
+import  {BaseButton}  from "../../../../components/Button/BaseButton"
 
 export default function ManageTab() {
   return (
@@ -11,7 +11,7 @@ export default function ManageTab() {
         <CardDescription>Add, edit, or remove recreational activities</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button>Add New Activity</Button>
+        <BaseButton>Add New Activity</BaseButton>
       </CardContent>
     </Card>
   )

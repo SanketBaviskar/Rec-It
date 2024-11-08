@@ -1,22 +1,22 @@
 import DashboardTab from './tabs/DashboardTab'
-import SearchTab from './tabs/SearchTab'
-import ManageTab from './tabs/ManageTab'
+import CalendarTab from './tabs/CalendarTab'
 import SalesTab from './tabs/SalesTab'
-import MembersTab from './tabs/MembersTab'
-import FacilitiesTab from './tabs/FacilitiesTab'
-import ReportsTab from './tabs/ReportsTab'
-import SettingsTab from './tabs/SettingsTab'
+import EquipmentTab from './tabs/EquipmentTab'
+import SearchTab from './tabs/SearchTab'
 
 export default function DashboardContent({ activeTab }) {
   switch (activeTab) {
-    case 'dashboard': return <DashboardTab />
-    case 'search': return <SearchTab />
-    case 'manage': return <ManageTab />
-    case 'sales': return <SalesTab />
-    case 'members': return <MembersTab />
-    case 'facilities': return <FacilitiesTab />
-    case 'reports': return <ReportsTab />
-    case 'settings': return <SettingsTab />
-    default: return null
+    case 'dashboard':
+      return <DashboardTab />
+    case 'calendar':
+      return <CalendarTab />
+    case 'sale':
+      return <SalesTab />
+    case 'equipment':
+      return <EquipmentTab />
+    case 'search':
+      return <SearchTab />
+    default:
+      return null
   }
 }
