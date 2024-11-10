@@ -1,163 +1,223 @@
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/index"
-import { StyledButton } from "../../../../components/Button/index"
-import { Avatar, AvatarFallback, AvatarImage } from "../../../../components/Avatar/Avatar"
-import { Badge } from "../../../../components/Badge/Badge"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Cloud, CheckCircle, XCircle, Users } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/Card/Card";
+import { useState } from 'react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Users, TrendingUp, Clock, Activity, Cloud, CheckCircle, XCircle } from 'lucide-react';
 
-// Sample data for the graph
-const dailyData = [
-  { name: 'Mon', users: 120 },
-  { name: 'Tue', users: 150 },
-  { name: 'Wed', users: 200 },
-  { name: 'Thu', users: 180 },
-  { name: 'Fri', users: 220 },
-  { name: 'Sat', users: 250 },
-  { name: 'Sun', users: 190 },
-]
+const DashboardPage = () => {
+  // Your existing data declarations remain the same
+  const [timeRange, setTimeRange] = useState('daily');
+  
+  const userStats = {
+    daily: [
+      { name: 'Mon', users: 120, revenue: 1200, avgTime: 45 },
+      { name: 'Tue', users: 150, revenue: 1500, avgTime: 52 },
+      { name: 'Wed', users: 200, revenue: 2000, avgTime: 48 },
+      { name: 'Thu', users: 180, revenue: 1800, avgTime: 50 },
+      { name: 'Fri', users: 220, revenue: 2200, avgTime: 55 },
+      { name: 'Sat', users: 250, revenue: 2500, avgTime: 60 },
+      { name: 'Sun', users: 190, revenue: 1900, avgTime: 47 }
+    ],
+    weekly: [
+      { name: 'Week 1', users: 1000, revenue: 10000, avgTime: 49 },
+      { name: 'Week 2', users: 1200, revenue: 12000, avgTime: 51 },
+      { name: 'Week 3', users: 1100, revenue: 11000, avgTime: 48 },
+      { name: 'Week 4', users: 1300, revenue: 13000, avgTime: 53 }
+    ]
+  };
 
-const weeklyData = [
-  { name: 'Week 1', users: 1000 },
-  { name: 'Week 2', users: 1200 },
-  { name: 'Week 3', users: 1100 },
-  { name: 'Week 4', users: 1300 },
-]
+  const activeUsers = [
+    { 
+      id: 1, 
+      name: 'John Doe', 
+      status: 'active', 
+      membershipType: 'Premium', 
+      lastActive: '2 min ago', 
+      avatar: '/api/placeholder/32/32',
+      note: 'VIP customer - Priority support'
+    },
+    { 
+      id: 2, 
+      name: 'Jane Smith', 
+      status: 'active', 
+      membershipType: 'Basic', 
+      lastActive: '5 min ago', 
+      avatar: '/api/placeholder/32/32'
+    },
+    { 
+      id: 3, 
+      name: 'Alice Brown', 
+      status: 'suspended', 
+      membershipType: 'Premium', 
+      lastActive: '15 min ago', 
+      avatar: '/api/placeholder/32/32',
+      note: 'Account under review'
+    },
+    ...Array.from({ length: 5 }, (_, i) => ({
+      id: i + 4,
+      name: `User ${i + 4}`,
+      status: i % 2 === 0 ? 'active' : 'inactive',
+      membershipType: i % 2 === 0 ? 'Premium' : 'Basic',
+      lastActive: `${(i + 1) * 5} min ago`,
+      avatar: '/api/placeholder/32/32',
+      note: i % 2 === 0 ? 'Regular customer' : undefined
+    }))
+  ];
 
-const monthlyData = [
-  { name: 'Jan', users: 5000 },
-  { name: 'Feb', users: 5500 },
-  { name: 'Mar', users: 6000 },
-  { name: 'Apr', users: 5800 },
-  { name: 'May', users: 6200 },
-  { name: 'Jun', users: 6500 },
-]
-
-const liveUsers = [
-  { id: 1, name: 'John Doe', photo: '/placeholder.svg', membershipType: 'Gold', phoneNumber: '(123) 456-7890', hasNotes: true, status: 'active' },
-  { id: 2, name: 'Jane Smith', photo: '/placeholder.svg', membershipType: 'Silver', phoneNumber: '(234) 567-8901', hasNotes: false, status: 'active' },
-  { id: 3, name: 'Bob Johnson', photo: '/placeholder.svg', membershipType: 'Bronze', phoneNumber: '(345) 678-9012', hasNotes: true, status: 'suspended' },
-  { id: 4, name: 'Alice Brown', photo: '/placeholder.svg', membershipType: 'Gold', phoneNumber: '(456) 789-0123', hasNotes: false, status: 'active' },
-]
-
-export default function DashboardTab() {
-  const [graphOption, setGraphOption] = useState('daily')
-  const [peopleInside, setPeopleInside] = useState(42)
-
-  const getGraphData = () => {
-    switch (graphOption) {
-      case 'weekly':
-        return weeklyData
-      case 'monthly':
-        return monthlyData
-      default:
-        return dailyData
-    }
-  }
+  const stats = [
+    { title: 'Total Users', value: '1,234', icon: Users, trend: '+12%' },
+    { title: 'Active Now', value: '42', icon: Activity, trend: '+5%' },
+    { title: 'Avg. Session', value: '48m', icon: Clock, trend: '+8%' },
+    { title: 'Revenue', value: '$12.4k', icon: TrendingUp, trend: '+15%' }
+  ];
 
   return (
-    <div className="w-full h-full p-4 md:p-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full max-h-screen">
-        <div className="lg:col-span-2 flex flex-col gap-4">
-          {/* User Count Card */}
-          <Card className="flex-1">
-            <CardHeader>
-              <CardTitle>User Count</CardTitle>
-              <div className="space-x-2">
-                <StyledButton
-                  variant={graphOption === 'daily' ? 'default' : 'outline'}
-                  onClick={() => setGraphOption('daily')}
-                >
-                  Daily
-                </StyledButton>
-                <StyledButton
-                  variant={graphOption === 'weekly' ? 'default' : 'outline'}
-                  onClick={() => setGraphOption('weekly')}
-                >
-                  Weekly
-                </StyledButton>
-                <StyledButton
-                  variant={graphOption === 'monthly' ? 'default' : 'outline'}
-                  onClick={() => setGraphOption('monthly')}
-                >
-                  Monthly
-                </StyledButton>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={getGraphData()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="users" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* People Inside Facility Card */}
-          <Card className="h-48">
-            <CardHeader>
-              <CardTitle>People Inside Facility</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-4">
-                <Users className="h-10 w-10 text-blue-500" />
-                <div>
-                  <p className="text-2xl font-bold">{peopleInside}</p>
-                  <p className="text-sm text-gray-500">Currently inside</p>
+    // Added pt-16 to account for navbar height
+    <div className="min-h-screen bg-gray-50 pt-16">
+      {/* Added mt-4 for extra spacing from navbar */}
+      <div className="container mx-auto px-4 py-8 mt-4">
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {stats.map((stat, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">{stat.title}</p>
+                    <h3 className="text-xl font-bold mt-1">{stat.value}</h3>
+                    <span className="inline-flex items-center text-sm text-green-600">
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      {stat.trend}
+                    </span>
+                  </div>
+                  <stat.icon className="w-10 h-10 text-blue-500 opacity-80" />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Live Section */}
-        <div className="lg:col-span-1 h-full">
-          <Card className="h-full">
-            <CardHeader className="border-b">
-              <CardTitle>LIVE</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="h-[calc(100vh-12rem)] overflow-y-auto">
-                {liveUsers.map((user) => (
-                  <div key={user.id} className="p-4 border-b last:border-b-0">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarImage src={user.photo} alt={user.name} />
-                        <AvatarFallback>{user.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-grow min-w-0">
-                        <h3 className="font-semibold truncate">{user.name}</h3>
-                        <p className="text-sm text-gray-500 truncate">{user.membershipType}</p>
-                        <p className="text-sm text-gray-500 truncate">{user.phoneNumber}</p>
-                      </div>
-                      <div className="flex items-center space-x-2 flex-shrink-0">
-                        {user.hasNotes && (
-                          <Cloud className="h-5 w-5 text-blue-500" />
-                        )}
-                        <Badge
-                          className={`flex items-center space-x-1 rounded-full px-3 py-1 ${user.status === 'active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                            }`}
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Charts Section */}
+          <div className="lg:col-span-1">
+            <div className="space-y-6">
+              {/* Activity Chart */}
+              <Card className="h-[300px]">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">User Activity</h3>
+                    <div className="flex space-x-2">
+                      {['daily', 'weekly'].map((range) => (
+                        <button
+                          key={range}
+                          onClick={() => setTimeRange(range)}
+                          className={`px-3 py-1 rounded-lg text-sm ${
+                            timeRange === range
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
                         >
-                          {user.status === 'active' ? (
-                            <CheckCircle className="h-4 w-4" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                          <span className="capitalize">{user.status}</span>
-                        </Badge>
-                      </div>
+                          {range.charAt(0).toUpperCase() + range.slice(1)}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={userStats[timeRange]}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="users" stroke="#3b82f6" />
+                        <Line type="monotone" dataKey="avgTime" stroke="#10b981" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Revenue Chart */}
+              <Card className="h-[300px]">
+                <CardContent className="p-4">
+                  <h3 className="text-lg font-semibold mb-4">Revenue Overview</h3>
+                  <div className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={userStats[timeRange]}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="revenue" fill="#3b82f6" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Active Users Section */}
+          <div className="lg:col-span-2">
+            <Card className="h-[620px]">
+              <CardContent className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Active Users</h3>
+                <div className="space-y-3 overflow-y-auto h-[540px]">
+                  {activeUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-sm text-gray-500">{user.membershipType}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        {user.note && (
+                          <div className="relative group">
+                            <Cloud className="w-4 h-4 text-blue-500 cursor-pointer" />
+                            <div className="absolute right-0 w-48 p-2 mt-2 text-sm bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                              {user.note}
+                            </div>
+                          </div>
+                        )}
+                        <div className="text-right">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              user.status === 'active'
+                                ? 'bg-green-100 text-green-800'
+                                : user.status === 'suspended'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {user.status === 'active' ? (
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                            ) : (
+                              <XCircle className={`w-3 h-3 mr-1 ${user.status === 'suspended' ? 'text-red-500' : ''}`} />
+                            )}
+                            {user.status}
+                          </span>
+                          <p className="text-xs text-gray-500 mt-1">{user.lastActive}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default DashboardPage;
