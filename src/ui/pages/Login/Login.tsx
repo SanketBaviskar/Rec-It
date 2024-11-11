@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -10,21 +11,41 @@ import {
   Link,
   TextField,
   Typography,
-  Paper
+  Paper,
+  Alert,
 } from '@mui/material';
 import { DumbbellIcon } from 'lucide-react';
 import GoogleIcon from '@mui/icons-material/Google';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import GitHubIcon from '@mui/icons-material/GitHub';
 
-export default function Login() {
+// Define types
+interface LoginProps {
+  onLogin: () => void;
+}
+
+// Constants
+const DUMMY_EMAIL = 'rectitadmin@gmail.com';
+const DUMMY_PASSWORD = '12345678';
+
+export default function Login({ onLogin }: LoginProps) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Login attempted', { email, password, rememberMe });
+    
+    // Check credentials
+    if (email === DUMMY_EMAIL && password === DUMMY_PASSWORD) {
+      setError('');
+      onLogin();
+      navigate('/dashboard');
+    } else {
+      setError('Invalid email or password. Please try rectitadmin@gmail.com and 12345678');
+    }
   };
 
   return (
@@ -99,6 +120,12 @@ export default function Login() {
           </Typography>
 
           <form onSubmit={handleLogin}>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
             <TextField
               fullWidth
               label="Email"
@@ -143,7 +170,7 @@ export default function Login() {
                 }
                 label="Remember me"
               />
-              <Link href="#" underline="hover">
+              <Link href="#" underline="hover" sx={{ color: 'primary.main' }}>
                 Forgot password?
               </Link>
             </Box>
@@ -168,15 +195,19 @@ export default function Login() {
 
           <Typography variant="body2" align="center" sx={{ mt: 2 }}>
             Don't have an account?{' '}
-            <Link href="#" underline="hover">
+            <Link href="#" underline="hover" sx={{ color: 'primary.main' }}>
               Sign up
             </Link>
           </Typography>
 
-          <Divider sx={{ my: 3 }} />
+          <Divider sx={{ my: 3 }}>
+            <Typography variant="body2" color="text.secondary">
+              OR
+            </Typography>
+          </Divider>
 
           <Typography variant="body2" align="center" gutterBottom>
-            Or continue with
+            Continue with
           </Typography>
 
           <Box
@@ -187,45 +218,27 @@ export default function Login() {
               mt: 2
             }}
           >
-            <IconButton
-              sx={{
-                border: 1,
-                borderColor: 'divider',
-                borderRadius: 1,
-                p: 1,
-                '&:hover': {
-                  bgcolor: 'rgba(0, 0, 0, 0.04)'
-                }
-              }}
-            >
-              <GoogleIcon />
-            </IconButton>
-            <IconButton
-              sx={{
-                border: 1,
-                borderColor: 'divider',
-                borderRadius: 1,
-                p: 1,
-                '&:hover': {
-                  bgcolor: 'rgba(0, 0, 0, 0.04)'
-                }
-              }}
-            >
-              <LinkedInIcon />
-            </IconButton>
-            <IconButton
-              sx={{
-                border: 1,
-                borderColor: 'divider',
-                borderRadius: 1,
-                p: 1,
-                '&:hover': {
-                  bgcolor: 'rgba(0, 0, 0, 0.04)'
-                }
-              }}
-            >
-              <GitHubIcon />
-            </IconButton>
+            {[
+              { icon: <GoogleIcon />, label: 'Google' },
+              { icon: <LinkedInIcon />, label: 'LinkedIn' },
+              { icon: <GitHubIcon />, label: 'GitHub' }
+            ].map((provider) => (
+              <IconButton
+                key={provider.label}
+                aria-label={`Sign in with ${provider.label}`}
+                sx={{
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 1,
+                  '&:hover': {
+                    bgcolor: 'rgba(0, 0, 0, 0.04)'
+                  }
+                }}
+              >
+                {provider.icon}
+              </IconButton>
+            ))}
           </Box>
         </Paper>
       </Container>
@@ -241,7 +254,7 @@ export default function Login() {
           color: 'white'
         }}
       >
-        © 2024 Rec-It. All rights reserved.
+        © {new Date().getFullYear()} Rec-It. All rights reserved.
       </Typography>
     </Box>
   );
