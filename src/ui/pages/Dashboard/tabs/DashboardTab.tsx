@@ -1,12 +1,53 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/Card/Card";
+import { Card, CardContent } from "../../../../components/Card/Card";
 import { useState } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Users, TrendingUp, Clock, Activity, Cloud, CheckCircle, XCircle } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Cloud, CheckCircle, XCircle } from 'lucide-react';
+
+const Gate = ({ isOpen, gateNumber, handleGateClick }) => {
+  return (
+    <div className="relative w-full h-16 mb-2" onClick={handleGateClick}>
+      <div className="absolute inset-0 border-4 border-gray-300 rounded-lg overflow-hidden cursor-pointer">
+        <div 
+          className={`absolute top-0 left-0 w-1/2 h-full bg-gray-200 border-r-2 border-gray-400 transition-transform duration-1000 
+            ${isOpen ? '-translate-x-full' : 'translate-x-0'}`}
+        >
+          <div className="absolute top-1/2 right-4 transform -translate-y-1/2">
+            <div className="w-4 h-8 bg-gray-400 rounded-full" />
+          </div>
+        </div>
+        <div 
+          className={`absolute top-0 right-0 w-1/2 h-full bg-gray-200 border-l-2 border-gray-400 transition-transform duration-1000 
+            ${isOpen ? 'translate-x-full' : 'translate-x-0'}`}
+        >
+          <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
+            <div className="w-4 h-8 bg-gray-400 rounded-full" />
+          </div>
+        </div>
+        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-sm font-bold text-gray-600">
+          Gate {gateNumber}
+        </div>
+        <div className={`absolute bottom-2 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded-full text-xs font-semibold 
+          ${isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {isOpen ? 'OPEN' : 'CLOSED'}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const DashboardPage = () => {
-  // Your existing data declarations remain the same
   const [timeRange, setTimeRange] = useState('daily');
-  
+  const [gateStates, setGateStates] = useState({
+    gate1: false,
+    gate2: false,
+    gate3: false,
+  });
+  const [manualToggle, setManualToggle] = useState({
+    gate1: false,
+    gate2: false,
+    gate3: false,
+  });
+
   const userStats = {
     daily: [
       { name: 'Mon', users: 120, revenue: 1200, avgTime: 45 },
@@ -26,29 +67,29 @@ const DashboardPage = () => {
   };
 
   const activeUsers = [
-    { 
-      id: 1, 
-      name: 'John Doe', 
-      status: 'active', 
-      membershipType: 'Premium', 
-      lastActive: '2 min ago', 
+    {
+      id: 1,
+      name: 'John Doe',
+      status: 'active',
+      membershipType: 'Premium',
+      lastActive: '2 min ago',
       avatar: '/api/placeholder/32/32',
       note: 'VIP customer - Priority support'
     },
-    { 
-      id: 2, 
-      name: 'Jane Smith', 
-      status: 'active', 
-      membershipType: 'Basic', 
-      lastActive: '5 min ago', 
+    {
+      id: 2,
+      name: 'Jane Smith',
+      status: 'active',
+      membershipType: 'Basic',
+      lastActive: '5 min ago',
       avatar: '/api/placeholder/32/32'
     },
-    { 
-      id: 3, 
-      name: 'Alice Brown', 
-      status: 'suspended', 
-      membershipType: 'Premium', 
-      lastActive: '15 min ago', 
+    {
+      id: 3,
+      name: 'Alice Brown',
+      status: 'suspended',
+      membershipType: 'Premium',
+      lastActive: '15 min ago',
       avatar: '/api/placeholder/32/32',
       note: 'Account under review'
     },
@@ -63,106 +104,112 @@ const DashboardPage = () => {
     }))
   ];
 
-  const stats = [
-    { title: 'Total Users', value: '1,234', icon: Users, trend: '+12%' },
-    { title: 'Active Now', value: '42', icon: Activity, trend: '+5%' },
-    { title: 'Avg. Session', value: '48m', icon: Clock, trend: '+8%' },
-    { title: 'Revenue', value: '$12.4k', icon: TrendingUp, trend: '+15%' }
-  ];
+  const handleGateClick = (gate) => {
+    if (!manualToggle[gate]) {
+      setGateStates(prevState => ({
+        ...prevState,
+        [gate]: true
+      }));
+      
+      setTimeout(() => {
+        setGateStates(prevState => ({
+          ...prevState,
+          [gate]: false
+        }));
+      }, 3000);
+    }
+  };
+
+  const toggleGateSwitch = (gate) => {
+    setManualToggle(prevState => ({
+      ...prevState,
+      [gate]: !prevState[gate]
+    }));
+    setGateStates(prevState => ({
+      ...prevState,
+      [gate]: !prevState[gate]
+    }));
+  };
 
   return (
-    // Added pt-16 to account for navbar height
-    <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Added mt-4 for extra spacing from navbar */}
-      <div className="container mx-auto px-4 py-8 mt-4">
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {stats.map((stat, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
+    <div className="w-full pt-16">
+      <div className="mx-auto w-full px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="h-[300px]">
               <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">{stat.title}</p>
-                    <h3 className="text-xl font-bold mt-1">{stat.value}</h3>
-                    <span className="inline-flex items-center text-sm text-green-600">
-                      <TrendingUp className="w-3 h-3 mr-1" />
-                      {stat.trend}
-                    </span>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">User Activity</h3>
+                  <div className="flex space-x-2">
+                    {['daily', 'weekly'].map((range) => (
+                      <button
+                        key={range}
+                        onClick={() => setTimeRange(range)}
+                        className={`px-3 py-1 rounded-lg text-sm ${
+                          timeRange === range
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {range.charAt(0).toUpperCase() + range.slice(1)}
+                      </button>
+                    ))}
                   </div>
-                  <stat.icon className="w-10 h-10 text-blue-500 opacity-80" />
+                </div>
+                <div className="h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={userStats[timeRange]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="users" stroke="#3b82f6" />
+                      <Line type="monotone" dataKey="avgTime" stroke="#10b981" />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Charts Section */}
-          <div className="lg:col-span-1">
-            <div className="space-y-6">
-              {/* Activity Chart */}
-              <Card className="h-[300px]">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">User Activity</h3>
-                    <div className="flex space-x-2">
-                      {['daily', 'weekly'].map((range) => (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-6">Gates Control</h3>
+                <div className="space-y-4">
+                  {Object.entries(gateStates).map(([gate, isOpen], index) => (
+                    <div key={gate} className="space-y-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-gray-700">
+                          Gate Control {index + 1}
+                        </span>
                         <button
-                          key={range}
-                          onClick={() => setTimeRange(range)}
-                          className={`px-3 py-1 rounded-lg text-sm ${
-                            timeRange === range
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
+                          onClick={() => toggleGateSwitch(gate)}
+                          className={`relative w-14 h-8 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                              ${isOpen ? 'bg-blue-500' : 'bg-gray-200'}`}
                         >
-                          {range.charAt(0).toUpperCase() + range.slice(1)}
+                          <span className="sr-only">Toggle gate</span>
+                          <span
+                            className={`absolute w-6 h-6 mx-1 my-1 bg-white rounded-full transition-transform duration-200 transform
+                                ${isOpen ? 'translate-x-6' : 'translate-x-0'}`}
+                          />
                         </button>
-                      ))}
+                      </div>
+                      <Gate 
+                        isOpen={isOpen} 
+                        gateNumber={index + 1} 
+                        handleGateClick={() => handleGateClick(gate)} 
+                      />
                     </div>
-                  </div>
-                  <div className="h-[200px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={userStats[timeRange]}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Line type="monotone" dataKey="users" stroke="#3b82f6" />
-                        <Line type="monotone" dataKey="avgTime" stroke="#10b981" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Revenue Chart */}
-              <Card className="h-[300px]">
-                <CardContent className="p-4">
-                  <h3 className="text-lg font-semibold mb-4">Revenue Overview</h3>
-                  <div className="h-[200px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={userStats[timeRange]}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="revenue" fill="#3b82f6" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Active Users Section */}
-          <div className="lg:col-span-2">
-            <Card className="h-[620px]">
+          <div className="lg:col-span-2 flex flex-col">
+            <Card className="flex-1">
               <CardContent className="p-4">
                 <h3 className="text-lg font-semibold mb-4">Active Users</h3>
-                <div className="space-y-3 overflow-y-auto h-[540px]">
+                <div className="space-y-3 overflow-y-auto flex-1">
                   {activeUsers.map((user) => (
                     <div
                       key={user.id}
@@ -194,8 +241,8 @@ const DashboardPage = () => {
                               user.status === 'active'
                                 ? 'bg-green-100 text-green-800'
                                 : user.status === 'suspended'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-gray-100 text-gray-800'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-gray-100 text-gray-800'
                             }`}
                           >
                             {user.status === 'active' ? (
