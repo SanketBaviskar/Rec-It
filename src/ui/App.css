@@ -143,10 +143,10 @@
 input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background-color: #1f2937;
+  background-color: #ffffff;
   border: 1px solid #374151;
   border-radius: 0.5rem;
-  color: white;
+  color: #333;
   font-size: 0.875rem;
 }
 
@@ -157,7 +157,7 @@ input::placeholder {
 input:focus {
   outline: none;
   border-color: #a78bfa;
-  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
+  /* box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2); */
 }
 
 .password-group {

@@ -64,11 +64,11 @@ export default function Navbar({ activeTab, setActiveTab }) {
     }
   ];
 
-  const handleProfileMenuOpen = (event) => {
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMobileMenuOpen = (event) => {
+  const handleMobileMenuOpen = (event:React.MouseEvent<HTMLButtonElement>) => {
     setMobileMenuAnchor(event.currentTarget);
   };
 
@@ -91,11 +91,6 @@ export default function Navbar({ activeTab, setActiveTab }) {
     >
       <Toolbar 
         sx={{
-          maxWidth: '1600px',
-          width: '100%',
-          margin: '0 auto',
-          px: { xs: 2, sm: 4 },
-          py: 1,
           display: 'flex',
           justifyContent: 'space-between'
         }}

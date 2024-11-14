@@ -5,7 +5,7 @@ import Dashboard from './pages/Dashboard/index';
 import { useState } from 'react';
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   return (
     <BrowserRouter>
