@@ -64,6 +64,10 @@ export default function SalesTab() {
           </Button>
         </Box>
       </Box>
+
+      <Grid>
+        
+      </Grid>
     </Box>
   );
 }

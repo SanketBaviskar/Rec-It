@@ -132,7 +132,7 @@ export default function Component() {
               sx={{
                 overflowX: "hidden",
                 overflowY: "scroll",
-                maxHeight: "83vh",
+                maxHeight: "82.5vh",
                 flexGrow: 1,
               }}
             >
