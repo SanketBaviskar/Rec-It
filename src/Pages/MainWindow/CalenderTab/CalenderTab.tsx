@@ -277,7 +277,7 @@ export default function CalenderTab() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-4 gap-4 p-4">
+        <div className="grid grid-cols-4 gap-1 p-1">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -325,8 +325,8 @@ export default function CalenderTab() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="flex-1 p-4">
-          <div className="grid grid-cols-4 gap-4 h-full">
+        <div className="flex-1 p-1">
+          <div className="grid grid-cols-4 gap-1 h-full">
             <div className="col-span-3 bg-white rounded-lg shadow p-4 overflow-auto">
               {view === 'day' && renderDayView()}
               {view === 'week' && renderWeekView()}
