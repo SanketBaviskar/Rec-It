@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { addDays, subDays, format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, isSameMonth } from 'date-fns'
+import { addDays, subDays, format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, isSameMonth, isSameDay, parseISO } from 'date-fns'
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -134,16 +134,52 @@ export default function CalendarTab() {
     setIsBookingModalOpen(false)
   }
 
+  const openBookingModal = (date: Date, hour?: number) => {
+    const selectedDate = new Date(date)
+    if (hour !== undefined) {
+      selectedDate.setHours(hour, 0, 0, 0)
+    }
+    setSelectedBookingDate(selectedDate)
+    setIsBookingModalOpen(true)
+  }
+
+  const renderBooking = (booking: Booking) => {
+    const facility = sampleFacilities.find(f => f.id === booking.facility)
+    return (
+      <div
+        key={booking.id}
+        className="bg-primary text-primary-foreground p-1 rounded text-xs"
+        style={{
+          position: 'absolute',
+          top: `${(booking.start.getHours() + booking.start.getMinutes() / 60) * 40}px`,
+          height: `${((booking.end.getTime() - booking.start.getTime()) / (1000 * 60 * 60)) * 40}px`,
+          left: '60px',
+          right: '4px',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="font-bold">{booking.title}</div>
+        <div>{facility?.name}</div>
+      </div>
+    )
+  }
+
   const renderDayView = () => (
-    <div className="grid grid-cols-1 gap-2">
+    <div className="grid grid-cols-1 gap-2 relative">
       {Array.from({ length: 24 }).map((_, i) => (
         <div key={i} className="flex items-center border-t py-1">
           <div className="w-16 text-sm text-muted-foreground">
             {String(i).padStart(2, '0')}:00
           </div>
-          <div className="flex-1 h-8 rounded-md hover:bg-accent/50 transition-colors"></div>
+          <div
+            className="flex-1 h-8 rounded-md hover:bg-accent/50 transition-colors"
+            onClick={() => openBookingModal(currentDate, i)}
+          ></div>
         </div>
       ))}
+      {bookings
+        .filter(booking => isSameDay(booking.start, currentDate))
+        .map(renderBooking)}
     </div>
   )
 
@@ -166,7 +202,29 @@ export default function CalendarTab() {
               {String(hour).padStart(2, '0')}:00
             </div>
             {days.map((day, index) => (
-              <div key={`${day}-${hour}`} className="border-t h-8 hover:bg-accent/50 transition-colors"></div>
+              <div
+                key={`${day}-${hour}`}
+                className="border-t h-8 hover:bg-accent/50 transition-colors relative"
+                onClick={() => openBookingModal(day, hour)}
+              >
+                {bookings
+                  .filter(booking =>
+                    isSameDay(booking.start, day) &&
+                    booking.start.getHours() === hour
+                  )
+                  .map(booking => (
+                    <div
+                      key={booking.id}
+                      className="bg-primary text-primary-foreground p-1 rounded text-xs absolute inset-0 overflow-hidden"
+                      style={{
+                        height: `${((booking.end.getTime() - booking.start.getTime()) / (1000 * 60 * 60)) * 32}px`,
+                      }}
+                    >
+                      <div className="font-bold">{booking.title}</div>
+                      <div>{sampleFacilities.find(f => f.id === booking.facility)?.name}</div>
+                    </div>
+                  ))}
+              </div>
             ))}
           </React.Fragment>
         ))}
@@ -190,9 +248,21 @@ export default function CalendarTab() {
           <div
             key={index}
             className={`h-24 border p-1 ${isSameMonth(day, currentDate) ? 'bg-background' : 'bg-muted'
-              } hover:bg-accent/50 transition-colors`}
+              } hover:bg-accent/50 transition-colors overflow-y-auto`}
+            onClick={() => openBookingModal(day)}
           >
             <div className="text-sm">{format(day, 'd')}</div>
+            {bookings
+              .filter(booking => isSameDay(booking.start, day))
+              .map(booking => (
+                <div
+                  key={booking.id}
+                  className="bg-primary text-primary-foreground p-1 rounded text-xs mb-1"
+                >
+                  <div className="font-bold">{booking.title}</div>
+                  <div>{sampleFacilities.find(f => f.id === booking.facility)?.name}</div>
+                </div>
+              ))}
           </div>
         ))}
       </div>
