@@ -20,7 +20,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ bookings, date }) => {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-4 gap-1">
       <div className="bg-white rounded-lg shadow p-4">
         <div className="flex items-center gap-2 text-blue-600 mb-2">
           <Calendar className="w-5 h-5" />
