@@ -176,9 +176,8 @@ export default function CalenderTab() {
         {days.map((day, index) => (
           <div
             key={index}
-            className={`h-24 border p-1 ${
-              isSameMonth(day, currentDate) ? 'bg-white' : 'bg-gray-100'
-            }`}
+            className={`h-24 border p-1 ${isSameMonth(day, currentDate) ? 'bg-white' : 'bg-gray-100'
+              }`}
           >
             <div className="text-sm">{format(day, 'd')}</div>
           </div>
@@ -191,48 +190,48 @@ export default function CalenderTab() {
     <div className="flex h-screen bg-gray-100">
       {/* Left Sidebar */}
       <div className="w-64 bg-white border-r p-4">
-      <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search facilities..." className="pl-8" />
-        </div>
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4" />
-          <Select defaultValue="all">
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="court">Court</SelectItem>
-              <SelectItem value="pool">Pool</SelectItem>
-              <SelectItem value="studio">Studio</SelectItem>
-              <SelectItem value="gym">Gym</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <ScrollArea className="h-[calc(100vh-200px)]">
-          <div className="space-y-4">
-            {sampleFacilities.map((facility) => (
-              <Card key={facility.id} className="cursor-pointer hover:bg-gray-50">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">{facility.name}</h3>
-                      <p className="text-sm text-muted-foreground">{facility.type} • {facility.capacity} capacity</p>
-                      <p className="text-sm text-muted-foreground">{facility.location}</p>
-                    </div>
-                    <Badge variant={facility.available ? "success" : "destructive"}>
-                      {facility.available ? 'Available' : 'In Use'}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search facilities..." className="pl-8" />
           </div>
-        </ScrollArea>
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            <Select defaultValue="all">
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="court">Court</SelectItem>
+                <SelectItem value="pool">Pool</SelectItem>
+                <SelectItem value="studio">Studio</SelectItem>
+                <SelectItem value="gym">Gym</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <ScrollArea className="h-[calc(100vh-200px)]">
+            <div className="space-y-4">
+              {sampleFacilities.map((facility) => (
+                <Card key={facility.id} className="cursor-pointer hover:bg-gray-50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium">{facility.name}</h3>
+                        <p className="text-sm text-muted-foreground">{facility.type} • {facility.capacity} capacity</p>
+                        <p className="text-sm text-muted-foreground">{facility.location}</p>
+                      </div>
+                      <Badge variant={facility.available ? "success" : "destructive"}>
+                        {facility.available ? 'Available' : 'In Use'}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
-    </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -275,55 +274,54 @@ export default function CalenderTab() {
             </div>
           </div>
         </div>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-1 p-1">
-          <Card>
+          <Card className="bg-white rounded-lg shadow p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-lg font-medium text-blue-600">
                 Total Bookings
               </CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <BookOpen className="h-5 w-5 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold text-gray-900">0</div>
             </CardContent>
           </Card>
-          <Card>
+
+          <Card className="bg-white rounded-lg shadow p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-lg font-medium text-green-600">
                 Total Attendees
               </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <Users className="h-5 w-5 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold text-gray-900">0</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white rounded-lg shadow p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-lg font-medium text-purple-600">
                 Classes Today
               </CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="h-5 w-5 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold text-gray-900">0</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white rounded-lg shadow p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-lg font-medium text-amber-600">
                 Maintenance
               </CardTitle>
-              <Tool className="h-4 w-4 text-muted-foreground" />
+              <Tool className="h-5 w-5 text-amber-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold text-gray-900">0</div>
             </CardContent>
           </Card>
         </div>
-
         {/* Calendar Grid */}
         <div className="flex-1 p-1">
           <div className="grid grid-cols-4 gap-1 h-full">
@@ -333,7 +331,7 @@ export default function CalenderTab() {
               {view === 'month' && renderMonthView()}
             </div>
             <div className="space-y-4">
-            <Card>
+              <Card>
                 <CardHeader>
                   <CardTitle>Quick Book</CardTitle>
                 </CardHeader>
