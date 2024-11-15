@@ -30,6 +30,21 @@ const initialActiveUsers = [
   { id: 3, name: "Alice Johnson", membershipType: "Premium", lastActive: "5 minutes ago", status: "active", note: "VIP member" },
   { id: 4, name: "Bob Williams", membershipType: "Basic", lastActive: "3 days ago", status: "suspended", note: "" },
   { id: 5, name: "Charlie Brown", membershipType: "Premium", lastActive: "1 hour ago", status: "active", note: "" },
+  { id: 1, name: "John Doe", membershipType: "Premium", lastActive: "2 hours ago", status: "active", note: "" },
+  { id: 2, name: "Jane Smith", membershipType: "Basic", lastActive: "1 day ago", status: "inactive", note: "" },
+  { id: 3, name: "Alice Johnson", membershipType: "Premium", lastActive: "5 minutes ago", status: "active", note: "VIP member" },
+  { id: 4, name: "Bob Williams", membershipType: "Basic", lastActive: "3 days ago", status: "suspended", note: "" },
+  { id: 5, name: "Charlie Brown", membershipType: "Premium", lastActive: "1 hour ago", status: "active", note: "" },
+  { id: 1, name: "John Doe", membershipType: "Premium", lastActive: "2 hours ago", status: "active", note: "" },
+  { id: 2, name: "Jane Smith", membershipType: "Basic", lastActive: "1 day ago", status: "inactive", note: "" },
+  { id: 3, name: "Alice Johnson", membershipType: "Premium", lastActive: "5 minutes ago", status: "active", note: "VIP member" },
+  { id: 4, name: "Bob Williams", membershipType: "Basic", lastActive: "3 days ago", status: "suspended", note: "" },
+  { id: 5, name: "Charlie Brown", membershipType: "Premium", lastActive: "1 hour ago", status: "active", note: "" },
+  { id: 1, name: "John Doe", membershipType: "Premium", lastActive: "2 hours ago", status: "active", note: "" },
+  { id: 2, name: "Jane Smith", membershipType: "Basic", lastActive: "1 day ago", status: "inactive", note: "" },
+  { id: 3, name: "Alice Johnson", membershipType: "Premium", lastActive: "5 minutes ago", status: "active", note: "VIP member" },
+  { id: 4, name: "Bob Williams", membershipType: "Basic", lastActive: "3 days ago", status: "suspended", note: "" },
+  { id: 5, name: "Charlie Brown", membershipType: "Premium", lastActive: "1 hour ago", status: "active", note: "" },
 ]
 
 export default function DashboardTab() {
@@ -90,7 +105,7 @@ export default function DashboardTab() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background p-1">
+    <div className="flex flex-col h-100 bg-background p-1">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-1 h-full">
         {/* Active Users */}
         <Card className="col-span-1 md:col-span-2 h-full">
@@ -98,7 +113,7 @@ export default function DashboardTab() {
             <h2 className="text-2xl font-bold mb-4">Active Users</h2>
             <ScrollArea className="h-[calc(100vh-12rem)]">
               {activeUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between py-4 border-b last:border-b-0">
+                <div key={user.id} className="flex items-center justify-between p-4 border-b last:border-b-0">
                   <div className="flex items-center space-x-4">
                     <Avatar>
                       <AvatarImage src={`/placeholder.svg?height=40&width=40`} alt={user.name} />

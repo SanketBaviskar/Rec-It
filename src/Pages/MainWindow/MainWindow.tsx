@@ -29,12 +29,12 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard")
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col bg-background overflow-hidden">
       {/* Navbar Component with Active Tab Management */}
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       
       {/* Main Content Area */}
-      <main className="flex-1 overflow-auto pt-0"> {/* pt-0 accounts for the navbar height */}
+      <main className="flex-1 pt-0"> {/* pt-0 accounts for the navbar height */}
         <DashboardContent activeTab={activeTab} />
       </main>
     </div>
