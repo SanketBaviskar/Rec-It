@@ -118,7 +118,7 @@ function App() {
         selectedFacility={selectedFacility}
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden p-1 space-y-1">
+      <div className="flex-1 flex flex-col overflow-hidden p-1.5 space-y-1.5">
         <CalendarHeader
           currentDate={currentDate}
           onPrevious={handlePrevious}
@@ -128,8 +128,8 @@ function App() {
           onViewChange={setView}
         />
 
-        <div className="grid grid-cols-4 gap-1">
-          <div className="col-span-3 space-y-1">
+        <div className="grid grid-cols-4 gap-1.5">
+          <div className="col-span-3 space-y-1.5">
             <DailyStats bookings={bookings} date={currentDate} />
             
             <div className="bg-white rounded-lg shadow">
@@ -149,7 +149,7 @@ function App() {
             </div>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <QuickBookingPanel
               facilities={sampleFacilities}
               onQuickBook={handleQuickBook}
