@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  Search,
   UserPlus,
   Building2,
   ShoppingCart,
@@ -10,8 +9,11 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import NewMemberForm  from "@/components/NewmemberForm"; // Adjust the path as needed
+import NewMemberForm from "@/components/NewmemberForm"; // Adjust the path as needed
 import { MemberData } from "@/components/NewmemberForm";
+
+import SearchBar from "@/components/SearchBar"; // Adjust the path as needed
+
 interface CartItem {
   id: string;
   name: string;
@@ -106,47 +108,47 @@ export default function SalesTab() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<
-    Array<Customer | (typeof orders)[0]>
-  >([]);
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const [searchResults, setSearchResults] = useState<
+  //   Array<Customer | (typeof orders)[0]>
+  // >([]);
   const [activeTab, setActiveTab] = useState("quick");
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showSearchResults, setShowSearchResults] = useState(false);
+  // const [showSearchResults, setShowSearchResults] = useState(false);
   const [isNewMemberFormOpen, setIsNewMemberFormOpen] = useState(false);
 
-  useEffect(() => {
-    if (searchQuery) {
-      const filteredCustomers = customers.filter((customer) =>
-        customer.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      const filteredOrders = orders.filter(
-        (order) =>
-          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.customerName.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setSearchResults([...filteredCustomers, ...filteredOrders]);
-      setShowSearchResults(true);
-    } else {
-      setSearchResults([]);
-      setShowSearchResults(false);
-    }
-  }, [searchQuery]);
+  // useEffect(() => {
+  //   if (searchQuery) {
+  //     const filteredCustomers = customers.filter((customer) =>
+  //       customer.name.toLowerCase().includes(searchQuery.toLowerCase())
+  //     );
+  //     const filteredOrders = orders.filter(
+  //       (order) =>
+  //         order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //         order.customerName.toLowerCase().includes(searchQuery.toLowerCase())
+  //     );
+  //     setSearchResults([...filteredCustomers, ...filteredOrders]);
+  //     setShowSearchResults(true);
+  //   } else {
+  //     setSearchResults([]);
+  //     setShowSearchResults(false);
+  //   }
+  // }, [searchQuery]);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
+  // const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   setSearchQuery(event.target.value);
+  // };
 
-  const handleSearchSelect = (result: Customer | (typeof orders)[0]) => {
-    if ("email" in result) {
-      setSelectedCustomer(result);
-    } else {
-      // Handle order selection (you might want to add more functionality here)
-      console.log("Selected order:", result);
-    }
-    setSearchQuery("");
-    setShowSearchResults(false);
-  };
+  // const handleSearchSelect = (result: Customer | typeof orders[number]) => {
+  //   if ("email" in result) {
+  //     setSelectedCustomer(result as Customer);
+  //   } else {
+  //     // Handle order selection
+  //     console.log("Selected order:", result);
+  //   }
+  //   setSearchQuery("");
+  //   setShowSearchResults(false);
+  // };
 
   const addToCart = (item: Omit<CartItem, "quantity">) => {
     setCart((current) => {
@@ -193,48 +195,31 @@ export default function SalesTab() {
         <div className="bg-white p-4 shadow-sm">
           <div className="flex items-center gap-4 mx-auto">
             <div className="flex-1 relative">
-              <input
-                type="search"
+              <SearchBar
                 placeholder="Search customers or orders..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full px-4 py-2 border rounded-md bg-white "
+                data={[...customers, ...orders]}
+                filterFn={(item, query) => {
+                  if ("name" in item) {
+                    return item.name
+                      .toLowerCase()
+                      .includes(query.toLowerCase());
+                  } else {
+                    return (
+                      item.id.toLowerCase().includes(query.toLowerCase()) ||
+                      item.customerName
+                        .toLowerCase()
+                        .includes(query.toLowerCase())
+                    );
+                  }
+                }}
+                onSelect={(result) => {
+                  if ("email" in result) {
+                    setSelectedCustomer(result as Customer);
+                  } else {
+                    console.log("Selected order:", result);
+                  }
+                }}
               />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              {showSearchResults && (
-                <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
-                  {searchResults.map((result) => (
-                    <div
-                      key={"email" in result ? result.id : result.id}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleSearchSelect(result)}
-                    >
-                      {"email" in result ? (
-                        <div className="flex items-center">
-                          <img
-                            src={result.image}
-                            alt={result.name}
-                            className="w-8 h-8 rounded-full mr-2"
-                          />
-                          <div>
-                            <div className="font-medium">{result.name}</div>
-                            <div className="text-sm text-gray-500">
-                              {result.email}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="font-medium">Order {result.id}</div>
-                          <div className="text-sm text-gray-500">
-                            {result.customerName} - ${result.total}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             <button
               onClick={() => setIsNewMemberFormOpen(true)}
