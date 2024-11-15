@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { addDays, subDays, format } from 'date-fns'
+import { addDays, subDays, format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, isSameMonth } from 'date-fns'
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -92,100 +92,155 @@ export default function CalenderTab() {
   const [bookings, setBookings] = useState<Booking[]>([])
 
   const handlePrevious = () => {
-    setCurrentDate(prev => view === 'week' ? subDays(prev, 7) : subDays(prev, 1))
+    setCurrentDate(prev => {
+      switch (view) {
+        case 'day':
+          return subDays(prev, 1)
+        case 'week':
+          return subDays(prev, 7)
+        case 'month':
+          return subDays(prev, 30)
+        default:
+          return prev
+      }
+    })
   }
 
   const handleNext = () => {
-    setCurrentDate(prev => view === 'week' ? addDays(prev, 7) : addDays(prev, 1))
+    setCurrentDate(prev => {
+      switch (view) {
+        case 'day':
+          return addDays(prev, 1)
+        case 'week':
+          return addDays(prev, 7)
+        case 'month':
+          return addDays(prev, 30)
+        default:
+          return prev
+      }
+    })
+  }
+
+  const renderDayView = () => (
+    <div className="grid grid-cols-1 gap-4">
+      {Array.from({ length: 24 }).map((_, i) => (
+        <div key={i} className="flex items-center border-t py-2">
+          <div className="w-16 text-sm text-muted-foreground">
+            {String(i).padStart(2, '0')}:00
+          </div>
+          <div className="flex-1 h-8 rounded hover:bg-gray-50"></div>
+        </div>
+      ))}
+    </div>
+  )
+
+  const renderWeekView = () => {
+    const startDate = startOfWeek(currentDate)
+    const endDate = endOfWeek(currentDate)
+    const days = eachDayOfInterval({ start: startDate, end: endDate })
+
+    return (
+      <div className="grid grid-cols-8 gap-4">
+        <div className="col-span-1"></div>
+        {days.map((day, index) => (
+          <div key={index} className="text-center font-medium">
+            {format(day, 'EEE d')}
+          </div>
+        ))}
+        {Array.from({ length: 24 }).map((_, hour) => (
+          <>
+            <div key={`hour-${hour}`} className="text-sm text-muted-foreground">
+              {String(hour).padStart(2, '0')}:00
+            </div>
+            {days.map((day, index) => (
+              <div key={`${day}-${hour}`} className="border-t h-8 hover:bg-gray-50"></div>
+            ))}
+          </>
+        ))}
+      </div>
+    )
+  }
+
+  const renderMonthView = () => {
+    const startDate = startOfMonth(currentDate)
+    const endDate = endOfMonth(currentDate)
+    const days = eachDayOfInterval({ start: startDate, end: endDate })
+
+    return (
+      <div className="grid grid-cols-7 gap-4">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+          <div key={day} className="text-center font-medium">
+            {day}
+          </div>
+        ))}
+        {days.map((day, index) => (
+          <div
+            key={index}
+            className={`h-24 border p-1 ${
+              isSameMonth(day, currentDate) ? 'bg-white' : 'bg-gray-100'
+            }`}
+          >
+            <div className="text-sm">{format(day, 'd')}</div>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Left Sidebar */}
       <div className="w-64 bg-white border-r p-4">
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search facilities..." className="pl-8" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            <Select defaultValue="all">
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="court">Court</SelectItem>
-                <SelectItem value="pool">Pool</SelectItem>
-                <SelectItem value="studio">Studio</SelectItem>
-                <SelectItem value="gym">Gym</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <ScrollArea className="h-[calc(100vh-200px)]">
-            <div className="space-y-4">
-              {sampleFacilities.map((facility) => (
-                <Card key={facility.id} className="cursor-pointer hover:bg-gray-50">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{facility.name}</h3>
-                        <p className="text-sm text-muted-foreground">{facility.type} • {facility.capacity} capacity</p>
-                        <p className="text-sm text-muted-foreground">{facility.location}</p>
-                      </div>
-                      <Badge variant={facility.available ? "success" : "destructive"}>
-                        {facility.available ? 'Available' : 'In Use'}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </ScrollArea>
+      <div className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search facilities..." className="pl-8" />
         </div>
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4" />
+          <Select defaultValue="all">
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="court">Court</SelectItem>
+              <SelectItem value="pool">Pool</SelectItem>
+              <SelectItem value="studio">Studio</SelectItem>
+              <SelectItem value="gym">Gym</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <ScrollArea className="h-[calc(100vh-200px)]">
+          <div className="space-y-4">
+            {sampleFacilities.map((facility) => (
+              <Card key={facility.id} className="cursor-pointer hover:bg-gray-50">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{facility.name}</h3>
+                      <p className="text-sm text-muted-foreground">{facility.type} • {facility.capacity} capacity</p>
+                      <p className="text-sm text-muted-foreground">{facility.location}</p>
+                    </div>
+                    <Badge variant={facility.available ? "success" : "destructive"}>
+                      {facility.available ? 'Available' : 'In Use'}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
       </div>
+    </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Navigation */}
-        <div className="bg-white border-b px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" className="gap-2">
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
-              </Button>
-              <Button variant="default" className="gap-2">
-                <CalendarIcon className="h-4 w-4" />
-                Calendar
-              </Button>
-              <Button variant="ghost" className="gap-2">
-                <ShoppingCart className="h-4 w-4" />
-                Sale
-              </Button>
-              <Button variant="ghost" className="gap-2">
-                <Wrench className="h-4 w-4" />
-                Equipment
-              </Button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Input
-                placeholder="Search..."
-                className="w-64"
-              />
-              <Button variant="outline" size="icon">
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
         {/* Calendar Header */}
         <div className="p-4 bg-white border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="outline">Today</Button>
+              <Button variant="outline" onClick={() => setCurrentDate(new Date())}>Today</Button>
               <div className="flex items-center">
                 <Button variant="ghost" size="icon" onClick={handlePrevious}>
                   <ChevronLeft className="h-4 w-4" />
@@ -272,20 +327,13 @@ export default function CalenderTab() {
         {/* Calendar Grid */}
         <div className="flex-1 p-4">
           <div className="grid grid-cols-4 gap-4 h-full">
-            <div className="col-span-3 bg-white rounded-lg shadow p-4">
-              <div className="grid grid-cols-1 gap-4">
-                {Array.from({ length: 24 }).map((_, i) => (
-                  <div key={i} className="flex items-center border-t py-2">
-                    <div className="w-16 text-sm text-muted-foreground">
-                      {String(i).padStart(2, '0')}:00
-                    </div>
-                    <div className="flex-1 h-8 rounded hover:bg-gray-50"></div>
-                  </div>
-                ))}
-              </div>
+            <div className="col-span-3 bg-white rounded-lg shadow p-4 overflow-auto">
+              {view === 'day' && renderDayView()}
+              {view === 'week' && renderWeekView()}
+              {view === 'month' && renderMonthView()}
             </div>
             <div className="space-y-4">
-              <Card>
+            <Card>
                 <CardHeader>
                   <CardTitle>Quick Book</CardTitle>
                 </CardHeader>

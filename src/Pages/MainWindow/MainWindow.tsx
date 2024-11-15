@@ -34,7 +34,7 @@ export default function Dashboard() {
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       
       {/* Main Content Area */}
-      <main className="flex-1 overflow-auto pt-14"> {/* pt-14 accounts for the navbar height */}
+      <main className="flex-1 overflow-auto pt-0"> {/* pt-0 accounts for the navbar height */}
         <DashboardContent activeTab={activeTab} />
       </main>
     </div>
