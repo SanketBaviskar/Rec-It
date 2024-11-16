@@ -10,8 +10,10 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import NewMemberForm  from "@/components/NewmemberForm"; // Adjust the path as needed
+import { SearchBar } from "@/components/SearchBar";
+import NewMemberForm from "@/components/NewmemberForm"; // Adjust the path as needed
 import { MemberData } from "@/components/NewmemberForm";
+
 interface CartItem {
   id: string;
   name: string;
@@ -19,58 +21,6 @@ interface CartItem {
   quantity: number;
   category: string;
 }
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  membershipType: string;
-  image?: string;
-}
-
-const customers: Customer[] = [
-  {
-    id: "1",
-    name: "Alex Johnson",
-    email: "alex@example.com",
-    membershipType: "Student",
-    image: "https://i.pravatar.cc/150?img=1",
-  },
-  {
-    id: "2",
-    name: "Sarah Wilson",
-    email: "sarah@example.com",
-    membershipType: "Faculty",
-    image: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    id: "3",
-    name: "Mike Brown",
-    email: "mike@example.com",
-    membershipType: "Student",
-    image: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: "4",
-    name: "Emily Davis",
-    email: "emily@example.com",
-    membershipType: "Staff",
-    image: "https://i.pravatar.cc/150?img=4",
-  },
-  {
-    id: "5",
-    name: "Chris Lee",
-    email: "chris@example.com",
-    membershipType: "Alumni",
-    image: "https://i.pravatar.cc/150?img=5",
-  },
-];
-
-const orders = [
-  { id: "ORD001", customerName: "Alex Johnson", total: 50 },
-  { id: "ORD002", customerName: "Sarah Wilson", total: 75 },
-  { id: "ORD003", customerName: "Mike Brown", total: 100 },
-];
 
 const quickItems = [
   { id: "day-pass", name: "Day Pass", price: 10, category: "Passes" },
@@ -103,49 +53,15 @@ const quickItems = [
 
 export default function SalesTab() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(
     null
   );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<
-    Array<Customer | (typeof orders)[0]>
-  >([]);
   const [activeTab, setActiveTab] = useState("quick");
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showSearchResults, setShowSearchResults] = useState(false);
   const [isNewMemberFormOpen, setIsNewMemberFormOpen] = useState(false);
 
-  useEffect(() => {
-    if (searchQuery) {
-      const filteredCustomers = customers.filter((customer) =>
-        customer.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      const filteredOrders = orders.filter(
-        (order) =>
-          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.customerName.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setSearchResults([...filteredCustomers, ...filteredOrders]);
-      setShowSearchResults(true);
-    } else {
-      setSearchResults([]);
-      setShowSearchResults(false);
-    }
-  }, [searchQuery]);
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleSearchSelect = (result: Customer | (typeof orders)[0]) => {
-    if ("email" in result) {
-      setSelectedCustomer(result);
-    } else {
-      // Handle order selection (you might want to add more functionality here)
-      console.log("Selected order:", result);
-    }
-    setSearchQuery("");
-    setShowSearchResults(false);
+  const handleSelectCustomer = (user: any) => {
+    setSelectedCustomer(user);
   };
 
   const addToCart = (item: Omit<CartItem, "quantity">) => {
@@ -164,6 +80,7 @@ export default function SalesTab() {
     setCart((current) => current.filter((item) => item.id !== itemId));
   };
 
+  
   const updateQuantity = (itemId: string, delta: number) => {
     setCart((current) =>
       current.map((item) => {
@@ -193,48 +110,13 @@ export default function SalesTab() {
         <div className="bg-white p-4 shadow-sm">
           <div className="flex items-center gap-4 mx-auto">
             <div className="flex-1 relative">
-              <input
-                type="search"
+              <SearchBar
                 placeholder="Search customers or orders..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full px-4 py-2 border rounded-md bg-white "
+                onSelect={(user) => handleSelectCustomer(user)} // Set selected user
+                onClear={() => setSelectedCustomer(null)} // Clear selection
+                variant="popup" // Use "popup" for dropdown style
+                triggerSearchOnClick={true} // Search only on button click
               />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              {showSearchResults && (
-                <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
-                  {searchResults.map((result) => (
-                    <div
-                      key={"email" in result ? result.id : result.id}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleSearchSelect(result)}
-                    >
-                      {"email" in result ? (
-                        <div className="flex items-center">
-                          <img
-                            src={result.image}
-                            alt={result.name}
-                            className="w-8 h-8 rounded-full mr-2"
-                          />
-                          <div>
-                            <div className="font-medium">{result.name}</div>
-                            <div className="text-sm text-gray-500">
-                              {result.email}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="font-medium">Order {result.id}</div>
-                          <div className="text-sm text-gray-500">
-                            {result.customerName} - ${result.total}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             <button
               onClick={() => setIsNewMemberFormOpen(true)}
@@ -325,7 +207,7 @@ export default function SalesTab() {
                     </div>
                   </div>
                   <div className="mt-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded inline-block">
-                    {selectedCustomer.membershipType}
+                    {selectedCustomer.phoneNumber}
                   </div>
                 </div>
               )}
