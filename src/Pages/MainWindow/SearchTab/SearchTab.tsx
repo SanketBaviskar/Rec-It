@@ -21,7 +21,6 @@ import {
   FileText,
   History,
   User,
-  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EditMemberProfile from "@/components/EditMemberProfile/EditMemberProfile";
@@ -229,19 +228,7 @@ export default function Component() {
       </Card>
       {/* Edit Profile Modal */}
       {showEditProfile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-[600px] max-w-full p-6 relative">
-            {/* Close Button */}
-            <button
-              className="absolute top-4 right-4 text-muted-foreground hover:text-red-500"
-              onClick={handleCloseEditProfile}
-              aria-label="Close"
-            >
-              <X className="h-6 w-6"  onClick={handleCloseEditProfile} />
-            </button>
-            <EditMemberProfile />
-          </div>
-        </div>
+        <EditMemberProfile onClose={handleCloseEditProfile} />
       )}
     </div>
   );
