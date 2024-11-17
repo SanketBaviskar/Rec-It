@@ -1,32 +1,21 @@
 'use client'
 
-import React, { useState } from 'react'
-import { addDays, subDays, format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, isSameMonth, isSameDay, parseISO, addMinutes, differenceInMinutes, addHours } from 'date-fns'
+import * as React from "react"
+import { useState, useRef } from "react"
+import { format, addDays, subDays, startOfDay, endOfDay, eachMinuteOfInterval, differenceInMinutes, addMinutes, isSameDay, setHours, setMinutes } from "date-fns"
+import { ChevronLeft, ChevronRight, Plus, Search, Filter, Trash2, BookOpen, Users, Clock, PenToolIcon as Tool } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CalendarIcon, ChevronLeft, ChevronRight, Users, Clock, BookOpen, PenToolIcon as Tool, Search, Filter, X } from 'lucide-react'
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-interface Facility {
+type Facility = {
   id: string
   name: string
   type: string
@@ -37,17 +26,18 @@ interface Facility {
   color: string
 }
 
-interface Booking {
+type Booking = {
   id: string
   title: string
   facility: string
   start: Date
   end: Date
-  type: 'booking' | 'class' | 'maintenance' | 'event'
-  status: 'confirmed' | 'pending' | 'cancelled'
+  type: 'booking' | 'maintenance' | 'event'
+  status: 'pending' | 'confirmed' | 'cancelled'
   description?: string
   attendees?: number
   instructor?: string
+  createdAt: Date
   recurring?: {
     frequency: 'daily' | 'weekly' | 'monthly'
     endDate: Date
@@ -104,6 +94,8 @@ export default function CalendarTab() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
   const [selectedBookingDate, setSelectedBookingDate] = useState(new Date())
+  const [draggedBooking, setDraggedBooking] = useState<Booking | null>(null)
+  const calendarRef = useRef<HTMLDivElement>(null)
 
   const handlePrevious = () => {
     setCurrentDate(prev => {
@@ -113,7 +105,7 @@ export default function CalendarTab() {
         case 'week':
           return subDays(prev, 7)
         case 'month':
-          return subDays(prev, 1)
+          return subDays(prev, 30)
         default:
           return prev
       }
@@ -128,7 +120,7 @@ export default function CalendarTab() {
         case 'week':
           return addDays(prev, 7)
         case 'month':
-          return addDays(prev, 1)
+          return addDays(prev, 30)
         default:
           return prev
       }
@@ -136,7 +128,7 @@ export default function CalendarTab() {
   }
 
   const handleBook = (booking: Booking) => {
-    setBookings(prev => [...prev, { ...booking, id: Date.now().toString() }])
+    setBookings(prev => [...prev, { ...booking, id: Date.now().toString(), createdAt: new Date() }])
     setIsBookingModalOpen(false)
   }
 
@@ -149,141 +141,166 @@ export default function CalendarTab() {
     setIsBookingModalOpen(true)
   }
 
-  const renderBooking = (booking: Booking, dayStart: Date) => {
+  const groupOverlappingEvents = (events: Booking[]) => {
+    const sortedEvents = events.sort((a, b) => a.start.getTime() - b.start.getTime())
+    const groups: Booking[][] = []
+
+    for (const event of sortedEvents) {
+      let added = false
+      for (const group of groups) {
+        if (!group.some(groupEvent => 
+          (event.start < groupEvent.end && event.end > groupEvent.start)
+        )) {
+          group.push(event)
+          added = true
+          break
+        }
+      }
+      if (!added) {
+        groups.push([event])
+      }
+    }
+
+    return groups
+  }
+
+  const renderBooking = (booking: Booking, dayStart: Date, totalWidth: number, groupIndex: number, totalGroups: number) => {
     const facility = sampleFacilities.find(f => f.id === booking.facility)
     const startMinutes = differenceInMinutes(booking.start, dayStart)
     const duration = differenceInMinutes(booking.end, booking.start)
+    const width = (totalWidth / totalGroups) - 4
+    const left = 60 + (groupIndex * (width + 4))
     
     return (
       <div
         key={booking.id}
-        className="absolute p-1 rounded text-xs"
+        className="absolute rounded-md overflow-hidden cursor-move"
         style={{
           top: `${startMinutes}px`,
           height: `${duration}px`,
-          left: '60px',
-          right: '4px',
-          overflow: 'hidden',
+          left: `${left}px`,
+          width: `${width}px`,
           backgroundColor: facility?.color || '#999',
-          color: '#fff',
         }}
+        draggable
+        onDragStart={(e) => handleDragStart(e, booking)}
+        onDragEnd={handleDragEnd}
       >
-        <div className="font-bold">{booking.title}</div>
-        <div>{facility?.name}</div>
-        <div>{format(booking.start, 'HH:mm')} - {format(booking.end, 'HH:mm')}</div>
+        <div className="p-2 h-full flex flex-col justify-between">
+          <div>
+            <div className="font-bold text-white truncate">{booking.title}</div>
+            <div className="text-white text-xs truncate">{facility?.name}</div>
+          </div>
+          <div className="text-white text-xs">
+            {format(booking.start, 'HH:mm')} - {format(booking.end, 'HH:mm')}
+          </div>
+        </div>
+        <button
+          className="absolute top-1 right-1 text-white hover:text-red-500 transition-colors"
+          onClick={() => handleDeleteBooking(booking.id)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </div>
     )
+  }
+
+  const handleDeleteBooking = (bookingId: string) => {
+    setBookings(prevBookings => prevBookings.filter(booking => booking.id !== bookingId))
+  }
+
+  const handleCalendarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (calendarRef.current) {
+      const rect = calendarRef.current.getBoundingClientRect()
+      const y = e.clientY - rect.top
+      const clickedMinute = Math.floor(y)
+      const clickedHour = Math.floor(clickedMinute / 60)
+      const clickedMinuteWithinHour = clickedMinute % 60
+
+      const newBookingDate = new Date(currentDate)
+      setHours(newBookingDate, clickedHour)
+      setMinutes(newBookingDate, clickedMinuteWithinHour)
+
+      openBookingModal(newBookingDate)
+    }
   }
 
   const renderDayView = () => {
-    const dayStart = new Date(currentDate.setHours(0, 0, 0, 0))
-    const dayEnd = new Date(currentDate.setHours(23, 59, 59, 999))
+    const dayStart = startOfDay(currentDate)
+    const dayEnd = endOfDay(currentDate)
+    const intervals = eachMinuteOfInterval(
+      { start: dayStart, end: dayEnd },
+      { step: 30 }
+    )
+    const columnWidth = calendarRef.current ? calendarRef.current.offsetWidth - 60 : 200 // 60px for time labels
+
+    const dayEvents = bookings.filter(booking => isSameDay(booking.start, currentDate))
+    const eventGroups = groupOverlappingEvents(dayEvents)
 
     return (
-      <div className="grid grid-cols-1 gap-0 relative" style={{ height: '1440px' }}> {/* 24 hours * 60 minutes */}
-        {Array.from({ length: 24 }).map((_, i) => (
-          <div key={i} className="flex items-center border-t py-1" style={{ height: '60px' }}>
-            <div className="w-16 text-sm text-muted-foreground">
-              {String(i).padStart(2, '0')}:00
+      <div 
+        className="relative" 
+        style={{ height: '1440px' }} 
+        onClick={handleCalendarClick}
+      > {/* 24 hours * 60 minutes */}
+        {intervals.map((interval, index) => (
+          <div key={index} className="flex items-center border-t border-gray-200 dark:border-gray-700" style={{ height: '60px' }}>
+            <div className="w-14 pr-2 text-right text-sm text-gray-500 dark:text-gray-400">
+              {format(interval, 'HH:mm')}
             </div>
             <div
-              className="flex-1 h-full rounded-md hover:bg-accent/50 transition-colors"
-              onClick={() => openBookingModal(currentDate, i)}
+              className="flex-1 h-full"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, currentDate, interval.getHours(), interval.getMinutes())}
             ></div>
           </div>
         ))}
-        {bookings
-          .filter(booking => booking.start >= dayStart && booking.start <= dayEnd)
-          .map(booking => renderBooking(booking, dayStart))}
+        {eventGroups.map((group, groupIndex) => 
+          group.map((booking, bookingIndex) => 
+            renderBooking(booking, dayStart, columnWidth, groupIndex, eventGroups.length)
+          )
+        )}
       </div>
     )
   }
 
-  const renderWeekView = () => {
-    const weekStart = startOfWeek(currentDate)
-    const weekEnd = endOfWeek(currentDate)
-    const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
-
-    return (
-      <div className="grid grid-cols-8 gap-2">
-        <div className="col-span-1"></div>
-        {days.map((day, index) => (
-          <div key={index} className="text-center font-medium">
-            {format(day, 'EEE d')}
-          </div>
-        ))}
-        {Array.from({ length: 24 }).map((_, hour) => (
-          <React.Fragment key={`hour-${hour}`}>
-            <div className="text-sm text-muted-foreground">
-              {String(hour).padStart(2, '0')}:00
-            </div>
-            {days.map((day, index) => (
-              <div
-                key={`${day}-${hour}`}
-                className="border-t h-8 hover:bg-accent/50 transition-colors relative"
-                onClick={() => openBookingModal(day, hour)}
-              >
-                {bookings
-                  .filter(booking =>
-                    isSameDay(booking.start, day) &&
-                    booking.start.getHours() === hour
-                  )
-                  .map(booking => renderBooking(booking, new Date(day.setHours(0, 0, 0, 0))))}
-              </div>
-            ))}
-          </React.Fragment>
-        ))}
-      </div>
-    )
+  const handleDragStart = (e: React.DragEvent, booking: Booking) => {
+    setDraggedBooking(booking)
+    if (e.dataTransfer) {
+      e.dataTransfer.setData('text/plain', booking.id)
+    }
   }
 
-  const renderMonthView = () => {
-    const startDate = startOfMonth(currentDate)
-    const endDate = endOfMonth(currentDate)
-    const days = eachDayOfInterval({ start: startDate, end: endDate })
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
 
-    return (
-      <div className="grid grid-cols-7 gap-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-          <div key={day} className="text-center font-medium">
-            {day}
-          </div>
-        ))}
-        {days.map((day, index) => (
-          <div
-            key={index}
-            className={`h-24 border p-1 ${isSameMonth(day, currentDate) ? 'bg-background' : 'bg-muted'
-              } hover:bg-accent/50 transition-colors overflow-y-auto`}
-            onClick={() => openBookingModal(day)}
-          >
-            <div className="text-sm">{format(day, 'd')}</div>
-            {bookings
-              .filter(booking => isSameDay(booking.start, day))
-              .map(booking => {
-                const facility = sampleFacilities.find(f => f.id === booking.facility)
-                return (
-                  <div
-                    key={booking.id}
-                    className="text-xs p-1 rounded mb-1"
-                    style={{
-                      backgroundColor: facility?.color || "#999",
-                      color: "#fff",
-                    }}
-                  >
-                    <div className="font-bold">{booking.title}</div>
-                    <div>{format(booking.start, 'HH:mm')} - {format(booking.end, 'HH:mm')}</div>
-                  </div>
-                )
-              })}
-          </div>
-        ))}
-      </div>
-    )
+  const handleDrop = (e: React.DragEvent, day: Date, hour: number, minute: number) => {
+    e.preventDefault()
+    if (draggedBooking) {
+      const newStart = new Date(day)
+      newStart.setHours(hour, minute, 0, 0)
+      const duration = differenceInMinutes(draggedBooking.end, draggedBooking.start)
+      const newEnd = addMinutes(newStart, duration)
+
+      setBookings(prevBookings => 
+        prevBookings.map(booking => 
+          booking.id === draggedBooking.id
+            ? { ...booking, start: newStart, end: newEnd }
+            : booking
+        )
+      )
+    }
+    setDraggedBooking(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedBooking(null)
   }
 
   const getUpcomingEvents = () => {
     const now = new Date();
-    const twoHoursLater = addHours(now, 2);
+    const twoHoursLater = addMinutes(now, 120);
     return bookings.filter(booking => 
       booking.start >= now && booking.start <= twoHoursLater
     ).sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -337,7 +354,7 @@ export default function CalendarTab() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col px-4">
         {/* Header */}
         <div className="p-4 border-b">
           <div className="flex items-center justify-between">
@@ -391,7 +408,7 @@ export default function CalendarTab() {
             <CardContent>
               <div className="text-2xl font-bold">
                 {bookings.filter(booking =>
-                  booking.type === 'class' &&
+                  booking.type === 'event' &&
                   booking.start.toDateString() === new Date().toDateString()
                 ).length}
               </div>
@@ -410,40 +427,61 @@ export default function CalendarTab() {
           </Card>
         </div>
 
-        {/* Calendar Grid */}
-        <div className="flex-1 p-4 overflow-auto">
-          <Tabs value={view} onValueChange={(v) => setView(v as "day" | "week" | "month")} className="h-full flex flex-col">
-            <TabsList>
-              <TabsTrigger value="day">Day</TabsTrigger>
-              <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="month">Month</TabsTrigger>
-            </TabsList>
-            <div className="flex-1 overflow-auto mt-4">
-              <TabsContent value="day">{renderDayView()}</TabsContent>
-              <TabsContent value="week">{renderWeekView()}</TabsContent>
-              <TabsContent value="month">{renderMonthView()}</TabsContent>
-            </div>
-          </Tabs>
+        {/* View Tabs */}
+        <div className="flex justify-center my-4">
+          <div className="inline-flex space-x-1 bg-muted p-1 rounded-md">
+            <button
+              onClick={() => setView('day')}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${
+                view === 'day' 
+                  ? 'bg-background text-foreground' 
+                  : 'text-muted-foreground hover:bg-background/50'
+              }`}
+            >
+              Day
+            </button>
+            <button
+              onClick={() => setView('week')}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${
+                view === 'week'
+                  ? 'bg-background text-foreground'
+                  : 'text-muted-foreground hover:bg-background/50'
+              }`}
+            >
+              Week
+            </button>
+            <button
+              onClick={() => setView('month')}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${
+                view === 'month'
+                  ? 'bg-background text-foreground'
+                  : 'text-muted-foreground hover:bg-background/50'
+              }`}
+            >
+              Month
+            </button>
+          </div>
+        </div>
+
+
+        {/* Calendar View */}
+        <div className="flex-1 overflow-auto p-4" ref={calendarRef}>
+          {renderDayView()}
         </div>
       </div>
 
-      {/* Quick Book Sidebar */}
-      <div className="w-80 border-l p-4">
+      {/* Right Sidebar */}
+      <div className="w-64 border-l p-4">
         <Card>
           <CardHeader>
             <CardTitle>Quick Book</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {[
-              { name: 'Study Room 1', seats: '2/10' },
-              { name: 'Study Room 2', seats: '4/10' },
-              { name: 'Study Room 3', seats: '7/10' },
-              { name: 'Study Room 4', seats: '10/10' }
-            ].map((room) => (
-              <div key={room.name}>
+          <CardContent>
+            {sampleFacilities.map((room) => (
+              <div key={room.id} className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium">{room.name}</h4>
-                  <span className="text-sm text-muted-foreground">({room.seats} seats)</span>
+                  <span className="text-sm text-muted-foreground">({room.capacity} seats)</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mb-2">
                   <Button variant="outline" size="sm"
@@ -571,6 +609,7 @@ function BookingForm({ selectedDate, facilities, onBook, onClose }: {
       description: formData.description,
       attendees: formData.attendees ? parseInt(formData.attendees) : undefined,
       instructor: formData.instructor || undefined,
+      createdAt: new Date(),
       ...(formData.isRecurring && {
         recurring: {
           frequency: formData.recurringFrequency,
@@ -584,10 +623,11 @@ function BookingForm({ selectedDate, facilities, onBook, onClose }: {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <Label htmlFor="title" className="block text-sm font-medium text-foreground mb-1">
           Title
-        </label>
+        </Label>
         <Input
+          id="title"
           type="text"
           required
           value={formData.title}
@@ -596,14 +636,14 @@ function BookingForm({ selectedDate, facilities, onBook, onClose }: {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <Label htmlFor="facility" className="block text-sm font-medium text-foreground mb-1">
           Facility
-        </label>
+        </Label>
         <Select
           value={formData.facility}
           onValueChange={(value) => setFormData({ ...formData, facility: value })}
         >
-          <SelectTrigger>
+          <SelectTrigger id="facility">
             <SelectValue placeholder="Select a facility" />
           </SelectTrigger>
           <SelectContent>
@@ -618,10 +658,11 @@ function BookingForm({ selectedDate, facilities, onBook, onClose }: {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">
+          <Label htmlFor="startTime" className="block text-sm font-medium text-foreground mb-1">
             Start Time
-          </label>
+          </Label>
           <Input
+            id="startTime"
             type="time"
             required
             value={formData.startTime}
@@ -629,10 +670,11 @@ function BookingForm({ selectedDate, facilities, onBook, onClose }: {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">
+          <Label htmlFor="endTime" className="block text-sm font-medium text-foreground mb-1">
             End Time
-          </label>
+          </Label>
           <Input
+            id="endTime"
             type="time"
             required
             value={formData.endTime}
@@ -642,67 +684,112 @@ function BookingForm({ selectedDate, facilities, onBook, onClose }: {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <Label htmlFor="type" className="block text-sm font-medium text-foreground mb-1">
           Type
-        </label>
+        </Label>
         <Select
           value={formData.type}
           onValueChange={(value) => setFormData({ ...formData, type: value as Booking['type'] })}
         >
-          <SelectTrigger>
-            <SelectValue />
+          <SelectTrigger id="type">
+            <SelectValue placeholder="Select booking type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="booking">Booking</SelectItem>
-            <SelectItem value="class">Class</SelectItem>
             <SelectItem value="maintenance">Maintenance</SelectItem>
             <SelectItem value="event">Event</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {formData.type === 'class' && (
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">
-            Instructor
-          </label>
-          <Input
-            type="text"
-            value={formData.instructor}
-            onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
-          />
-        </div>
-      )}
-
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
+        <Label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
           Description
-        </label>
-        <textarea
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        </Label>
+        <Input
+          id="description"
+          type="text"
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
-          Expected Attendees
-        </label>
+        <Label htmlFor="attendees" className="block text-sm font-medium text-foreground mb-1">
+          Attendees
+        </Label>
         <Input
+          id="attendees"
           type="number"
           value={formData.attendees}
           onChange={(e) => setFormData({ ...formData, attendees: e.target.value })}
         />
       </div>
 
-      <div className="flex justify-end gap-2">
+      <div>
+        <Label htmlFor="instructor" className="block text-sm font-medium text-foreground mb-1">
+          Instructor
+        </Label>
+        <Input
+          id="instructor"
+          type="text"
+          value={formData.instructor}
+          onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
+        />
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="isRecurring"
+          checked={formData.isRecurring}
+          onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked })}
+        />
+        <Label htmlFor="isRecurring" className="text-sm font-medium text-foreground">
+          Recurring Booking
+        </Label>
+      </div>
+
+      {formData.isRecurring && (
+        <>
+          <div>
+            <Label htmlFor="recurringFrequency" className="block text-sm font-medium text-foreground mb-1">
+              Recurring Frequency
+            </Label>
+            <Select
+              value={formData.recurringFrequency}
+              onValueChange={(value) => setFormData({ ...formData, recurringFrequency: value as 'daily' | 'weekly' | 'monthly' })}
+            >
+              <SelectTrigger id="recurringFrequency">
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="recurringEndDate" className="block text-sm font-medium text-foreground mb-1">
+              Recurring End Date
+            </Label>
+            <Input
+              id="recurringEndDate"
+              type="date"
+              value={formData.recurringEndDate}
+              onChange={(e) => setFormData({ ...formData, recurringEndDate: e.target.value })}
+            />
+          </div>
+        </>
+      )}
+
+      <div className="flex justify-end space-x-2">
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button type="submit">
-          Book
-        </Button>
+        <Button type="submit">Book</Button>
       </div>
     </form>
   )
