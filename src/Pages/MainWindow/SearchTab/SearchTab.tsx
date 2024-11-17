@@ -3,12 +3,28 @@
 import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SearchBar } from "@/components/SearchBar";
-import { CheckCircle, Clock, CreditCard, Edit, FileText, History, User } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  CreditCard,
+  Edit,
+  FileText,
+  History,
+  User,
+  X
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import EditMemberProfile from "@/components/EditMemberProfile/EditMemberProfile";
 
 interface User {
   id: string;
@@ -22,13 +38,21 @@ interface User {
 export default function Component() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchResults, setSearchResults] = useState<User[]>([]);
-
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const handleUserSelect = (user: User) => {
     setSelectedUser(user);
   };
 
   const handleClearSelection = () => {
     setSelectedUser(null);
+  };
+
+  const handleEditClick = () => {
+    setShowEditProfile(true);
+  };
+
+  const handleCloseEditProfile = () => {
+    setShowEditProfile(false);
   };
 
   return (
@@ -59,7 +83,10 @@ export default function Component() {
               >
                 <Avatar>
                   {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
+                    <img
+                      src={user.avatarUrl}
+                      alt={`${user.firstName} ${user.lastName}`}
+                    />
                   ) : (
                     <User className="h-5 w-5" />
                   )}
@@ -87,7 +114,10 @@ export default function Component() {
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
                   {selectedUser.avatarUrl ? (
-                    <img src={selectedUser.avatarUrl} alt={`${selectedUser.firstName} ${selectedUser.lastName}`} />
+                    <img
+                      src={selectedUser.avatarUrl}
+                      alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
+                    />
                   ) : (
                     <User className="h-8 w-8" />
                   )}
@@ -110,7 +140,7 @@ export default function Component() {
                   <History className="mr-2 h-4 w-4" />
                   View History
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleEditClick}>
                   <Edit className="mr-2 h-4 w-4" />
                   Edit
                 </Button>
@@ -197,6 +227,22 @@ export default function Component() {
           </CardContent>
         )}
       </Card>
+      {/* Edit Profile Modal */}
+      {showEditProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-[600px] max-w-full p-6 relative">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-muted-foreground hover:text-red-500"
+              onClick={handleCloseEditProfile}
+              aria-label="Close"
+            >
+              <X className="h-6 w-6"  onClick={handleCloseEditProfile} />
+            </button>
+            <EditMemberProfile />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

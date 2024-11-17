@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  Search,
   UserPlus,
   Building2,
   ShoppingCart,

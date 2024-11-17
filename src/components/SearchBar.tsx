@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,7 +32,6 @@ export function SearchBar({
   placeholder = "Search customers or orders...",
   className = "",
   variant = "popup", // Default layout
-  triggerSearchOnClick = false, // Default: live search
 }: UserSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<User[]>([]);
