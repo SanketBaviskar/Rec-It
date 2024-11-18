@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useState, useRef } from "react";
+import * as React from "react"
+import { useState, useRef } from "react"
 import {
   format,
   addDays,
@@ -14,40 +14,34 @@ import {
   isSameDay,
   setHours,
   setMinutes,
-} from "date-fns";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Search,
-  Filter,
-  Trash2,
-  BookOpen,
-  Users,
-  Clock,
-  PenToolIcon as Tool,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  subMonths,
+  addMonths,
+} from "date-fns"
+import { ChevronLeft, ChevronRight, Plus, Search, Filter, Trash2, BookOpen, Users, Clock, PenToolIcon as Tool } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
 
 type Facility = {
   id: string;
@@ -122,70 +116,48 @@ const sampleFacilities: Facility[] = [
 ];
 
 export default function CalendarTab() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<"day" | "week" | "month">("day");
-  const [selectedFacility, setSelectedFacility] = useState<string>();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [selectedBookingDate, setSelectedBookingDate] = useState(new Date());
-  const [draggedBooking, setDraggedBooking] = useState<Booking | null>(null);
-  const calendarRef = useRef<HTMLDivElement>(null);
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [view, setView] = useState<"day" | "week" | "month">("day")
+  const [selectedFacility, setSelectedFacility] = useState<string>()
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+  const [selectedBookingDate, setSelectedBookingDate] = useState(new Date())
+  const [draggedBooking, setDraggedBooking] = useState<Booking | null>(null)
+  const calendarRef = useRef<HTMLDivElement>(null)
 
   const handlePrevious = () => {
-    setCurrentDate((prev) => {
-      switch (view) {
-        case "day":
-          return subDays(prev, 1);
-        case "week":
-          return subDays(prev, 7);
-        case "month":
-          return subDays(prev, 30);
-        default:
-          return prev;
-      }
-    });
-  };
+    setCurrentDate((prev) => subMonths(prev, 1))
+  }
 
   const handleNext = () => {
-    setCurrentDate((prev) => {
-      switch (view) {
-        case "day":
-          return addDays(prev, 1);
-        case "week":
-          return addDays(prev, 7);
-        case "month":
-          return addDays(prev, 30);
-        default:
-          return prev;
-      }
-    });
-  };
+    setCurrentDate((prev) => addMonths(prev, 1))
+  }
 
   const handleBook = (booking: Booking) => {
     setBookings((prev) => [
       ...prev,
       { ...booking, id: Date.now().toString(), createdAt: new Date() },
-    ]);
-    setIsBookingModalOpen(false);
-  };
+    ])
+    setIsBookingModalOpen(false)
+  }
 
   const openBookingModal = (date: Date, hour?: number, minute?: number) => {
-    const selectedDate = new Date(date);
+    const selectedDate = new Date(date)
     if (hour !== undefined) {
-      selectedDate.setHours(hour, minute || 0, 0, 0);
+      selectedDate.setHours(hour, minute || 0, 0, 0)
     }
-    setSelectedBookingDate(selectedDate);
-    setIsBookingModalOpen(true);
-  };
+    setSelectedBookingDate(selectedDate)
+    setIsBookingModalOpen(true)
+  }
 
   const groupOverlappingEvents = (events: Booking[]) => {
     const sortedEvents = events.sort(
       (a, b) => a.start.getTime() - b.start.getTime()
-    );
-    const groups: Booking[][] = [];
+    )
+    const groups: Booking[][] = []
 
     for (const event of sortedEvents) {
-      let added = false;
+      let added = false
       for (const group of groups) {
         if (
           !group.some(
@@ -193,18 +165,18 @@ export default function CalendarTab() {
               event.start < groupEvent.end && event.end > groupEvent.start
           )
         ) {
-          group.push(event);
-          added = true;
-          break;
+          group.push(event)
+          added = true
+          break
         }
       }
       if (!added) {
-        groups.push([event]);
+        groups.push([event])
       }
     }
 
-    return groups;
-  };
+    return groups
+  }
 
   const renderBooking = (
     booking: Booking,
@@ -213,11 +185,11 @@ export default function CalendarTab() {
     groupIndex: number,
     totalGroups: number
   ) => {
-    const facility = sampleFacilities.find((f) => f.id === booking.facility);
-    const startMinutes = differenceInMinutes(booking.start, dayStart);
-    const duration = differenceInMinutes(booking.end, booking.start);
-    const width = totalWidth / totalGroups - 4;
-    const left = 60 + groupIndex * (width + 4);
+    const facility = sampleFacilities.find((f) => f.id === booking.facility)
+    const startMinutes = differenceInMinutes(booking.start, dayStart)
+    const duration = differenceInMinutes(booking.end, booking.start)
+    const width = totalWidth / totalGroups - 4
+    const left = 60 + groupIndex * (width + 4)
 
     return (
       <div
@@ -250,46 +222,46 @@ export default function CalendarTab() {
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
-    );
-  };
+    )
+  }
 
   const handleDeleteBooking = (bookingId: string) => {
     setBookings((prevBookings) =>
       prevBookings.filter((booking) => booking.id !== bookingId)
-    );
-  };
+    )
+  }
 
   const handleCalendarClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (calendarRef.current) {
-      const rect = calendarRef.current.getBoundingClientRect();
-      const y = e.clientY - rect.top;
-      const clickedMinute = Math.floor(y);
-      const clickedHour = Math.floor(clickedMinute / 60);
-      const clickedMinuteWithinHour = clickedMinute % 60;
+      const rect = calendarRef.current.getBoundingClientRect()
+      const y = e.clientY - rect.top
+      const clickedMinute = Math.floor(y)
+      const clickedHour = Math.floor(clickedMinute / 60)
+      const clickedMinuteWithinHour = clickedMinute % 60
 
-      const newBookingDate = new Date(currentDate);
-      setHours(newBookingDate, clickedHour);
-      setMinutes(newBookingDate, clickedMinuteWithinHour);
+      const newBookingDate = new Date(currentDate)
+      setHours(newBookingDate, clickedHour)
+      setMinutes(newBookingDate, clickedMinuteWithinHour)
 
-      openBookingModal(newBookingDate);
+      openBookingModal(newBookingDate)
     }
-  };
+  }
 
   const renderDayView = () => {
-    const dayStart = startOfDay(currentDate);
-    const dayEnd = endOfDay(currentDate);
+    const dayStart = startOfDay(currentDate)
+    const dayEnd = endOfDay(currentDate)
     const intervals = eachMinuteOfInterval(
       { start: dayStart, end: dayEnd },
       { step: 30 }
-    );
+    )
     const columnWidth = calendarRef.current
       ? calendarRef.current.offsetWidth - 60
-      : 200; // 60px for time labels
+      : 200 // 60px for time labels
 
     const dayEvents = bookings.filter((booking) =>
       isSameDay(booking.start, currentDate)
-    );
-    const eventGroups = groupOverlappingEvents(dayEvents);
+    )
+    const eventGroups = groupOverlappingEvents(dayEvents)
 
     return (
       <div
@@ -297,8 +269,6 @@ export default function CalendarTab() {
         style={{ height: "1440px" }}
         onClick={handleCalendarClick}
       >
-        {" "}
-        {/* 24 hours * 60 minutes */}
         {intervals.map((interval, index) => (
           <div
             key={index}
@@ -323,7 +293,7 @@ export default function CalendarTab() {
           </div>
         ))}
         {eventGroups.map((group, groupIndex) =>
-          group.map((booking, bookingIndex) =>
+          group.map((booking) =>
             renderBooking(
               booking,
               dayStart,
@@ -334,19 +304,19 @@ export default function CalendarTab() {
           )
         )}
       </div>
-    );
-  };
+    )
+  }
 
   const handleDragStart = (e: React.DragEvent, booking: Booking) => {
-    setDraggedBooking(booking);
+    setDraggedBooking(booking)
     if (e.dataTransfer) {
-      e.dataTransfer.setData("text/plain", booking.id);
+      e.dataTransfer.setData("text/plain", booking.id)
     }
-  };
+  }
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
+    e.preventDefault()
+  }
 
   const handleDrop = (
     e: React.DragEvent,
@@ -354,15 +324,15 @@ export default function CalendarTab() {
     hour: number,
     minute: number
   ) => {
-    e.preventDefault();
+    e.preventDefault()
     if (draggedBooking) {
-      const newStart = new Date(day);
-      newStart.setHours(hour, minute, 0, 0);
+      const newStart = new Date(day)
+      newStart.setHours(hour, minute, 0, 0)
       const duration = differenceInMinutes(
         draggedBooking.end,
         draggedBooking.start
-      );
-      const newEnd = addMinutes(newStart, duration);
+      )
+      const newEnd = addMinutes(newStart, duration)
 
       setBookings((prevBookings) =>
         prevBookings.map((booking) =>
@@ -370,24 +340,24 @@ export default function CalendarTab() {
             ? { ...booking, start: newStart, end: newEnd }
             : booking
         )
-      );
+      )
     }
-    setDraggedBooking(null);
-  };
+    setDraggedBooking(null)
+  }
 
   const handleDragEnd = () => {
-    setDraggedBooking(null);
-  };
+    setDraggedBooking(null)
+  }
 
   const getUpcomingEvents = () => {
-    const now = new Date();
-    const twoHoursLater = addMinutes(now, 120);
+    const now = new Date()
+    const twoHoursLater = addMinutes(now, 120)
     return bookings
       .filter(
         (booking) => booking.start >= now && booking.start <= twoHoursLater
       )
-      .sort((a, b) => a.start.getTime() - b.start.getTime());
-  };
+      .sort((a, b) => a.start.getTime() - b.start.getTime())
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -446,19 +416,48 @@ export default function CalendarTab() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header with Calendar and Stats */}
         <div className="p-4 border-b flex">
-          <div className="flex-shrink-0 mr-4">
-            <Calendar
-              mode="single"
-              selected={currentDate}
-              onSelect={(date) => date && setCurrentDate(date)}
-              className="rounded-md border"
-            />
+          <div className="flex-shrink-0 mr-6">
+            <div className="w-[280px] border rounded-md p-4">
+              <div className="flex justify-between items-center mb-4">
+                <Button variant="ghost" size="icon" onClick={handlePrevious}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="font-medium">
+                  {format(currentDate, "MMMM yyyy")}
+                </span>
+                <Button variant="ghost" size="icon" onClick={handleNext}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-7 gap-1 text-center">
+                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                  <div key={day} className="text-sm font-medium text-muted-foreground">
+                    {day}
+                  </div>
+                ))}
+                {eachDayOfInterval({
+                  start: startOfMonth(currentDate),
+                  end: endOfMonth(currentDate),
+                }).map((day, index) => (
+                  <Button
+                    key={day.toISOString()}
+                    variant={isSameDay(day, currentDate) ? "default" : "ghost"}
+                    className={`p-0 h-8 w-8 ${
+                      index === 0 ? `col-start-${day.getDay() + 1}` : ""
+                    }`}
+                    onClick={() => setCurrentDate(day)}
+                  >
+                    {format(day, "d")}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="flex-grow grid grid-cols-2 gap-4 content-start">
-            <div className="col-span-2 flex justify-between items-center mb-4">
+          <div className="flex-grow grid grid-cols-2 gap-2 content-start">
+            <div className="col-span-2 flex justify-between items-center mb-2">
               <div className="flex items-center space-x-4">
                 <Button
                   variant="outline"
@@ -482,7 +481,7 @@ export default function CalendarTab() {
                 New Booking
               </Button>
             </div>
-            <Card>
+            <Card className="col-span-1">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
                   Total Bookings
@@ -493,7 +492,7 @@ export default function CalendarTab() {
                 <div className="text-2xl font-bold">{bookings.length}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="col-span-1">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
                   Total Attendees
@@ -509,7 +508,7 @@ export default function CalendarTab() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="col-span-1">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
                   Classes Today
@@ -529,7 +528,7 @@ export default function CalendarTab() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="col-span-1">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
                   Maintenance
@@ -548,7 +547,7 @@ export default function CalendarTab() {
           </div>
         </div>
         {/* View Tabs */}
-        <div className="flex justify-center my-4">
+        <div className="flex justify-center my-2">
           <div className="inline-flex space-x-1 bg-muted p-1 rounded-md">
             <button
               onClick={() => setView("day")}
@@ -590,65 +589,67 @@ export default function CalendarTab() {
       </div>
 
       {/* Right Sidebar */}
-      <div className="w-64 border-l p-4">
-        <Card>
+      <div className="w-64 border-l p-4 flex flex-col">
+        <Card className="flex-grow">
           <CardHeader>
             <CardTitle>Quick Book</CardTitle>
           </CardHeader>
           <CardContent>
-            {sampleFacilities.map((room) => (
-              <div key={room.id} className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium">{room.name}</h4>
-                  <span className="text-sm text-muted-foreground">
-                    ({room.capacity} seats)
-                  </span>
+            <ScrollArea className="h-[calc(100vh-16rem)]">
+              {sampleFacilities.map((room) => (
+                <div key={room.id} className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-medium">{room.name}</h4>
+                    <span className="text-sm text-muted-foreground">
+                      ({room.capacity} seats)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedBookingDate(new Date());
+                        setIsBookingModalOpen(true);
+                      }}
+                    >
+                      30m
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedBookingDate(new Date());
+                        setIsBookingModalOpen(true);
+                      }}
+                    >
+                      60m
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedBookingDate(new Date());
+                        setIsBookingModalOpen(true);
+                      }}
+                    >
+                      90m
+                    </Button>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => {
+                      setSelectedBookingDate(new Date());
+                      setIsBookingModalOpen(true);
+                    }}
+                  >
+                    120m
+                  </Button>
                 </div>
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedBookingDate(new Date());
-                      setIsBookingModalOpen(true);
-                    }}
-                  >
-                    30m
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedBookingDate(new Date());
-                      setIsBookingModalOpen(true);
-                    }}
-                  >
-                    60m
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedBookingDate(new Date());
-                      setIsBookingModalOpen(true);
-                    }}
-                  >
-                    90m
-                  </Button>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => {
-                    setSelectedBookingDate(new Date());
-                    setIsBookingModalOpen(true);
-                  }}
-                >
-                  120m
-                </Button>
-              </div>
-            ))}
+              ))}
+            </ScrollArea>
           </CardContent>
         </Card>
 
@@ -692,7 +693,7 @@ export default function CalendarTab() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }
 
 function BookingForm({
@@ -719,20 +720,20 @@ function BookingForm({
     isRecurring: false,
     recurringFrequency: "weekly" as "daily" | "weekly" | "monthly",
     recurringEndDate: format(addDays(selectedDate, 90), "yyyy-MM-dd"),
-  });
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     const [startHours, startMinutes] = formData.startTime
       .split(":")
-      .map(Number);
-    const [endHours, endMinutes] = formData.endTime.split(":").map(Number);
+      .map(Number)
+    const [endHours, endMinutes] = formData.endTime.split(":").map(Number)
 
-    const start = new Date(selectedDate);
-    start.setHours(startHours, startMinutes, 0, 0);
+    const start = new Date(selectedDate)
+    start.setHours(startHours, startMinutes, 0, 0)
 
-    const end = new Date(selectedDate);
-    end.setHours(endHours, endMinutes, 0, 0);
+    const end = new Date(selectedDate)
+    end.setHours(endHours, endMinutes, 0, 0)
 
     onBook({
       id: "", // This will be set in the parent component
@@ -752,9 +753,9 @@ function BookingForm({
           endDate: new Date(formData.recurringEndDate),
         },
       }),
-    });
-    onClose();
-  };
+    })
+    onClose()
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -984,5 +985,5 @@ function BookingForm({
         <Button type="submit">Book</Button>
       </div>
     </form>
-  );
+  )
 }
