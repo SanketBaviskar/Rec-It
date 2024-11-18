@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
   format,
   addDays,
@@ -118,12 +118,17 @@ const sampleFacilities: Facility[] = [
 export default function CalendarTab() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<"day" | "week" | "month">("day")
-  const [selectedFacility, setSelectedFacility] = useState<string>()
+  const [selectedFacility, setSelectedFacility] = useState<string | undefined>(undefined)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
   const [selectedBookingDate, setSelectedBookingDate] = useState(new Date())
   const [draggedBooking, setDraggedBooking] = useState<Booking | null>(null)
   const calendarRef = useRef<HTMLDivElement>(null)
+
+  // Filter bookings based on the selected facilities
+  const filteredBookings = selectedFacility
+    ? bookings.filter(booking => booking.facility === selectedFacility)
+    : bookings
 
   const handlePrevious = () => {
     setCurrentDate((prev) => subMonths(prev, 1))
@@ -148,6 +153,10 @@ export default function CalendarTab() {
     }
     setSelectedBookingDate(selectedDate)
     setIsBookingModalOpen(true)
+  }
+
+  const toggleFacilitySelection = (facilityId: string) => {
+    setSelectedFacility(prev => prev === facilityId ? undefined : facilityId)
   }
 
   const groupOverlappingEvents = (events: Booking[]) => {
@@ -258,7 +267,7 @@ export default function CalendarTab() {
       ? calendarRef.current.offsetWidth - 60
       : 200 // 60px for time labels
 
-    const dayEvents = bookings.filter((booking) =>
+    const dayEvents = filteredBookings.filter((booking) =>
       isSameDay(booking.start, currentDate)
     )
     const eventGroups = groupOverlappingEvents(dayEvents)
@@ -352,7 +361,7 @@ export default function CalendarTab() {
   const getUpcomingEvents = () => {
     const now = new Date()
     const twoHoursLater = addMinutes(now, 120)
-    return bookings
+    return filteredBookings
       .filter(
         (booking) => booking.start >= now && booking.start <= twoHoursLater
       )
@@ -388,7 +397,10 @@ export default function CalendarTab() {
               {sampleFacilities.map((facility) => (
                 <Card
                   key={facility.id}
-                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  className={`cursor-pointer hover:bg-accent/50 transition-colors ${
+                    selectedFacility === facility.id ? 'bg-accent' : ''
+                  }`}
+                  onClick={() => toggleFacilitySelection(facility.id)}
                 >
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
@@ -489,7 +501,7 @@ export default function CalendarTab() {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{bookings.length}</div>
+                <div className="text-2xl font-bold">{filteredBookings.length}</div>
               </CardContent>
             </Card>
             <Card className="col-span-1">
@@ -501,7 +513,7 @@ export default function CalendarTab() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {bookings.reduce(
+                  {filteredBookings.reduce(
                     (sum, booking) => sum + (booking.attendees || 0),
                     0
                   )}
@@ -518,7 +530,7 @@ export default function CalendarTab() {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {
-                    bookings.filter(
+                    filteredBookings.filter(
                       (booking) =>
                         booking.type === "event" &&
                         booking.start.toDateString() ===
@@ -538,7 +550,7 @@ export default function CalendarTab() {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {
-                    bookings.filter((booking) => booking.type === "maintenance")
+                    filteredBookings.filter((booking) => booking.type === "maintenance")
                       .length
                   }
                 </div>
@@ -610,6 +622,7 @@ export default function CalendarTab() {
                       size="sm"
                       onClick={() => {
                         setSelectedBookingDate(new Date());
+                        setSelectedFacility(room.id);
                         setIsBookingModalOpen(true);
                       }}
                     >
@@ -620,6 +633,7 @@ export default function CalendarTab() {
                       size="sm"
                       onClick={() => {
                         setSelectedBookingDate(new Date());
+                        setSelectedFacility(room.id);
                         setIsBookingModalOpen(true);
                       }}
                     >
@@ -630,6 +644,7 @@ export default function CalendarTab() {
                       size="sm"
                       onClick={() => {
                         setSelectedBookingDate(new Date());
+                        setSelectedFacility(room.id);
                         setIsBookingModalOpen(true);
                       }}
                     >
@@ -642,6 +657,7 @@ export default function CalendarTab() {
                     className="w-full"
                     onClick={() => {
                       setSelectedBookingDate(new Date());
+                      setSelectedFacility(room.id);
                       setIsBookingModalOpen(true);
                     }}
                   >
@@ -687,6 +703,7 @@ export default function CalendarTab() {
           <BookingForm
             selectedDate={selectedBookingDate}
             facilities={sampleFacilities}
+            selectedFacility={selectedFacility}
             onBook={handleBook}
             onClose={() => setIsBookingModalOpen(false)}
           />
@@ -699,17 +716,19 @@ export default function CalendarTab() {
 function BookingForm({
   selectedDate,
   facilities,
+  selectedFacility,
   onBook,
   onClose,
 }: {
   selectedDate: Date;
   facilities: Facility[];
+  selectedFacility?: string;
   onBook: (booking: Booking) => void;
   onClose: () => void;
 }) {
   const [formData, setFormData] = useState({
     title: "",
-    facility: "",
+    facility: selectedFacility || "",
     startTime: format(selectedDate, "HH:mm"),
     endTime: format(addMinutes(selectedDate, 60), "HH:mm"),
     type: "booking" as Booking["type"],
@@ -721,6 +740,13 @@ function BookingForm({
     recurringFrequency: "weekly" as "daily" | "weekly" | "monthly",
     recurringEndDate: format(addDays(selectedDate, 90), "yyyy-MM-dd"),
   })
+
+  useEffect(() => {
+    setFormData(prevData => ({
+      ...prevData,
+      facility: selectedFacility || "",
+    }))
+  }, [selectedFacility])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -912,71 +938,6 @@ function BookingForm({
           }
         />
       </div>
-
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="isRecurring"
-          checked={formData.isRecurring}
-          onChange={(e) =>
-            setFormData({ ...formData, isRecurring: e.target.checked })
-          }
-        />
-        <Label
-          htmlFor="isRecurring"
-          className="text-sm font-medium text-foreground"
-        >
-          Recurring Booking
-        </Label>
-      </div>
-
-      {formData.isRecurring && (
-        <>
-          <div>
-            <Label
-              htmlFor="recurringFrequency"
-              className="block text-sm font-medium text-foreground mb-1"
-            >
-              Recurring Frequency
-            </Label>
-            <Select
-              value={formData.recurringFrequency}
-              onValueChange={(value) =>
-                setFormData({
-                  ...formData,
-                  recurringFrequency: value as "daily" | "weekly" | "monthly",
-                })
-              }
-            >
-              <SelectTrigger id="recurringFrequency">
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label
-              htmlFor="recurringEndDate"
-              className="block text-sm font-medium text-foreground mb-1"
-            >
-              Recurring End Date
-            </Label>
-            <Input
-              id="recurringEndDate"
-              type="date"
-              value={formData.recurringEndDate}
-              onChange={(e) =>
-                setFormData({ ...formData, recurringEndDate: e.target.value })
-              }
-            />
-          </div>
-        </>
-      )}
 
       <div className="flex justify-end space-x-2">
         <Button type="button" variant="outline" onClick={onClose}>
