@@ -26,8 +26,8 @@ export default function EditMemberProfile({ onClose }: { onClose: () => void }) 
 
         <div className="p-6 flex-none">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">Edit Member Profile</h1>
-            <Avatar className="h-20 w-20">
+            <h2 className="text-2xl font-bold">Edit Member Profile</h2>
+            <Avatar className="h-20 w-20 mr-8">
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
           </div>
@@ -63,29 +63,29 @@ export default function EditMemberProfile({ onClose }: { onClose: () => void }) 
             </TabsList>
           </div>
 
-          <div className="flex-1 overflow-hidden px-6">
+          <div className="flex-1 overflow-y-auto px-6">
             <div className="h-full overflow-y-auto">
-              <TabsContent value="personal" className="mt-4 h-full">
+              <TabsContent value="personal" className="my-4 h-full">
                 <PersonalInfo />
               </TabsContent>
 
-              <TabsContent value="membership" className="mt-4 h-full">
+              <TabsContent value="membership" className="my-4 h-full">
                 <Membership />
               </TabsContent>
 
-              <TabsContent value="fitness" className="mt-4 h-full">
+              <TabsContent value="fitness" className="my-4 h-full">
                 <Fitness />
               </TabsContent>
 
-              <TabsContent value="billing" className="mt-4 h-full">
+              <TabsContent value="billing" className="my-4 h-full">
                 <Billing />
               </TabsContent>
 
-              <TabsContent value="activity" className="mt-4 h-full">
+              <TabsContent value="activity" className="my-4 h-full">
                 <Activity />
               </TabsContent>
 
-              <TabsContent value="notes" className="mt-4 h-full">
+              <TabsContent value="notes" className="my-4 h-full">
                 <Notes />
               </TabsContent>
             </div>

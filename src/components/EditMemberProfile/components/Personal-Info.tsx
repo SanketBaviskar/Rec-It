@@ -5,11 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 // import { Calendar } from "@/components/ui/calendar"
 import { CalendarIcon } from 'lucide-react'
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
 
 export function PersonalInfo() {
   // const [dob, setDob] = useState<Date>()

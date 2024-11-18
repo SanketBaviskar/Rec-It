@@ -10,9 +10,9 @@ import {
   Minus,
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
-import NewMemberForm from "@/components/NewmemberForm"; // Adjust the path as needed
-import { MemberData } from "@/components/NewmemberForm";
-
+import NewMemberForm from "@/components/AddNewMember/NewmemberForm"; // Adjust the path as needed
+import { MemberData } from "@/components/AddNewMember/NewmemberForm";
+import { NewOrgaAdd } from "@/components/AddNewOrg/NewOrgForm";
 interface CartItem {
   id: string;
   name: string;
@@ -52,12 +52,11 @@ const quickItems = [
 
 export default function SalesTab() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(
-    null
-  );
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState("quick");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNewMemberFormOpen, setIsNewMemberFormOpen] = useState(false);
+  const [isNewOrgFormOpen, setIsNewOrgFormOpen] = useState(false);
 
   const handleSelectCustomer = (user: any) => {
     setSelectedCustomer(user);
@@ -79,7 +78,6 @@ export default function SalesTab() {
     setCart((current) => current.filter((item) => item.id !== itemId));
   };
 
-  
   const updateQuantity = (itemId: string, delta: number) => {
     setCart((current) =>
       current.map((item) => {
@@ -97,6 +95,18 @@ export default function SalesTab() {
     setIsNewMemberFormOpen(false);
     // Optionally, add the new member to a list or update the state as needed
   };
+
+  const handleNewOrgSubmit = (values: {
+    name: string;
+    description?: string;
+    email: string;
+    phone?: string;
+  }) => {
+    console.log("Form Submitted:", values);
+    setIsNewOrgFormOpen(false);
+    // Perform further actions like API calls here
+  };
+
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -124,7 +134,10 @@ export default function SalesTab() {
               <UserPlus size={20} />
               New Member
             </button>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center gap-2 hover:bg-blue-600">
+            <button
+              onClick={() => setIsNewOrgFormOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center gap-2 hover:bg-blue-600"
+            >
               <Building2 size={20} />
               New Organization
             </button>
@@ -265,6 +278,11 @@ export default function SalesTab() {
         isOpen={isNewMemberFormOpen}
         onClose={() => setIsNewMemberFormOpen(false)}
         onSubmit={handleNewMemberSubmit}
+      />
+      <NewOrgaAdd
+        isOpen={isNewOrgFormOpen}
+        onClose={() => setIsNewOrgFormOpen(false)}
+        onSubmit={handleNewOrgSubmit}
       />
     </>
   );
