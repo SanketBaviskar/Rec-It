@@ -220,18 +220,24 @@ export default function CalendarTab() {
         const deltaMinutes = Math.round(deltaY / 2) * 5 // Snap to 5-minute intervals
         const newTime = new Date(startTime.getTime() + deltaMinutes * 60000)
 
-        setBookings(prevBookings =>
-          prevBookings.map(b => {
-            if (b.id === booking.id) {
-              if (position === 'top') {
-                return { ...b, start: newTime }
-              } else {
-                return { ...b, end: newTime }
+        // Ensure the new time is within the 00:00 to 24:00 range
+        const dayStart = startOfDay(booking.start)
+        const dayEnd = endOfDay(booking.start)
+
+        if (newTime >= dayStart && newTime <= dayEnd) {
+          setBookings(prevBookings =>
+            prevBookings.map(b => {
+              if (b.id === booking.id) {
+                if (position === 'top') {
+                  return { ...b, start: newTime }
+                } else {
+                  return { ...b, end: newTime }
+                }
               }
-            }
-            return b
-          })
-        )
+              return b
+            })
+          )
+        }
       }
 
       const handleMouseUp = () => {
