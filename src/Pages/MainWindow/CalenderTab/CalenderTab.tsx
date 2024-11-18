@@ -19,6 +19,7 @@ import {
   eachDayOfInterval,
   subMonths,
   addMonths,
+  parseISO,
 } from "date-fns"
 import { ChevronLeft, ChevronRight, Plus, Search, Filter, Trash2, BookOpen, Users, Clock, PenToolIcon as Tool } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -123,6 +124,7 @@ export default function CalendarTab() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
   const [selectedBookingDate, setSelectedBookingDate] = useState(new Date())
   const [draggedBooking, setDraggedBooking] = useState<Booking | null>(null)
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null)
   const calendarRef = useRef<HTMLDivElement>(null)
 
   // Filter bookings based on the selected facilities
@@ -139,10 +141,17 @@ export default function CalendarTab() {
   }
 
   const handleBook = (booking: Booking) => {
-    setBookings((prev) => [
-      ...prev,
-      { ...booking, id: Date.now().toString(), createdAt: new Date() },
-    ])
+    if (editingBooking) {
+      setBookings((prev) =>
+        prev.map((b) => (b.id === editingBooking.id ? { ...booking, id: b.id } : b))
+      )
+      setEditingBooking(null)
+    } else {
+      setBookings((prev) => [
+        ...prev,
+        { ...booking, id: Date.now().toString(), createdAt: new Date() },
+      ])
+    }
     setIsBookingModalOpen(false)
   }
 
@@ -152,6 +161,7 @@ export default function CalendarTab() {
       selectedDate.setHours(hour, minute || 0, 0, 0)
     }
     setSelectedBookingDate(selectedDate)
+    setEditingBooking(null)
     setIsBookingModalOpen(true)
   }
 
@@ -200,10 +210,49 @@ export default function CalendarTab() {
     const width = totalWidth / totalGroups - 4
     const left = 60 + groupIndex * (width + 4)
 
+    const handleResizeStart = (e: React.MouseEvent, position: 'top' | 'bottom') => {
+      e.stopPropagation()
+      const startY = e.clientY
+      const startTime = position === 'top' ? booking.start : booking.end
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const deltaY = moveEvent.clientY - startY
+        const deltaMinutes = Math.round(deltaY / 2) * 5 // Snap to 5-minute intervals
+        const newTime = new Date(startTime.getTime() + deltaMinutes * 60000)
+
+        setBookings(prevBookings =>
+          prevBookings.map(b => {
+            if (b.id === booking.id) {
+              if (position === 'top') {
+                return { ...b, start: newTime }
+              } else {
+                return { ...b, end: newTime }
+              }
+            }
+            return b
+          })
+        )
+      }
+
+      const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+
+    const handleEventClick = (e: React.MouseEvent) => {
+      e.stopPropagation()
+      setEditingBooking(booking)
+      setIsBookingModalOpen(true)
+    }
+
     return (
       <div
         key={booking.id}
-        className="absolute rounded-md overflow-hidden cursor-move"
+        className="absolute rounded-md overflow-hidden cursor-pointer"
         style={{
           top: `${startMinutes}px`,
           height: `${duration}px`,
@@ -211,11 +260,13 @@ export default function CalendarTab() {
           width: `${width}px`,
           backgroundColor: facility?.color || "#999",
         }}
-        draggable
-        onDragStart={(e) => handleDragStart(e, booking)}
-        onDragEnd={handleDragEnd}
+        onClick={handleEventClick}
       >
-        <div className="p-2 h-full flex flex-col justify-between">
+        <div className="p-2 h-full flex flex-col justify-between relative">
+          <div
+            className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize"
+            onMouseDown={(e) => handleResizeStart(e, 'top')}
+          />
           <div>
             <div className="font-bold text-white truncate">{booking.title}</div>
             <div className="text-white text-xs truncate">{facility?.name}</div>
@@ -223,10 +274,17 @@ export default function CalendarTab() {
           <div className="text-white text-xs">
             {format(booking.start, "HH:mm")} - {format(booking.end, "HH:mm")}
           </div>
+          <div
+            className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize"
+            onMouseDown={(e) => handleResizeStart(e, 'bottom')}
+          />
         </div>
         <button
           className="absolute top-1 right-1 text-white hover:text-red-500 transition-colors"
-          onClick={() => handleDeleteBooking(booking.id)}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleDeleteBooking(booking.id)
+          }}
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -287,18 +345,7 @@ export default function CalendarTab() {
             <div className="w-14 pr-2 text-right text-sm text-gray-500 dark:text-gray-400">
               {format(interval, "HH:mm")}
             </div>
-            <div
-              className="flex-1 h-full"
-              onDragOver={handleDragOver}
-              onDrop={(e) =>
-                handleDrop(
-                  e,
-                  currentDate,
-                  interval.getHours(),
-                  interval.getMinutes()
-                )
-              }
-            ></div>
+            <div className="flex-1 h-full"></div>
           </div>
         ))}
         {eventGroups.map((group, groupIndex) =>
@@ -314,48 +361,6 @@ export default function CalendarTab() {
         )}
       </div>
     )
-  }
-
-  const handleDragStart = (e: React.DragEvent, booking: Booking) => {
-    setDraggedBooking(booking)
-    if (e.dataTransfer) {
-      e.dataTransfer.setData("text/plain", booking.id)
-    }
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-  }
-
-  const handleDrop = (
-    e: React.DragEvent,
-    day: Date,
-    hour: number,
-    minute: number
-  ) => {
-    e.preventDefault()
-    if (draggedBooking) {
-      const newStart = new Date(day)
-      newStart.setHours(hour, minute, 0, 0)
-      const duration = differenceInMinutes(
-        draggedBooking.end,
-        draggedBooking.start
-      )
-      const newEnd = addMinutes(newStart, duration)
-
-      setBookings((prevBookings) =>
-        prevBookings.map((booking) =>
-          booking.id === draggedBooking.id
-            ? { ...booking, start: newStart, end: newEnd }
-            : booking
-        )
-      )
-    }
-    setDraggedBooking(null)
-  }
-
-  const handleDragEnd = () => {
-    setDraggedBooking(null)
   }
 
   const getUpcomingEvents = () => {
@@ -407,7 +412,8 @@ export default function CalendarTab() {
                       <div>
                         <h3 className="font-medium">{facility.name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {facility.type} • {facility.capacity} capacity
+                          {facility.type} • {" "}
+                          {facility.capacity} capacity
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {facility.location}
@@ -698,14 +704,18 @@ export default function CalendarTab() {
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>New Booking</DialogTitle>
+            <DialogTitle>{editingBooking ? "Edit Booking" : "New Booking"}</DialogTitle>
           </DialogHeader>
           <BookingForm
             selectedDate={selectedBookingDate}
             facilities={sampleFacilities}
             selectedFacility={selectedFacility}
             onBook={handleBook}
-            onClose={() => setIsBookingModalOpen(false)}
+            onClose={() => {
+              setIsBookingModalOpen(false)
+              setEditingBooking(null)
+            }}
+            editingBooking={editingBooking}
           />
         </DialogContent>
       </Dialog>
@@ -719,12 +729,14 @@ function BookingForm({
   selectedFacility,
   onBook,
   onClose,
+  editingBooking,
 }: {
   selectedDate: Date;
   facilities: Facility[];
   selectedFacility?: string;
   onBook: (booking: Booking) => void;
   onClose: () => void;
+  editingBooking: Booking | null;
 }) {
   const [formData, setFormData] = useState({
     title: "",
@@ -742,11 +754,30 @@ function BookingForm({
   })
 
   useEffect(() => {
-    setFormData(prevData => ({
-      ...prevData,
-      facility: selectedFacility || "",
-    }))
-  }, [selectedFacility])
+    if (editingBooking) {
+      setFormData({
+        title: editingBooking.title,
+        facility: editingBooking.facility,
+        startTime: format(editingBooking.start, "HH:mm"),
+        endTime: format(editingBooking.end, "HH:mm"),
+        type: editingBooking.type,
+        status: editingBooking.status,
+        description: editingBooking.description || "",
+        attendees: editingBooking.attendees?.toString() || "",
+        instructor: editingBooking.instructor || "",
+        isRecurring: !!editingBooking.recurring,
+        recurringFrequency: editingBooking.recurring?.frequency || "weekly",
+        recurringEndDate: editingBooking.recurring
+          ? format(editingBooking.recurring.endDate, "yyyy-MM-dd")
+          : format(addDays(selectedDate, 90), "yyyy-MM-dd"),
+      })
+    } else {
+      setFormData(prevData => ({
+        ...prevData,
+        facility: selectedFacility || "",
+      }))
+    }
+  }, [editingBooking, selectedFacility, selectedDate])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -762,7 +793,7 @@ function BookingForm({
     end.setHours(endHours, endMinutes, 0, 0)
 
     onBook({
-      id: "", // This will be set in the parent component
+      id: editingBooking?.id || "", // This will be set in the parent component for new bookings
       title: formData.title,
       facility: formData.facility,
       start,
@@ -772,11 +803,11 @@ function BookingForm({
       description: formData.description,
       attendees: formData.attendees ? parseInt(formData.attendees) : undefined,
       instructor: formData.instructor || undefined,
-      createdAt: new Date(),
+      createdAt: editingBooking?.createdAt || new Date(),
       ...(formData.isRecurring && {
         recurring: {
           frequency: formData.recurringFrequency,
-          endDate: new Date(formData.recurringEndDate),
+          endDate: parseISO(formData.recurringEndDate),
         },
       }),
     })
@@ -943,7 +974,7 @@ function BookingForm({
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button type="submit">Book</Button>
+        <Button type="submit">{editingBooking ? "Update" : "Book"}</Button>
       </div>
     </form>
   )
