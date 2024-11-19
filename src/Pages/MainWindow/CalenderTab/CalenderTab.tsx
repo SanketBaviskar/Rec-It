@@ -209,6 +209,72 @@ export default function CalendarTab() {
     return groups
   }
 
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  
+  // Add these new functions for drag and drop
+  const handleDragStart = (e: React.MouseEvent, booking: Booking) => {
+    e.stopPropagation()
+    const element = e.currentTarget as HTMLDivElement
+    const rect = element.getBoundingClientRect()
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
+    setDraggedBooking(booking)
+    setIsDragging(true)
+  }
+
+  const handleDragMove = (e: MouseEvent) => {
+    if (!draggedBooking || !calendarRef.current || !isDragging) return
+
+    const rect = calendarRef.current.getBoundingClientRect()
+    const y = e.clientY - rect.top - dragOffset.y
+    
+    // Convert y position to time
+    const minutes = Math.floor(y)
+    const hours = Math.floor(minutes / 60)
+    const minutesWithinHour = minutes % 60
+    
+    // Snap to 5-minute intervals
+    const snappedMinutes = Math.round(minutesWithinHour / 5) * 5
+    
+    // Create new dates for the dragged booking
+    const newStart = new Date(currentDate)
+    newStart.setHours(hours, snappedMinutes, 0, 0)
+    
+    // Maintain the same duration
+    const duration = differenceInMinutes(draggedBooking.end, draggedBooking.start)
+    const newEnd = addMinutes(newStart, duration)
+    
+    // Update bookings
+    setBookings(prevBookings =>
+      prevBookings.map(b =>
+        b.id === draggedBooking.id
+          ? { ...b, start: newStart, end: newEnd }
+          : b
+      )
+    )
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+    setDraggedBooking(null)
+  }
+
+  // Add event listeners for drag and drop
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleDragMove)
+      window.addEventListener('mouseup', handleDragEnd)
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove)
+      window.removeEventListener('mouseup', handleDragEnd)
+    }
+  }, [isDragging, draggedBooking])
+
   const renderBooking = (
     booking: Booking,
     dayStart: Date,
@@ -229,10 +295,9 @@ export default function CalendarTab() {
 
       const handleMouseMove = (moveEvent: MouseEvent) => {
         const deltaY = moveEvent.clientY - startY
-        const deltaMinutes = Math.round(deltaY / 2) * 5 // Snap to 5-minute intervals
+        const deltaMinutes = Math.round(deltaY / 2) * 5
         const newTime = new Date(startTime.getTime() + deltaMinutes * 60000)
 
-        // Ensure the new time is within the 00:00 to 24:00 range
         const dayStart = startOfDay(booking.start)
         const dayEnd = endOfDay(booking.start)
 
@@ -270,14 +335,19 @@ export default function CalendarTab() {
     return (
       <div
         key={booking.id}
-        className="absolute rounded-md overflow-hidden cursor-pointer"
+        className={`absolute rounded-md overflow-hidden cursor-move ${
+          isDragging && draggedBooking?.id === booking.id ? 'opacity-50' : ''
+        }`}
         style={{
           top: `${startMinutes}px`,
           height: `${duration}px`,
           left: `${left}px`,
           width: `${width}px`,
           backgroundColor: facility?.color || "#999",
+          cursor: isDragging ? 'grabbing' : 'grab',
+          zIndex: isDragging && draggedBooking?.id === booking.id ? 1000 : 1,
         }}
+        onMouseDown={(e) => handleDragStart(e, booking)}
         onClick={handleEventClick}
       >
         <div className="p-2 h-full flex flex-col justify-between relative">
