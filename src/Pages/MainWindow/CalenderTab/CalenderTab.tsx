@@ -426,12 +426,26 @@ export default function CalendarTab() {
         {intervals.map((interval, index) => (
           <div
             key={index}
-            className="flex items-center border-t border-gray-200 dark:border-gray-700"
+            className="relative flex"
             style={{ height: "60px" }}
           >
-            <div className="w-14 pr-2 text-right text-sm text-gray-500 dark:text-gray-400">
+            <div
+              className="absolute w-14 pr-2 text-right text-sm text-gray-500 dark:text-gray-400"
+              style={{
+                top: "-9px",
+                left: "0",
+                zIndex: 10,
+                background: "var(--background)",
+                paddingTop: "2px",
+                paddingBottom: "2px"
+              }}
+            >
               {format(interval, "HH:mm")}
             </div>
+            <div
+              className="absolute left-14 right-0 border-t border-gray-200 dark:border-gray-700"
+              style={{ top: "-1px" }}
+            />
             <div className="flex-1 h-full"></div>
           </div>
         ))}
@@ -449,7 +463,6 @@ export default function CalendarTab() {
       </div>
     )
   }
-
   const getUpcomingEvents = () => {
     const now = new Date()
     const twoHoursLater = addMinutes(now, 120)
@@ -655,8 +668,8 @@ export default function CalendarTab() {
             <button
               onClick={() => setView("day")}
               className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${view === "day"
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:bg-background/50"
+                ? "bg-background text-foreground"
+                : "text-muted-foreground hover:bg-background/50"
                 }`}
             >
               Day
@@ -664,8 +677,8 @@ export default function CalendarTab() {
             <button
               onClick={() => setView("week")}
               className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${view === "week"
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:bg-background/50"
+                ? "bg-background text-foreground"
+                : "text-muted-foreground hover:bg-background/50"
                 }`}
             >
               Week
@@ -673,8 +686,8 @@ export default function CalendarTab() {
             <button
               onClick={() => setView("month")}
               className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${view === "month"
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:bg-background/50"
+                ? "bg-background text-foreground"
+                : "text-muted-foreground hover:bg-background/50"
                 }`}
             >
               Month
