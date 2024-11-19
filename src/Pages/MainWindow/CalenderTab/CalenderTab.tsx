@@ -143,11 +143,11 @@ export default function CalendarTab() {
   const handlePreviousDay = () => {
     setCurrentDate((prev) => subDays(prev, 1))
   }
-/*************  ✨ Codeium Command ⭐  *************/
+  /*************  ✨ Codeium Command ⭐  *************/
   /**
    * Sets the current date to the next day
    */
-/******  40ee3015-5554-4c2b-b1ea-d7e596e0411f  *******/
+  /******  40ee3015-5554-4c2b-b1ea-d7e596e0411f  *******/
   const handleNextDay = () => {
     setCurrentDate((prev) => addDays(prev, 1))
   }
@@ -211,7 +211,7 @@ export default function CalendarTab() {
 
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-  
+
   // Add these new functions for drag and drop
   const handleDragStart = (e: React.MouseEvent, booking: Booking) => {
     e.stopPropagation()
@@ -230,23 +230,23 @@ export default function CalendarTab() {
 
     const rect = calendarRef.current.getBoundingClientRect()
     const y = e.clientY - rect.top - dragOffset.y
-    
+
     // Convert y position to time
     const minutes = Math.floor(y)
     const hours = Math.floor(minutes / 60)
     const minutesWithinHour = minutes % 60
-    
+
     // Snap to 5-minute intervals
     const snappedMinutes = Math.round(minutesWithinHour / 5) * 5
-    
+
     // Create new dates for the dragged booking
     const newStart = new Date(currentDate)
     newStart.setHours(hours, snappedMinutes, 0, 0)
-    
+
     // Maintain the same duration
     const duration = differenceInMinutes(draggedBooking.end, draggedBooking.start)
     const newEnd = addMinutes(newStart, duration)
-    
+
     // Update bookings
     setBookings(prevBookings =>
       prevBookings.map(b =>
@@ -283,8 +283,8 @@ export default function CalendarTab() {
     totalGroups: number
   ) => {
     const facility = sampleFacilities.find((f) => f.id === booking.facility)
-    const startMinutes = differenceInMinutes(booking.start, dayStart)
-    const duration = differenceInMinutes(booking.end, booking.start)
+    const startMinutes = differenceInMinutes(booking.start, dayStart) * 2
+    const duration = differenceInMinutes(booking.end, booking.start) * 2
     const width = totalWidth / totalGroups - 4
     const left = 60 + groupIndex * (width + 4)
 
@@ -335,9 +335,8 @@ export default function CalendarTab() {
     return (
       <div
         key={booking.id}
-        className={`absolute rounded-md overflow-hidden cursor-move ${
-          isDragging && draggedBooking?.id === booking.id ? 'opacity-50' : ''
-        }`}
+        className={`absolute rounded-md overflow-hidden cursor-move ${isDragging && draggedBooking?.id === booking.id ? 'opacity-50' : ''
+          }`}
         style={{
           top: `${startMinutes}px`,
           height: `${duration}px`,
@@ -421,7 +420,7 @@ export default function CalendarTab() {
     return (
       <div
         className="relative"
-        style={{ height: "1440px" }}
+        style={{ height: "2880px" }} // 24 hours * 60 minutes * 2
         onClick={handleCalendarClick}
       >
         {intervals.map((interval, index) => (
@@ -490,9 +489,8 @@ export default function CalendarTab() {
               {sampleFacilities.map((facility) => (
                 <Card
                   key={facility.id}
-                  className={`cursor-pointer hover:bg-accent/50 transition-colors ${
-                    selectedFacility === facility.id ? 'bg-accent' : ''
-                  }`}
+                  className={`cursor-pointer hover:bg-accent/50 transition-colors ${selectedFacility === facility.id ? 'bg-accent' : ''
+                    }`}
                   onClick={() => toggleFacilitySelection(facility.id)}
                 >
                   <CardContent className="p-4">
@@ -551,9 +549,8 @@ export default function CalendarTab() {
                   <Button
                     key={day.toISOString()}
                     variant={isSameDay(day, currentDate) ? "default" : "ghost"}
-                    className={`p-0 h-8 w-8 ${
-                      index === 0 ? `col-start-${day.getDay() + 1}` : ""
-                    }`}
+                    className={`p-0 h-8 w-8 ${index === 0 ? `col-start-${day.getDay() + 1}` : ""
+                      }`}
                     onClick={() => setCurrentDate(day)}
                   >
                     {format(day, "d")}
@@ -628,7 +625,7 @@ export default function CalendarTab() {
                       (booking) =>
                         booking.type === "event" &&
                         booking.start.toDateString() ===
-                          new Date().toDateString()
+                        new Date().toDateString()
                     ).length
                   }
                 </div>
@@ -657,31 +654,28 @@ export default function CalendarTab() {
           <div className="inline-flex space-x-1 bg-muted p-1 rounded-md">
             <button
               onClick={() => setView("day")}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${
-                view === "day"
+              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${view === "day"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:bg-background/50"
-              }`}
+                }`}
             >
               Day
             </button>
             <button
               onClick={() => setView("week")}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${
-                view === "week"
+              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${view === "week"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:bg-background/50"
-              }`}
+                }`}
             >
               Week
             </button>
             <button
               onClick={() => setView("month")}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${
-                view === "month"
+              className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${view === "month"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:bg-background/50"
-              }`}
+                }`}
             >
               Month
             </button>
