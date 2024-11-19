@@ -140,6 +140,18 @@ export default function CalendarTab() {
     setCurrentDate((prev) => addMonths(prev, 1))
   }
 
+  const handlePreviousDay = () => {
+    setCurrentDate((prev) => subDays(prev, 1))
+  }
+/*************  ✨ Codeium Command ⭐  *************/
+  /**
+   * Sets the current date to the next day
+   */
+/******  40ee3015-5554-4c2b-b1ea-d7e596e0411f  *******/
+  const handleNextDay = () => {
+    setCurrentDate((prev) => addDays(prev, 1))
+  }
+
   const handleBook = (booking: Booking) => {
     if (editingBooking) {
       setBookings((prev) =>
@@ -490,10 +502,10 @@ export default function CalendarTab() {
                   Today
                 </Button>
                 <div className="flex items-center">
-                  <Button variant="ghost" size="icon" onClick={handlePrevious}>
+                  <Button variant="ghost" size="icon" onClick={handlePreviousDay}>
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={handleNext}>
+                  <Button variant="ghost" size="icon" onClick={handleNextDay}>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                   <span className="mx-4 font-medium">
