@@ -401,28 +401,55 @@ export default function CalendarTab() {
     }
   }
 
+  const [mouseTime, setMouseTime] = useState<Date | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  // Add this new function to handle mouse movement
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (calendarRef.current) {
+      const rect = calendarRef.current.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const minutes = Math.floor(y / 2); // Since each pixel represents 0.5 minutes
+
+      const newDate = new Date(currentDate);
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      newDate.setHours(hours, mins, 0, 0);
+
+      setMouseTime(newDate);
+      setIsHovering(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+  };
+
   const renderDayView = () => {
-    const dayStart = startOfDay(currentDate)
-    const dayEnd = endOfDay(currentDate)
+    const dayStart = startOfDay(currentDate);
+    const dayEnd = endOfDay(currentDate);
     const intervals = eachMinuteOfInterval(
       { start: dayStart, end: dayEnd },
       { step: 30 }
-    )
+    );
     const columnWidth = calendarRef.current
       ? calendarRef.current.offsetWidth - 60
-      : 200 // 60px for time labels
+      : 200;
 
     const dayEvents = filteredBookings.filter((booking) =>
       isSameDay(booking.start, currentDate)
-    )
-    const eventGroups = groupOverlappingEvents(dayEvents)
+    );
+    const eventGroups = groupOverlappingEvents(dayEvents);
 
     return (
       <div
         className="relative"
-        style={{ height: "2880px" }} // 24 hours * 60 minutes * 2
+        style={{ height: "2880px" }}
         onClick={handleCalendarClick}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
+        {/* Time grid lines */}
         {intervals.map((interval, index) => (
           <div
             key={index}
@@ -449,6 +476,24 @@ export default function CalendarTab() {
             <div className="flex-1 h-full"></div>
           </div>
         ))}
+
+        {/* Time indicator line */}
+        {isHovering && mouseTime && (
+          <div className="absolute left-0 right-0 flex items-center pointer-events-none"
+            style={{
+              top: `${format(mouseTime, 'H') * 120 + Math.floor(parseInt(format(mouseTime, 'm')) * 2)}px`,
+              zIndex: 20
+            }}>
+            <div className="w-14 pr-2 text-right">
+              <span className="bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
+                {format(mouseTime, "HH:mm")}
+              </span>
+            </div>
+            <div className="flex-1 h-px bg-blue-500" />
+          </div>
+        )}
+
+        {/* Render bookings */}
         {eventGroups.map((group, groupIndex) =>
           group.map((booking) =>
             renderBooking(
@@ -461,8 +506,8 @@ export default function CalendarTab() {
           )
         )}
       </div>
-    )
-  }
+    );
+  };
   const getUpcomingEvents = () => {
     const now = new Date()
     const twoHoursLater = addMinutes(now, 120)
