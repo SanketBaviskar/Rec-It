@@ -16,7 +16,7 @@ export default function RecCenterFooter() {
   const appVersion = "v1.0.3"
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 border-t bg-background h-8 px-1 text-[10px]">
+    <footer className="fixed bottom-0 left-0 right-0 border-t bg-background h-[3vh] px-1 text-[10px]">
       <div className="h-full mx-auto flex items-center justify-between">
         <div className="flex items-center ml-2">
           <TooltipProvider>

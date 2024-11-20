@@ -53,7 +53,7 @@ export default function Navbar({
 
   return (
     <header className="sticky top-0 z-50 border-b w-100 border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
-      <div className="items-center px-4 flex h-14 border-b">
+      <div className="items-center px-4 flex h-[7vh] border-b">
         {" "}
         {/* Added padding */}
         <div className="flex items-center space-x-2 mr-4 md:space-x-4 w-1/5 pr-4">

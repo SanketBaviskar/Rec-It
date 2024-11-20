@@ -447,7 +447,6 @@ export default function CalendarTab() {
     return (
       <div
       className="relative"
-      style={{ height: "2880px" }}
       onClick={handleCalendarClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -514,6 +513,7 @@ export default function CalendarTab() {
       </div>
     );
   };
+  
   const getUpcomingEvents = () => {
     const now = new Date()
     const twoHoursLater = addMinutes(now, 120)
@@ -525,7 +525,7 @@ export default function CalendarTab() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-[90vh] bg-background">
       {/* Left Sidebar */}
       <div className="w-64 border-r p-4">
         <div className="space-y-4">
@@ -714,7 +714,7 @@ export default function CalendarTab() {
           </div>
         </div>
         {/* View Tabs */}
-        <div className="flex justify-center my-2">
+        <div className="flex justify-center my-4 ">
           <div className="inline-flex space-x-1 bg-muted p-1 rounded-md">
             <button
               onClick={() => setView("day")}
@@ -747,7 +747,7 @@ export default function CalendarTab() {
         </div>
 
         {/* Calendar View */}
-        <div className="flex-1 overflow-auto p-4" ref={calendarRef}>
+        <div className="flex-1 overflow-auto pt-2" ref={calendarRef}>
           {renderDayView()}
         </div>
       </div>
