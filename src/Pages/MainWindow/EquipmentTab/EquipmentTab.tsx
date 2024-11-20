@@ -1,5 +1,5 @@
 export default function EquipmentTab(){
     return(
-        <div> euipment tab</div>
+        <div className="h-[90vh]"> euipment tab</div>
     )
 }

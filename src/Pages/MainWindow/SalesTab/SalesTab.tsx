@@ -112,8 +112,7 @@ export default function SalesTab() {
   return (
     <>
       <div
-        className="flex flex-col h-screen bg-gray-100"
-        style={{ height: "93.5vh" }}
+        className="flex flex-col h-[90vh] bg-gray-100"
       >
         {/* Top Bar */}
         <div className="bg-white p-4 shadow-sm">
@@ -156,8 +155,8 @@ export default function SalesTab() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-4">
-          <div className="mx-auto flex gap-6 h-full">
+        <div className="flex-1 p-4 h-full">
+          <div className="mx-auto flex gap-6 h-[100%]">
             {/* Left side - Sales items */}
             <div className="flex-1 bg-white rounded-lg shadow p-4">
               <div className="flex mb-4">

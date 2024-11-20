@@ -105,10 +105,10 @@ export default function DashboardTab() {
   }
 
   return (
-    <div className="flex flex-col h-100 bg-background p-1">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-1 h-full">
+    <div className="flex flex-col bg-background p-1 h-[90vh]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
         {/* Active Users */}
-        <Card className="col-span-1 md:col-span-2 h-full">
+        <Card className="col-span-1 md:col-span-2">
           <CardContent className="p-6">
             <h2 className="text-2xl font-bold mb-4">Active Users</h2>
             <ScrollArea className="h-[calc(100vh-12rem)]">
