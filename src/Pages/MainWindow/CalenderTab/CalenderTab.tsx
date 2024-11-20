@@ -411,7 +411,7 @@ export default function CalendarTab() {
       const scrollTop = calendarRef.current.scrollTop;
       const y = e.clientY - rect.top + scrollTop;
       setMouseY(y);
-
+      
       const minutes = Math.floor(y / 2); // Since each pixel represents 0.5 minutes
       const newDate = new Date(currentDate);
       const hours = Math.floor(minutes / 60);
@@ -446,12 +446,12 @@ export default function CalendarTab() {
 
     return (
       <div
-        className="relative"
-        style={{ height: "2880px" }}
-        onClick={handleCalendarClick}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
+      className="relative"
+      style={{ height: "2880px" }}
+      onClick={handleCalendarClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
         {/* Time grid lines */}
         {intervals.map((interval, index) => (
           <div
@@ -482,14 +482,14 @@ export default function CalendarTab() {
 
         {/* Time indicator line */}
         {mouseTime && (
-          <div
-            className="absolute left-0 right-0 flex items-center pointer-events-none"
-            style={{
-              top: `${mouseY}px`,
-              zIndex: 20,
-              transition: isHovering ? 'none' : 'top 0.1s ease-out'
-            }}
-          >
+        <div 
+          className="absolute left-0 right-0 flex items-center pointer-events-none"
+          style={{
+            top: `${(mouseY||0) - 28}px`,
+            zIndex: 20,
+            transition: isHovering ? 'none' : 'top 0.1s ease-out'
+          }}
+        >
             <div className="w-14 pr-2 text-right">
               <span className="bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
                 {format(mouseTime, "HH:mm")}
