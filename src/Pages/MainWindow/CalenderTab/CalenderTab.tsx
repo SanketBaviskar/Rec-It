@@ -400,17 +400,19 @@ export default function CalendarTab() {
       openBookingModal(newBookingDate)
     }
   }
-
   const [mouseTime, setMouseTime] = useState<Date | null>(null);
   const [isHovering, setIsHovering] = useState(false);
+  const [mouseY, setMouseY] = useState<number | null>(null);
 
-  // Add this new function to handle mouse movement
+  // Update handleMouseMove to track mouse position relative to scrolled position
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (calendarRef.current) {
       const rect = calendarRef.current.getBoundingClientRect();
-      const y = e.clientY - rect.top;
-      const minutes = Math.floor(y / 2); // Since each pixel represents 0.5 minutes
+      const scrollTop = calendarRef.current.scrollTop;
+      const y = e.clientY - rect.top + scrollTop;
+      setMouseY(y);
 
+      const minutes = Math.floor(y / 2); // Since each pixel represents 0.5 minutes
       const newDate = new Date(currentDate);
       const hours = Math.floor(minutes / 60);
       const mins = minutes % 60;
@@ -420,6 +422,7 @@ export default function CalendarTab() {
       setIsHovering(true);
     }
   };
+
 
   const handleMouseLeave = () => {
     setIsHovering(false);
@@ -478,12 +481,15 @@ export default function CalendarTab() {
         ))}
 
         {/* Time indicator line */}
-        {isHovering && mouseTime && (
-          <div className="absolute left-0 right-0 flex items-center pointer-events-none"
+        {mouseTime && (
+          <div
+            className="absolute left-0 right-0 flex items-center pointer-events-none"
             style={{
-              top: `${format(mouseTime, 'H') * 120 + Math.floor(parseInt(format(mouseTime, 'm')) * 2)}px`,
-              zIndex: 20
-            }}>
+              top: `${mouseY}px`,
+              zIndex: 20,
+              transition: isHovering ? 'none' : 'top 0.1s ease-out'
+            }}
+          >
             <div className="w-14 pr-2 text-right">
               <span className="bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
                 {format(mouseTime, "HH:mm")}
