@@ -7,6 +7,7 @@ import CalendarTab from './CalenderTab/CalenderTab'
 import SalesTab from './SalesTab/SalesTab'
 import EquipmentTab from './EquipmentTab/EquipmentTab'
 import SearchTab from './SearchTab/SearchTab'
+import RecCenterFooter from "./Footer/footer"
 
 function DashboardContent({ activeTab }: { activeTab: string }) {
   switch (activeTab) {
@@ -29,7 +30,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard")
 
   return (
-    <div className="flex flex-col bg-background overflow-hidden">
+    <div className="flex flex-col bg-background overflow-hidden h-full">
       {/* Navbar Component with Active Tab Management */}
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       
@@ -37,6 +38,8 @@ export default function Dashboard() {
       <main className="flex-1 pt-0"> {/* pt-0 accounts for the navbar height */}
         <DashboardContent activeTab={activeTab} />
       </main>
+
+      <RecCenterFooter></RecCenterFooter>
     </div>
   )
 }

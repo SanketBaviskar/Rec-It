@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
-import { DumbbellIcon, X as CloseIcon, Mail } from 'lucide-react'
+import { DumbbellIcon, X as  Mail } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -22,19 +22,12 @@ export default function Login() {
     console.log(`${provider} login attempted`)
   }
 
-  const handleClose = () => {
-    // Use Electron's IPC to send a message to the main process to close the window
-    //window.electron.send('close-window')
-  }
+ 
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
       <header className="flex justify-between items-center p-4">
         <div className="text-white text-2xl font-bold">Rec-It</div>
-        <Button variant="ghost" size="icon" onClick={handleClose} className="text-white">
-          <CloseIcon className="h-6 w-6" />
-          <span className="sr-only">Close</span>
-        </Button>
       </header>
       <main className="flex-grow flex items-center justify-center px-4">
         <div className="w-full max-w-md">
