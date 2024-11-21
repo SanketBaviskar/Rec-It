@@ -22,6 +22,7 @@ interface EquipmentManagementProps {
 }
 
 export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
+    
   const [checkedOutItems, setCheckedOutItems] = useState<EquipmentItem[]>(initialItems)
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredItems, setFilteredItems] = useState<EquipmentItem[]>(initialItems)
@@ -65,7 +66,6 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
           className="pl-8"
         />
       </div>
-      <div className='overflow-auto'>
       <Table>
         <TableHeader>
           <TableRow>
@@ -98,8 +98,6 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
           ))}
         </TableBody>
       </Table>
-
-      </div>
       {/* Render the Toaster to handle toast notifications */}
       <Toaster />
     </div>
