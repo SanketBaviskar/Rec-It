@@ -9,7 +9,7 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import { SearchBar } from "@/components/SearchBar";
+import { SearchBar } from "@/components/SearchBar/SearchBar";
 import NewMemberForm from "@/components/AddNewMember/NewmemberForm"; // Adjust the path as needed
 import { MemberData } from "@/components/AddNewMember/NewmemberForm";
 import { NewOrgaAdd } from "@/components/AddNewOrg/NewOrgForm";

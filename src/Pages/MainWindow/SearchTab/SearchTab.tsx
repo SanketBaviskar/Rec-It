@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SearchBar } from "@/components/SearchBar";
+import { SearchBar } from "@/components/SearchBar/SearchBar";
 import {
   CheckCircle,
   Clock,
@@ -34,7 +34,7 @@ interface User {
   membershipType: string;
 }
 
-export default function Component() {
+export default function SearchTab() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -55,9 +55,9 @@ export default function Component() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] gap-4 p-4">
+    <div className="flex h-[90vh] gap-4 p-4 bg-gray-100">
       {/* Left Side - Search Results */}
-      <div className="w-1/2 flex flex-col gap-4">
+      <div className="w-1/3 flex flex-col gap-4">
         <SearchBar
           placeholder="Search members..."
           onSelect={(user) => handleUserSelect(user)}
@@ -66,7 +66,7 @@ export default function Component() {
           triggerSearchOnClick={false}
           variant="inline"
         />
-        <ScrollArea className="flex-1 rounded-lg border">
+        <ScrollArea className="flex-1 rounded-lg border bg-white">
           {/* Search Results */}
           <div className="p-4 space-y-4">
             {searchResults.length === 0 && (
@@ -106,7 +106,7 @@ export default function Component() {
       </div>
 
       {/* Right Side - Member Details */}
-      <Card className="w-1/2">
+      <Card className="w-2/3">
         {selectedUser ? (
           <>
             <CardHeader>

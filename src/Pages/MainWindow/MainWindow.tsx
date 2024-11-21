@@ -7,7 +7,7 @@ import CalendarTab from './CalenderTab/CalenderTab'
 import SalesTab from './SalesTab/SalesTab'
 import EquipmentTab from './EquipmentTab/EquipmentTab'
 import SearchTab from './SearchTab/SearchTab'
-import RecCenterFooter from "./Footer/footer"
+import RecCenterFooter from "./Footer/Footer"
 
 function DashboardContent({ activeTab }: { activeTab: string }) {
   switch (activeTab) {
