@@ -53,7 +53,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
   }, [searchQuery, checkedOutItems])
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow">
+    <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Equipment Management</h2>
       <div className="relative mb-4">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -65,6 +65,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
           className="pl-8"
         />
       </div>
+      <div className='overflow-auto'>
       <Table>
         <TableHeader>
           <TableRow>
@@ -97,6 +98,8 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
           ))}
         </TableBody>
       </Table>
+
+      </div>
       {/* Render the Toaster to handle toast notifications */}
       <Toaster />
     </div>

@@ -34,7 +34,6 @@ interface User {
 }
 
 export default function Component() {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const handleUserSelect = (user: User) => {
@@ -54,9 +53,9 @@ export default function Component() {
   };
 
   return (
-    <div className="flex h-[90vh] gap-4 p-4 bg-gray-100">
+    <div className="flex h-[90vh] gap-4">
       {/* Left Side - Search Results */}
-      <div className="w-1/4 flex flex-col gap-4">
+      <div className="w-1/4 flex flex-col gap-4 py-4 pl-4">
         <SearchBar
           placeholder="Search members..."
           onSelect={(user) => handleUserSelect(user)}
@@ -105,13 +104,12 @@ export default function Component() {
       </div>
 
       {/* Right Side - Member Details */}
-      <Card className="w-3/5 rounded-lg border">
+      <div className="w-3/5 border-l border-r">
         <EquipmentNavBar></EquipmentNavBar>
-      </Card>
+      </div>
 
-      <Card className="w-3/20">
-
-      </Card>
+      <div className="w-3/20">
+      </div>
       
     </div>
   );
