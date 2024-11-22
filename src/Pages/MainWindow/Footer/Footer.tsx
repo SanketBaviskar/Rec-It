@@ -21,19 +21,6 @@ export default function RecCenterFooter() {
       <div className="h-full mx-auto flex items-center justify-between">
         <div className="flex items-center ml-2">
           <SettingsMenu/>
-          {/* <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 p-0 mr-2">
-                  <Settings className="h-3 w-3" />
-                  <span className="sr-only">Settings</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>Settings</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider> */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
