@@ -1,13 +1,14 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { Settings, HelpCircle, Wifi, User } from 'lucide-react'
+import { HelpCircle, Wifi, User } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { SettingsMenu } from "./Settings/Settings"
 
 export default function RecCenterFooter() {
   // These would typically come from your app's state or context
@@ -19,7 +20,8 @@ export default function RecCenterFooter() {
     <footer className="fixed bottom-0 left-0 right-0 border-t bg-background h-[3vh] px-1 text-[10px]">
       <div className="h-full mx-auto flex items-center justify-between">
         <div className="flex items-center ml-2">
-          <TooltipProvider>
+          <SettingsMenu/>
+          {/* <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6 p-0 mr-2">
@@ -31,7 +33,7 @@ export default function RecCenterFooter() {
                 <p>Settings</p>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
+          </TooltipProvider> */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
