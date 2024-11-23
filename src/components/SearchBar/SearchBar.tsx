@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, X } from "lucide-react";
-import data from '@/data/UserData.json';
+import data from '@/Data/UserData.json';
 
 interface User {
   id: string;
