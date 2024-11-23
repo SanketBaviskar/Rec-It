@@ -14,31 +14,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { addMember } from "@/Services/Api/addNewMember"; // Adjust the path as needed
+import { MemberData } from "@/Interface/memberData";
+
 
 interface NewMemberFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (memberData: MemberData) => void;
 }
 
-export interface MemberData {
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  accessId: string;
-  membershipType: string;
-}
 
-const MEMBERSHIP_TYPES = ["Standard", "Premium", "Student", "Senior", "Family"];
 
-export default function NewMemberForm({
-  isOpen,
-  onClose,
-  onSubmit,
-}: NewMemberFormProps) {
+const MEMBERSHIP_TYPES = [{1:"Standard", 2:"Premium", 3:"Student", 4:"Senior", 5:"Family"}];
+
+export default function NewMemberForm({ isOpen, onClose }: NewMemberFormProps) {
   const [formData, setFormData] = useState<MemberData>({
     firstName: "",
     middleName: "",
@@ -47,8 +36,13 @@ export default function NewMemberForm({
     phone: "",
     address: "",
     accessId: "",
-    membershipType: "Standard",
+    //membershipId: "Standard",
+    gender: "",
+    dateOfBirth: "",
   });
+
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
@@ -61,10 +55,21 @@ export default function NewMemberForm({
     onClose(); // Close the form
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    //setIsSubmitting(true);
+    try {
+      // Call the API to add a member
+      const response = await addMember(formData);
+      console.log("Member added successfully:", response);
+      setSubmitMessage("Member added successfully!"); // Show success message
+      //setIsSubmitting(false);
+      onClose(); // Close the form
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setSubmitMessage("Failed to add member. Please try again."); // Show error message
+      //setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +80,7 @@ export default function NewMemberForm({
     }));
   };
 
+  //camer states
   const [showUpload, setShowUpload] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -207,17 +213,32 @@ export default function NewMemberForm({
             </div>
           </div>
           {/* Date of Birth */}
-          <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Date of Birth *
+              </label>
+              <Input
+                required
+                type="date"
+                name="dateOfBirth"
+                onChange={handleChange}
+                value={formData.dateOfBirth}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
             <label className="block text-sm font-medium mb-1">
-              Date of Birth *
-            </label>
-            <Input
-              required
-              type="date"
-              name="dateOfBirth"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+                Gender *
+              </label>
+              <Input
+                required
+                type="text"
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           {/* Address */}
@@ -235,7 +256,6 @@ export default function NewMemberForm({
           {/* Photo */}
           <div className="space-y-4">
             <label className="block text-sm font-medium mb-1">Photo</label>
-
             {/* Buttons for selecting photo option */}
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => setShowUpload(true)}>
@@ -295,7 +315,7 @@ export default function NewMemberForm({
                 onChange={handleChange}
               />
             </div>
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium mb-1">
                 Membership Type *
               </label>
@@ -303,27 +323,29 @@ export default function NewMemberForm({
                 onValueChange={(value) =>
                   setFormData((prev) => ({ ...prev, membershipType: value }))
                 }
-                defaultValue={formData.membershipType}
+                defaultValue={formData.membershipId}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a type" />
                 </SelectTrigger>
                 <SelectContent>
                   {MEMBERSHIP_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
+                    <SelectItem key={type.id} value={type}>
                       {type}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-4">
             <Button type="button" variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button type="submit">Add Member</Button>
+            <Button type="submit" onClick={handleSubmit}>
+              Add Member
+            </Button>
           </div>
         </form>
 
@@ -336,7 +358,10 @@ export default function NewMemberForm({
                 Are you sure you want to cancel? All changes will be lost.
               </p>
               <div className="flex justify-end space-x-4">
-                <Button variant="outline" onClick={() => setShowCancelConfirm(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCancelConfirm(false)}
+                >
                   Continue Editing
                 </Button>
                 <Button variant="destructive" onClick={confirmCancel}>
@@ -345,6 +370,17 @@ export default function NewMemberForm({
               </div>
             </div>
           </div>
+        )}
+        {submitMessage && (
+          <p
+            className={`text-center text-sm ${
+              submitMessage.includes("successfully")
+                ? "text-green-500"
+                : "text-red-500"
+            }`}
+          >
+            {submitMessage}
+          </p>
         )}
       </DialogContent>
     </Dialog>

@@ -54,7 +54,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
   }, [searchQuery, checkedOutItems])
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-[83vh] flex flex-col">
       <h2 className="text-xl font-bold mb-4">Equipment Management</h2>
       <div className="relative mb-4">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -67,7 +67,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
         />
       </div>
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
           <TableRow>
             <TableHead>Item Name</TableHead>
             <TableHead>Item Number</TableHead>

@@ -1,28 +1,37 @@
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Separator } from "@/components/ui/separator"
-import { DumbbellIcon, X as  Mail } from 'lucide-react'
+import { useForm } from 'react-hook-form';
+import { Input } from '@/components/ui/input';
+import { login } from '@/Services/Api/login';
+import { Label } from '@/components/ui/label';
+import { DumbbellIcon, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LoginFormValues } from '@/Interface/loginData';
+import { Toaster } from '@/components/ui/toaster';
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Implement login logic
-    console.log('Login attempted', { email, password, rememberMe })
-  }
+
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  const onSubmit = async (data: LoginFormValues) => {
+    console.log('Form Submitted:', data);
+    try {
+      const response = await login(data.email, data.password);
+      navigate('/dashboard');
+      loginToast(response)
+      console.log('Login successful:', response);
+    } catch (error) {
+      console.error('Error during login:', error);
+    }
+  };
 
   const handleExternalLogin = (provider: string) => {
-    // TODO: Implement external login logic
-    console.log(`${provider} login attempted`)
-  }
-
- 
+    console.log(`${provider} login attempted`);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
@@ -36,84 +45,95 @@ export default function Login() {
               <DumbbellIcon className="h-12 w-12 text-blue-500" />
             </div>
             <h1 className="text-2xl font-bold text-center mb-8">Welcome to Rec-It</h1>
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="you@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required 
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  {...register('email', { required: 'Email is required' })}
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required 
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  {...register('password', { required: 'Password is required' })}
                 />
+                {errors.password && (
+                  <p className="text-sm text-red-500">{errors.password.message}</p>
+                )}
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="remember" 
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  {/* <input
+                    type="checkbox"
+                    id="remember"
+                    {...register('rememberMe')}
+                    className="form-checkbox"
                   />
-                  <Label htmlFor="remember">Remember me</Label>
+                  <Label htmlFor="remember">Remember me</Label> */}
                 </div>
                 <a href="#" className="text-sm text-blue-600 hover:underline">
                   Forgot password?
                 </a>
               </div>
-              <Button type="submit" className="w-full">
-                Sign In
-              </Button>
+              <button
+                type="submit"
+                className={`w-full px-4 py-2 text-white bg-blue-500 rounded-lg ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Signing In...' : 'Sign In'}
+              </button>
             </form>
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}
+                Don't have an account?{' '}
                 <a href="#" className="text-blue-600 hover:underline">
                   Sign up
                 </a>
               </p>
             </div>
-            <Separator className="my-8" />
-            <div className="space-y-4">
-              <p className="text-sm text-center text-gray-600">Or continue with</p>
-              <div className="grid grid-cols-3 gap-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
+            <div className="my-8 text-center">
+              <p className="text-sm text-gray-600">Or continue with</p>
+              <div className="grid grid-cols-3 gap-4 mt-4">
+                <button
+                  type="button"
                   onClick={() => handleExternalLogin('Google')}
+                  className="flex justify-center items-center border border-gray-300 p-2 rounded-lg hover:bg-gray-100"
                 >
                   <Mail className="h-5 w-5" />
                   <span className="sr-only">Continue with Google</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleExternalLogin('Facebook')}
+                  className="flex justify-center items-center border border-gray-300 p-2 rounded-lg hover:bg-gray-100"
                 >
-                  {/* <Facebook className="h-5 w-5" /> */}
                   <span className="sr-only">Continue with Facebook</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleExternalLogin('Apple')}
+                  className="flex justify-center items-center border border-gray-300 p-2 rounded-lg hover:bg-gray-100"
                 >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-6h2v2h-2v-2zm0-8h2v6h-2V6z"/>
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-6h2v2h-2v-2zm0-8h2v6h-2V6z" />
                   </svg>
                   <span className="sr-only">Continue with Apple</span>
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -123,5 +143,18 @@ export default function Login() {
         © {new Date().getFullYear()} Rec-It. All rights reserved.
       </footer>
     </div>
+  );
+}
+
+
+function loginToast({ messege}) {
+  return (
+    <html lang="en">
+      <head />
+      <body>
+        <main>{messege}</main>
+        <Toaster />
+      </body>
+    </html>
   )
 }

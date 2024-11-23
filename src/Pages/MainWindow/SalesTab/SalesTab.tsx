@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import NewMemberForm from "@/components/AddNewMember/NewmemberForm"; // Adjust the path as needed
-import { MemberData } from "@/components/AddNewMember/NewmemberForm";
 import { NewOrgaAdd } from "@/components/AddNewOrg/NewOrgForm";
 interface CartItem {
   id: string;
@@ -90,11 +89,7 @@ export default function SalesTab() {
     );
   };
 
-  const handleNewMemberSubmit = (memberData: MemberData) => {
-    console.log("New Member Data:", memberData);
-    setIsNewMemberFormOpen(false);
-    // Optionally, add the new member to a list or update the state as needed
-  };
+  
 
   const handleNewOrgSubmit = (values: {
     name: string;
@@ -276,7 +271,6 @@ export default function SalesTab() {
       <NewMemberForm
         isOpen={isNewMemberFormOpen}
         onClose={() => setIsNewMemberFormOpen(false)}
-        onSubmit={handleNewMemberSubmit}
       />
       <NewOrgaAdd
         isOpen={isNewOrgFormOpen}
