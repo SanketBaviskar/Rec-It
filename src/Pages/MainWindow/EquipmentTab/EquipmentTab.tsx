@@ -1,29 +1,11 @@
-"use client";
-
 import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
-import {
-  CheckCircle,
-  Clock,
-  CreditCard,
-  Edit,
-  FileText,
-  History,
-  User,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import EquipmentNavBar from "./EquipmentNavBar"
+import { User } from "lucide-react";
+import EquipmentNavBar from "./EquipmentNavBar";
+
 interface User {
   id: string;
   firstName: string;
@@ -33,23 +15,17 @@ interface User {
   membershipType: string;
 }
 
-export default function Component() {
+export default function EquipmentTab() {
   const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
   const handleUserSelect = (user: User) => {
-    setSelectedUser(user);
+    setSelectedCustomer(user);
   };
 
   const handleClearSelection = () => {
-    setSelectedUser(null);
-  };
-
-  const handleEditClick = () => {
-    setShowEditProfile(true);
-  };
-
-  const handleCloseEditProfile = () => {
-    setShowEditProfile(false);
+    setSelectedCustomer(null);
   };
 
   return (
@@ -103,14 +79,44 @@ export default function Component() {
         </ScrollArea>
       </div>
 
-      {/* Right Side - Member Details */}
+
       <div className="w-3/5 border-l border-r">
-        <EquipmentNavBar></EquipmentNavBar>
+        <EquipmentNavBar />
       </div>
 
+      {/* members details */}
       <div className="w-3/20">
+        <div
+          className={`w-96 bg-white rounded-lg shadow p-4 ${
+            isCartOpen ? "block" : "hidden"
+          } lg:block`}
+        >
+          <h2 className="text-xl font-bold mb-4">Shopping Cart</h2>
+          {selectedCustomer ? (
+            <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+              <div className="flex items-center gap-3">
+                <img
+                  src={selectedCustomer.avatarUrl}
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <div className="font-medium">
+                    {selectedCustomer.firstName} {selectedCustomer.lastName}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {selectedCustomer.membershipType}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded inline-block">
+                {selectedCustomer.phoneNumber}
+              </div>
+            </div>
+          ) : (
+            <p>No customer selected</p>
+          )}
+        </div>
       </div>
-      
     </div>
   );
 }

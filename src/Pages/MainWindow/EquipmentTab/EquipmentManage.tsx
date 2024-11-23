@@ -68,7 +68,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
       </div>
       <Table>
         <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-          <TableRow>
+          <TableRow >
             <TableHead>Item Name</TableHead>
             <TableHead>Item Number</TableHead>
             <TableHead>Checked Out By</TableHead>
@@ -77,9 +77,9 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
             <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="h-[10vh]">
           {filteredItems.map((item) => (
-            <TableRow key={item.id}>
+            <TableRow key={item.id} className="h-[1vh] !important">
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.itemNumber}</TableCell>
               <TableCell>{item.checkedOutBy}</TableCell>

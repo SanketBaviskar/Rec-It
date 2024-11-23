@@ -12,6 +12,7 @@ import {
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import NewMemberForm from "@/components/AddNewMember/NewmemberForm"; // Adjust the path as needed
 import { NewOrgaAdd } from "@/components/AddNewOrg/NewOrgForm";
+
 interface CartItem {
   id: string;
   name: string;
@@ -59,6 +60,7 @@ export default function SalesTab() {
 
   const handleSelectCustomer = (user: any) => {
     setSelectedCustomer(user);
+    console.log(user)
   };
 
   const addToCart = (item: Omit<CartItem, "quantity">) => {
@@ -190,7 +192,7 @@ export default function SalesTab() {
               )}
             </div>
 
-            {/* Right side - Cart */}
+            {/* Right side - Shopping Cart */}
             <div
               className={`w-96 bg-white rounded-lg shadow p-4 ${
                 isCartOpen ? "block" : "hidden"
@@ -202,13 +204,12 @@ export default function SalesTab() {
                   <div className="flex items-center gap-3">
                     <img
                       src={selectedCustomer.image}
-                      alt={selectedCustomer.name}
                       className="w-10 h-10 rounded-full"
                     />
                     <div>
-                      <div className="font-medium">{selectedCustomer.name}</div>
+                      <div className="font-medium">{selectedCustomer.firstName} {selectedCustomer.lastName}</div>
                       <div className="text-sm text-gray-500">
-                        {selectedCustomer.email}
+                        {selectedCustomer.membershipType}
                       </div>
                     </div>
                   </div>
@@ -265,6 +266,7 @@ export default function SalesTab() {
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       </div>
