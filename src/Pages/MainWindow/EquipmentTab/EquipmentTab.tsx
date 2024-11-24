@@ -101,7 +101,7 @@ export default function EquipmentTab() {
                 />
                 <div>
                   <div className="font-medium">
-                    {selectedCustomer.firstName} {selectedCustomer.lastName}
+                    Sanket {selectedCustomer.lastName}
                   </div>
                   <div className="text-sm text-gray-500">
                     {selectedCustomer.membershipType}
