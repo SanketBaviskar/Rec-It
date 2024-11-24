@@ -79,7 +79,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
         </TableHeader>
         <TableBody className="h-[10vh]">
           {filteredItems.map((item) => (
-            <TableRow key={item.id} className="h-[1vh] !important">
+            <TableRow key={item.id}>
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.itemNumber}</TableCell>
               <TableCell>{item.checkedOutBy}</TableCell>

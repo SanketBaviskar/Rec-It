@@ -261,7 +261,7 @@ export default function EquipmentNavBar() {
       <div className="flex flex-1 overflow-hidden">
         {/* Vertical Navbar for Inventory - only visible when Inventory is active */}
         {activeSection === "inventory" && (
-          <nav className="w-64 bg-white border-r">
+          <nav className="w-48 bg-white border-r">
             <ul className="py-4 px-4">
               {inventoryCategories.map((item) => (
                 <li key={item.id}>
