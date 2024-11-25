@@ -7,6 +7,15 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import basketball from "@/assets/EquipmentImages/basketball.jpg"
+import vollyball from "@/assets/EquipmentImages/vollyball.jpg"
+import soccerball from "@/assets/EquipmentImages/soccerball.jpg"
+import tabletennis from "@/assets/EquipmentImages/tabletennis.webp"
+import badminton from "@/assets/EquipmentImages/badminton.jpg"
+import tennisrq from "@/assets/EquipmentImages/tennisrq.webp"
+import jumprope from "@/assets/EquipmentImages/jumprope.jpg"
+import frisbee from "@/assets/EquipmentImages/frisbee.jpg"
+
 type EquipmentItem = {
   id: string;
   name: string;
@@ -21,98 +30,110 @@ const sportsEquipment: EquipmentItem[] = [
     name: "Basketball",
     quantity: 10,
     condition: "Good",
-    image: './EquipmentImages/basketball.jpg',
+    image: basketball,
   },
   {
     id: "2",
     name: "Volleyball",
     quantity: 8,
     condition: "Excellent",
-    image: "/placeholder.svg?height=50&width=50",
+    image: vollyball,
   },
   {
     id: "3",
     name: "Table Tennis Set",
     quantity: 5,
     condition: "Fair",
-    image: "/placeholder.svg?height=50&width=50",
+    image: tabletennis,
   },
   {
     id: "4",
     name: "Soccer Ball",
     quantity: 12,
     condition: "Good",
-    image: "/placeholder.svg?height=50&width=50",
+    image: soccerball,
   },
   {
     id: "5",
     name: "Tennis Racket",
     quantity: 6,
     condition: "Excellent",
-    image: "/placeholder.svg?height=50&width=50",
+    image: tennisrq,
   },
   {
     id: "6",
     name: "Badminton Set",
     quantity: 4,
     condition: "Good",
-    image: "/placeholder.svg?height=50&width=50",
+    image: badminton ,
   },
   {
     id: "7",
     name: "Frisbee",
     quantity: 15,
     condition: "Excellent",
-    image: "/placeholder.svg?height=50&width=50",
+    image: frisbee,
   },
   {
     id: "8",
     name: "Jump Rope",
     quantity: 20,
     condition: "Good",
-    image: "/placeholder.svg?height=50&width=50",
+    image: jumprope,
+  },
+  {
+    id: "9",
+    name: "Jump Rope",
+    quantity: 20,
+    condition: "Good",
+    image: jumprope,
+  },
+  {
+    id: "10",
+    name: "Jump Rope",
+    quantity: 20,
+    condition: "Good",
+    image: jumprope,
+  },
+  {
+    id: "11",
+    name: "Jump Rope",
+    quantity: 20,
+    condition: "Good",
+    image: jumprope,
   },
 ];
 
 export function EquipmentInventory() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-      {sportsEquipment.map((item) => (
-        <Card key={item.id} className="flex flex-col h-48">
-          <CardHeader className="p-3">
-            <CardTitle className="text-sm">{item.name}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 pt-0 flex-grow">
-            <div className="flex items-center mb-2">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-10 h-10 object-contain mr-2"
-              />
-              <span className="text-sm">Qty: {item.quantity}</span>
-            </div>
-            <Badge
-              variant={
-                item.condition === "Excellent"
-                  ? "default"
-                  : item.condition === "Good"
-                  ? "secondary"
-                  : item.condition === "Fair"
-                  ? "outline"
-                  : "destructive"
-              }
-              className="text-xs"
-            >
-              {item.condition}
-            </Badge>
-          </CardContent>
-          <CardFooter className="p-3 pt-0">
-            <Button size="sm" className="w-full text-xs">
-              Reserve
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+    <div className="pl-4 pr-2 py-4 pb-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+        {sportsEquipment.map((item) => (
+          <Card
+            key={item.id}
+            className="flex flex-col h-48 transform transition-transform duration-200 hover:shadow-lg hover:scale-105"
+          >
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm">{item.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-0 flex-grow">
+              <div className="flex items-center mb-2">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-20 h-20 object-contain mr-2"
+                />
+                <span className="text-sm">Qty: {item.quantity}</span>
+              </div>
+            </CardContent>
+            <CardFooter className="p-3 pt-0">
+              <Button size="sm" className="w-full text-xs">
+                Reserve
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
