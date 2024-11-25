@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -8,12 +7,22 @@ import { User } from "lucide-react";
 import EquipmentNavBar from "./EquipmentNavBar";
 import MemberDetails from "./MemberDetails";
 
+// Define TypeScript types for user objects
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string;
+  membershipType: string;
+}
+
 export default function EquipmentTab() {
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const handleUserSelect = (user: any) => {
+  const handleUserSelect = (user: User) => {
+    console.log("Selected customer:", user);
     setSelectedCustomer(user);
   };
 
@@ -24,64 +33,78 @@ export default function EquipmentTab() {
   return (
     <div className="flex h-[90vh] gap-4">
       {/* Left Side - Search Results */}
-      <div className="w-1/4 flex flex-col gap-4 py-4 pl-4">
+      <div className="w-[30%] flex flex-col gap-4 py-4 pl-4">
         <SearchBar
           placeholder="Search members..."
           onSelect={(user) => handleUserSelect(user)}
           onClear={handleClearSelection}
-          onResults={(results) => setSearchResults(results)}
+          onResults={(results: User[]) => setSearchResults(results)}
           triggerSearchOnClick={false}
           variant="inline"
         />
         <ScrollArea className="flex-1 rounded-lg border bg-white">
-          {/* Search Results */}
           <div className="p-4 space-y-4">
-            {searchResults.length === 0 && (
+            {searchResults.length === 0 ? (
               <div className="text-center text-muted-foreground py-4">
                 No search results
               </div>
+            ) : (
+              searchResults.map((user) => (
+                <UserCard
+                  key={user.id}
+                  user={user}
+                  onClick={handleUserSelect}
+                />
+              ))
             )}
-            {searchResults.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted cursor-pointer"
-                onClick={() => handleUserSelect(user)}
-              >
-                <Avatar>
-                  {user.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt={`${user.firstName} ${user.lastName}`}
-                    />
-                  ) : (
-                    <User className="h-5 w-5" />
-                  )}
-                </Avatar>
-                <div className="flex-1">
-                  <div className="font-medium">
-                    {user.firstName} {user.lastName}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {user.membershipType}
-                  </div>
-                </div>
-                <Badge variant="default">Active</Badge>
-              </div>
-            ))}
           </div>
         </ScrollArea>
       </div>
 
-
-      <div className="w-3/5 border-l border-r">
+      {/* Equipment Navbar */}
+      <div className="w-[47%] border-l border-r">
         <EquipmentNavBar />
       </div>
 
-      {/* members details */}
-      <div className="w-3/20">
-
-        <MemberDetails user = {selectedCustomer}/>
+      {/* Member Details */}
+      <div className="w-[23%]">
+        <MemberDetails userDetails={selectedCustomer} />
       </div>
+    </div>
+  );
+}
+
+// Extracted UserCard Component for modularity
+interface UserCardProps {
+  user: User;
+  onClick: (user: User) => void;
+}
+
+function UserCard({ user, onClick }: UserCardProps) {
+  return (
+    <div
+      className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted cursor-pointer"
+      onClick={() => onClick(user)}
+    >
+      <Avatar>
+        {user.avatarUrl ? (
+          <img
+            src={user.avatarUrl}
+            alt={`${user.firstName} ${user.lastName}`}
+          />
+        ) : (
+          <User className="h-5 w-5" />
+        )}
+      </Avatar>
+      <div className="flex-1">
+        <div className="font-medium">
+          {user.firstName} {user.lastName}
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {user.membershipType}
+        </div>
+      </div>
+      <Badge variant="default">Active</Badge>
     </div>
   );
 }
