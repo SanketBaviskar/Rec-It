@@ -8,6 +8,7 @@ export const searchUsers = async (query: string): Promise<any[]> => {
     const response = await apiClient.get("/users/", {
       params: { search: query },
     });
+    
     console.log(response.data.data.items);
     return response.data.data.items
   } catch (error) {
