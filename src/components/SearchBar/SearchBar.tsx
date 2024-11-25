@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, X } from "lucide-react";
 import data from "@/Data/UserData.json";
+import { searchUsers } from "@/Services/Api/User/searchUser";
 
 interface UserSearchProps {
   onSelect: (user: any) => void;
@@ -27,30 +28,26 @@ export function SearchBar({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const performSearch = () => {
+  const performSearch = async () => {
     if (query.trim().length > 1) {
-      const filteredUsers = data
-        .filter(
-          (user: any) =>
-            `${user.firstName} ${user.lastName}`
-              .toLowerCase()
-              .includes(query.toLowerCase()) ||
-            user.emailAddress.toLowerCase().includes(query.toLowerCase())
-        )
-        .map((user: any) => ({
-          id: user.accessId,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phoneNumber: user.phoneNumber,
-          avatarUrl: user.photo,
-          membershipType: user.membershipType,
-        }));
-
-      setResults(filteredUsers);
-      setIsOpen(true);
-      if (onResults) {
-        onResults(filteredUsers);
+      setLoading(true);
+      setError(null);
+      try {
+        const users = await searchUsers(query);
+        setResults(users);
+        console.log(users)
+        setIsOpen(true);
+        if (onResults) {
+          onResults(users);
+        }
+      } catch (err: any) {
+        setError(err.message || "Something went wrong.");
+        setResults([]);
+      } finally {
+        setLoading(false);
       }
     } else {
       clearResults();
@@ -120,7 +117,13 @@ export function SearchBar({
       {variant === "popup" && isOpen && (
         <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-2 shadow-md">
           <ScrollArea>
-            {results.length > 0 ? (
+            {loading ? (
+              <div className="text-center text-muted-foreground py-2">
+                Loading...
+              </div>
+            ) : error ? (
+              <div className="text-center text-red-500 py-2">{error}</div>
+            ) : results.length > 0 ? (
               results.map((user: any) => (
                 <div
                   key={user.id}
