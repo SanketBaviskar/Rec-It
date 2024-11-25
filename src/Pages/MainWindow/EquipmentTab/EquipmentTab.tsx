@@ -22,7 +22,7 @@ export default function EquipmentTab() {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const handleUserSelect = (user: User) => {
-    console.log("Selected customer:", user);
+    // console.log("Selected customer:", user);
     setSelectedCustomer(user);
   };
 

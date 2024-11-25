@@ -60,7 +60,7 @@ export default function SalesTab() {
 
   const handleSelectCustomer = (user: any) => {
     setSelectedCustomer(user);
-    console.log(user)
+    // console.log(user)
   };
 
   const addToCart = (item: Omit<CartItem, "quantity">) => {
