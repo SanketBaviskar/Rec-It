@@ -38,7 +38,6 @@ export function SearchBar({
       try {
         const users = await searchUsers(query);
         setResults(users);
-        console.log(users)
         setIsOpen(true);
         if (onResults) {
           onResults(users);

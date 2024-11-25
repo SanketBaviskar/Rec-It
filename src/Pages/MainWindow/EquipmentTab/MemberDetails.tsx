@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 // import { UserData } from "@/Interface/memberData";
 
 export default function MemberDetails({ userDetails }: any) {
-  // console.log("User Details from MemberDetails component:", userDetails);
 
   // Move equipment list outside the component to prevent re-creation on every render
   const equipmentList = [

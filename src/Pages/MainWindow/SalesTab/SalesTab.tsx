@@ -60,7 +60,6 @@ export default function SalesTab() {
 
   const handleSelectCustomer = (user: any) => {
     setSelectedCustomer(user);
-    // console.log(user)
   };
 
   const addToCart = (item: Omit<CartItem, "quantity">) => {
@@ -99,7 +98,6 @@ export default function SalesTab() {
     email: string;
     phone?: string;
   }) => {
-    console.log("Form Submitted:", values);
     setIsNewOrgFormOpen(false);
     // Perform further actions like API calls here
   };

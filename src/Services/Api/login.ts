@@ -6,7 +6,6 @@ export const login = async (email: string, password: string) => {
     const response = await apiClient.post("/users/login", { email, password });
     const token = response.data.data.token;
     localStorage.setItem("token", token);
-    console.log("Token saved:", token);
     return response.data;
   } catch (error) {
     console.error("Error during login:", error);

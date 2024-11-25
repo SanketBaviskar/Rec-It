@@ -18,19 +18,17 @@ export default function Login() {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const onSubmit = async (data: LoginFormValues) => {
-    console.log('Form Submitted:', data);
     try {
       const response = await login(data.email, data.password);
       navigate('/dashboard');
       loginToast(response)
-      console.log('Login successful:', response);
     } catch (error) {
       console.error('Error during login:', error);
     }
   };
 
   const handleExternalLogin = (provider: string) => {
-    console.log(`${provider} login attempted`);
+    console.log(`login attempted`);
   };
 
   return (
