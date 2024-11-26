@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,6 +38,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
     toast({
       title: "Item Checked In",
       description: "The item has been successfully checked in.",
+      className: "bg-red-500 text-white",
     })
   }
 

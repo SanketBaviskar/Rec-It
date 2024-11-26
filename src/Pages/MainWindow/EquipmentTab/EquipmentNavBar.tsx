@@ -94,7 +94,6 @@ export default function EquipmentNavBar() {
           </div>
         </div>
       </nav>
-
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Vertical Navbar (Inventory Categories) */}
@@ -102,7 +101,7 @@ export default function EquipmentNavBar() {
           <nav className="w-48 bg-white border-r">
             <ul className="py-4 px-4">
               {inventoryCategories.map((item) => (
-                <li key={item.id}>
+                <li key={item.id} className="py-1">
                   <Button
                     variant="ghost"
                     className={`w-full justify-start py-2 px-4 ${
@@ -127,9 +126,9 @@ export default function EquipmentNavBar() {
         >
           {/* Inventory Section */}
           {activeSection === "inventory" && (
-            <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden">
+            <div className="h-full flex flex-col ">
               {activeCategory && (
-                <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                <div className="flex-1">
                   {activeCategory === "Sports" && <EquipmentInventory />}
                   {/* Add conditional rendering for other categories if needed */}
                 </div>
@@ -139,7 +138,7 @@ export default function EquipmentNavBar() {
 
           {/* Reserve Section */}
           {activeSection === "reserve" && (
-            <div className="p-4 h-full overflow-y-auto">
+            <div className="p-4 h-full ">
               <h2 className="text-2xl font-bold mb-4">Reserve</h2>
               {/* Reserve section content */}
             </div>
@@ -147,7 +146,7 @@ export default function EquipmentNavBar() {
 
           {/* Manage Section */}
           {activeSection === "manage" && (
-            <div className="p-4 h-full overflow-y-auto">
+            <div className="h-full">
               <EquipmentManage initialItems={initialCheckedOutItems} />
             </div>
           )}

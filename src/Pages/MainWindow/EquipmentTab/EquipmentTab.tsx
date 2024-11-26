@@ -32,7 +32,7 @@ export default function EquipmentTab() {
   return (
     <div className="flex h-[90vh] gap-4">
       {/* Left Side - Search Results */}
-      <div className="w-[30%] flex flex-col gap-4 py-4 pl-4">
+      <div className="w-[25%] flex flex-col gap-4 py-4 pl-4">
         <SearchBar
           placeholder="Search members..."
           onSelect={(user) => handleUserSelect(user)}
@@ -61,19 +61,19 @@ export default function EquipmentTab() {
       </div>
 
       {/* Equipment Navbar */}
-      <div className="w-[47%] border-l border-r">
+      <div className="w-[50%] border-l border-r">
         <EquipmentNavBar />
       </div>
 
       {/* Member Details */}
-      <div className="w-[23%]">
+      <div className="w-[25%]">
         <MemberDetails userDetails={selectedCustomer} />
       </div>
     </div>
   );
 }
 
-// Extracted UserCard Component for modularity
+// Extracted UserCard Component for modularity:- after seaarching the result is shown as a user card and this is the code to show that single user card
 interface UserCardProps {
   user: User;
   onClick: (user: User) => void;
