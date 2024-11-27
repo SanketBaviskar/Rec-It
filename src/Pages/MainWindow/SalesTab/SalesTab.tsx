@@ -90,8 +90,6 @@ export default function SalesTab() {
     );
   };
 
-  
-
   const handleNewOrgSubmit = (values: {
     name: string;
     description?: string;
@@ -106,13 +104,11 @@ export default function SalesTab() {
 
   return (
     <>
-      <div
-        className="flex flex-col h-[90vh] bg-gray-100"
-      >
+      <div className="flex flex-col h-[90vh]">
         {/* Top Bar */}
-        <div className="bg-white p-4 shadow-sm">
+        <div className="p-4 border-b">
           <div className="flex items-center gap-4 mx-auto">
-            <div className="flex-1 relative">
+            <div className="flex-1 relative mr-4">
               <SearchBar
                 placeholder="Search customers or orders..."
                 onSelect={(user) => handleSelectCustomer(user)} // Set selected user
@@ -135,25 +131,15 @@ export default function SalesTab() {
               <Building2 size={20} />
               New Organization
             </button>
-            <button
-              className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full"
-              onClick={() => setIsCartOpen(!isCartOpen)}
-            >
-              <ShoppingCart size={24} />
-              {cart.length > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  {cart.length}
-                </span>
-              )}
-            </button>
+            
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-4 h-full">
-          <div className="mx-auto flex gap-6 h-[100%]">
+        <div className="flex-1 h-full">
+          <div className="mx-auto flex h-[100%]">
             {/* Left side - Sales items */}
-            <div className="flex-1 bg-white rounded-lg shadow p-4">
+            <div className="flex-1 p-4 border-r">
               <div className="flex mb-4">
                 {["quick", "recreation", "bike", "adventure"].map((tab) => (
                   <button
@@ -192,20 +178,40 @@ export default function SalesTab() {
 
             {/* Right side - Shopping Cart */}
             <div
-              className={`w-96 bg-white rounded-lg shadow p-4 ${
+              className={`w-96  rounded-lg p-4 ${
                 isCartOpen ? "block" : "hidden"
               } lg:block`}
             >
-              <h2 className="text-xl font-bold mb-4">Shopping Cart</h2>
+              <div className="flex justify-between">
+                <h2 className="text-xl font-bold mb-4">Shopping Cart</h2>
+                <button
+              className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+              onClick={() => setIsCartOpen(!isCartOpen)}
+            >
+              <ShoppingCart size={24} />
+              {cart.length > 0 && (
+                <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+                {cart.length > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    {cart.length}
+                  </span>
+                )}
+              </div>
               {selectedCustomer && (
-                <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                <div className="mb-4">
                   <div className="flex items-center gap-3">
                     <img
                       src={selectedCustomer.image}
                       className="w-10 h-10 rounded-full"
                     />
                     <div>
-                      <div className="font-medium">{selectedCustomer.firstName} {selectedCustomer.lastName}</div>
+                      <div className="font-medium">
+                        {selectedCustomer.firstName} {selectedCustomer.lastName}
+                      </div>
                       <div className="text-sm text-gray-500">
                         {selectedCustomer.membershipType}
                       </div>
@@ -264,7 +270,6 @@ export default function SalesTab() {
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </div>

@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import basketball from "@/assets/EquipmentImages/basketball.jpg";
 import vollyball from "@/assets/EquipmentImages/vollyball.jpg";
