@@ -1,53 +1,35 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table"
-import { Button } from "../../../components/ui/button"
+"use client"
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import AccessSettings from "./AccessSetting"
+import AccessProfiles from "./AccessProfile"
+import IdentificationTypes from "./AccessIdentification"
+import SuspensionSettings from "./AccessSuspension"
 
 export default function AccessPage() {
   return (
-      <div className="space-y-6">
-        <h2 className="text-3xl font-bold tracking-tight">Access Control</h2>
-        <Card>
-          <CardHeader>
-            <CardTitle>Access Logs</CardTitle>
-            <CardDescription>
-              Recent access events at your fitness center.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell>2023-11-03</TableCell>
-                  <TableCell>09:15 AM</TableCell>
-                  <TableCell>John Doe</TableCell>
-                  <TableCell>Entered Gym</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>2023-11-03</TableCell>
-                  <TableCell>10:30 AM</TableCell>
-                  <TableCell>Jane Smith</TableCell>
-                  <TableCell>Entered Pool Area</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>2023-11-03</TableCell>
-                  <TableCell>11:45 AM</TableCell>
-                  <TableCell>Mike Johnson</TableCell>
-                  <TableCell>Exited Gym</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-            <Button className="mt-4">View All Logs</Button>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="space-y-6 p-0">
+      <Tabs defaultValue="access-settings" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="access-settings">Access Settings</TabsTrigger>
+          <TabsTrigger value="access-profiles">Access Profiles</TabsTrigger>
+          <TabsTrigger value="identification-types">Identification Types</TabsTrigger>
+          <TabsTrigger value="suspension-settings">Suspension Settings</TabsTrigger>
+        </TabsList>
+        <TabsContent value="access-settings" className="space-y-4">
+          <AccessSettings />
+        </TabsContent>
+        <TabsContent value="access-profiles" className="space-y-4">
+          <AccessProfiles />
+        </TabsContent>
+        <TabsContent value="identification-types" className="space-y-4">
+          <IdentificationTypes />
+        </TabsContent>
+        <TabsContent value="suspension-settings" className="space-y-4">
+          <SuspensionSettings />
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }
 
