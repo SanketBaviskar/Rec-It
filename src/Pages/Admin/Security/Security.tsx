@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import AdminLayout from "../AdminDashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table"
 import { Button } from "../../../components/ui/button"
@@ -32,7 +31,6 @@ export default function SecurityPage() {
   )
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-3xl font-bold tracking-tight">Security</h2>
@@ -177,6 +175,5 @@ export default function SecurityPage() {
           </div>
         </div>
       </div>
-    </AdminLayout>
   )
 }

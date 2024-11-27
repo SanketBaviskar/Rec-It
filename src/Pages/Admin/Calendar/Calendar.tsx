@@ -1,11 +1,10 @@
-import AdminLayout from "../AdminDashboard"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
 import { Calendar } from "../../../components/ui/calendar"
 import { Button } from "../../../components/ui/button"
 
 export default function CalendarsPage() {
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <h2 className="text-3xl font-bold tracking-tight">Calendars</h2>
         <Card>
@@ -26,7 +25,6 @@ export default function CalendarsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }
 

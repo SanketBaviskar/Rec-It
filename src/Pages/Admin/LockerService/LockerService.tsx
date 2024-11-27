@@ -1,11 +1,9 @@
-import AdminLayout from "../AdminDashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table"
 import { Button } from "../../../components/ui/button"
 
 export default function LockerServicePage() {
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <h2 className="text-3xl font-bold tracking-tight">Locker Service</h2>
         <Card>
@@ -57,6 +55,5 @@ export default function LockerServicePage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

@@ -1,6 +1,25 @@
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { SidebarNav } from './SideBarNav'
+import SettingsPage from './Setting/Setting'
+import AccessPage from './Access/Access'
+import AccountingPage from './Accounting/Accounting'
+import CalendarsPage from './Calendar/Calendar'
+import DocumentsPage from './Document/Document'
+import FacilityPage from './Facility/Facility'
+import GuestPasses from './GuestPasses/GuestPasses'
+import IntegrationPage from './Integration/Integration'
+import KioskPage from './Kiosk/Kiosk'
+import LockerServicePage from './LockerService/LockerService'
+import MembershipsPage from './Membership/Membership'
+import SecurityPage from './Security/Security'
+import TravelPage from './TravelService/TravelService'
+import UtilitiesPage from './Utilities/Utilities'
+import MultiVisitPassesPage from './MultiVisitPasses/MultiVisitPasses'
+import ParkingPage from './Parking/Parking'
+import ProductsPage from './Product/Product'
+import SalesPage from './Sales/Sales'
+import ProgramsPage from './Program/Program'
 
 const sidebarNavItems = [
   {
@@ -106,6 +125,25 @@ export default function AdminDashboard() {
           <div className="flex-1">
             <Routes>
               <Route path="/" element={<AdminHome />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/access" element={<AccessPage />} />
+                <Route path="/accounting" element={<AccountingPage />} />
+                <Route path="/calendars" element={<CalendarsPage />} />
+                <Route path="/documents" element={<DocumentsPage />} />
+                <Route path="/facility" element={<FacilityPage />} />
+                <Route path="/guest-passes" element={<GuestPasses />} />
+                <Route path="/integration" element={<IntegrationPage />} />
+                <Route path="/kiosk" element={<KioskPage />} />
+                <Route path="/locker-service" element={<LockerServicePage />} />
+                <Route path="/memberships" element={<MembershipsPage />} />
+                <Route path="/security" element={<SecurityPage />} />
+                <Route path="/travel" element={<TravelPage />} />
+                <Route path="/utilities" element={<UtilitiesPage />} />
+                <Route path="/multi-visit-passes" element={<MultiVisitPassesPage />} />
+                <Route path="/parking" element={<ParkingPage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/sales" element={<SalesPage />} />
+                <Route path="/programs" element={<ProgramsPage />} />
               {/* Add routes for other admin pages here */}
             </Routes>
           </div>
@@ -114,4 +152,3 @@ export default function AdminDashboard() {
     </div>
   )
 }
-

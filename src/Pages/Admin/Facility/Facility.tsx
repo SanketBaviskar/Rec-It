@@ -1,4 +1,3 @@
-import AdminLayout from "../AdminDashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
 import { Input } from "../../../components/ui/input"
 import { Label } from "../../../components/ui/label"
@@ -23,7 +22,6 @@ export default function FacilityPage() {
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-3xl font-bold tracking-tight">Facility Management</h2>
@@ -91,6 +89,5 @@ export default function FacilityPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

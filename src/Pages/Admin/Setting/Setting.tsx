@@ -1,4 +1,3 @@
-import AdminLayout from "../AdminDashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
 import { Input } from "../../../components/ui/input"
 import { Label } from "../../../components/ui/label"
@@ -6,7 +5,6 @@ import { Button } from "../../../components/ui/button"
 
 export default function SettingsPage() {
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <h2 className="text-3xl font-bold tracking-tight">General Settings</h2>
         <Card>
@@ -37,7 +35,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }
 
