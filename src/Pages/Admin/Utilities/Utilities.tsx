@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import AdminLayout from "../AdminLayout"
+import AdminLayout from "../AdminDashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table"
 import { Button } from "../../../components/ui/button"
@@ -10,7 +10,6 @@ import { Label } from "../../../components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog"
 import { Badge } from "../../../components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 // Mock data for utility usage

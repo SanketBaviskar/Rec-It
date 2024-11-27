@@ -1,4 +1,6 @@
-import { SidebarNav } from "./SideBarNav"
+import React from 'react'
+import { Route, Routes } from 'react-router-dom'
+import { SidebarNav } from './SideBarNav'
 
 const sidebarNavItems = [
   {
@@ -79,11 +81,16 @@ const sidebarNavItems = [
   },
 ]
 
-interface AdminLayoutProps {
-  children: React.ReactNode
+function AdminHome() {
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Welcome to Admin Dashboard</h2>
+      <p>Select an option from the sidebar to manage your fitness center.</p>
+    </div>
+  )
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminDashboard() {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="border-b">
@@ -96,7 +103,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <aside className="lg:w-1/5">
             <SidebarNav items={sidebarNavItems} />
           </aside>
-          <div className="flex-1">{children}</div>
+          <div className="flex-1">
+            <Routes>
+              <Route path="/" element={<AdminHome />} />
+              {/* Add routes for other admin pages here */}
+            </Routes>
+          </div>
         </div>
       </div>
     </div>

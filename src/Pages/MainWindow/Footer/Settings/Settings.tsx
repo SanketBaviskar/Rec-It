@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Link } from 'react-router-dom'
 
 export function SettingsMenu() {
   return (
@@ -27,7 +28,7 @@ export function SettingsMenu() {
           Account Settings
         </DropdownMenuItem>
         <DropdownMenuItem>
-          Admin Dashboard
+        <Link to="/admin" className="">Admin Dashboard</Link>
         </DropdownMenuItem>
         <DropdownMenuItem>
           Appearance
