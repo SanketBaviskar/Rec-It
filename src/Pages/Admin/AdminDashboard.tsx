@@ -1,8 +1,17 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
-import { SidebarNav } from './SideBarNav'
+"use client"
+
+import React, { useState } from 'react'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
 import SettingsPage from './Setting/Setting'
-import AccessPage from './Access/Access'
+import AccessTabs from './Access/Access'
 import AccountingPage from './Accounting/Accounting'
 import CalendarsPage from './Calendar/Calendar'
 import DocumentsPage from './Document/Document'
@@ -22,82 +31,25 @@ import SalesPage from './Sales/Sales'
 import ProgramsPage from './Program/Program'
 
 const sidebarNavItems = [
-  {
-    title: "General Settings",
-    href: "/admin/settings",
-  },
-  {
-    title: "Access",
-    href: "/admin/access",
-  },
-  {
-    title: "Accounting",
-    href: "/admin/accounting",
-  },
-  {
-    title: "Calendars",
-    href: "/admin/calendars",
-  },
-  {
-    title: "Documents & Templates",
-    href: "/admin/documents",
-  },
-  {
-    title: "Facility",
-    href: "/admin/facility",
-  },
-  {
-    title: "Guest Passes",
-    href: "/admin/guest-passes",
-  },
-  {
-    title: "Integration",
-    href: "/admin/integration",
-  },
-  {
-    title: "Kiosk",
-    href: "/admin/kiosk",
-  },
-  {
-    title: "Locker Service",
-    href: "/admin/locker-service",
-  },
-  {
-    title: "Memberships",
-    href: "/admin/memberships",
-  },
-  {
-    title: "Multi-Visit Passes",
-    href: "/admin/multi-visit-passes",
-  },
-  {
-    title: "Parking Permits",
-    href: "/admin/parking",
-  },
-  {
-    title: "Products & Equipment",
-    href: "/admin/products",
-  },
-  {
-    title: "Programs",
-    href: "/admin/programs",
-  },
-  {
-    title: "Sales",
-    href: "/admin/sales",
-  },
-  {
-    title: "Security",
-    href: "/admin/security",
-  },
-  {
-    title: "Travel Service",
-    href: "/admin/travel",
-  },
-  {
-    title: "Utilities",
-    href: "/admin/utilities",
-  },
+  { title: "General Settings", key: "settings" },
+  { title: "Access", key: "access" },
+  { title: "Accounting", key: "accounting" },
+  { title: "Calendars", key: "calendars" },
+  { title: "Documents & Templates", key: "documents" },
+  { title: "Facility", key: "facility" },
+  { title: "Guest Passes", key: "guest-passes" },
+  { title: "Integration", key: "integration" },
+  { title: "Kiosk", key: "kiosk" },
+  { title: "Locker Service", key: "locker-service" },
+  { title: "Memberships", key: "memberships" },
+  { title: "Multi-Visit Passes", key: "multi-visit-passes" },
+  { title: "Parking Permits", key: "parking" },
+  { title: "Products & Equipment", key: "products" },
+  { title: "Programs", key: "programs" },
+  { title: "Sales", key: "sales" },
+  { title: "Security", key: "security" },
+  { title: "Travel Service", key: "travel" },
+  { title: "Utilities", key: "utilities" },
 ]
 
 function AdminHome() {
@@ -109,46 +61,99 @@ function AdminHome() {
   )
 }
 
-export default function AdminDashboard() {
+function AdminSidebar({ setActiveSection }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="border-b">
-        <div className="flex h-16 items-center px-4">
-          <h1 className="text-lg font-bold">Fitness Center Admin</h1>
-        </div>
-      </div>
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-          <aside className="lg:w-1/5">
-            <SidebarNav items={sidebarNavItems} />
-          </aside>
-          <div className="flex-1">
-            <Routes>
-              <Route path="/" element={<AdminHome />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/access" element={<AccessPage />} />
-                <Route path="/accounting" element={<AccountingPage />} />
-                <Route path="/calendars" element={<CalendarsPage />} />
-                <Route path="/documents" element={<DocumentsPage />} />
-                <Route path="/facility" element={<FacilityPage />} />
-                <Route path="/guest-passes" element={<GuestPasses />} />
-                <Route path="/integration" element={<IntegrationPage />} />
-                <Route path="/kiosk" element={<KioskPage />} />
-                <Route path="/locker-service" element={<LockerServicePage />} />
-                <Route path="/memberships" element={<MembershipsPage />} />
-                <Route path="/security" element={<SecurityPage />} />
-                <Route path="/travel" element={<TravelPage />} />
-                <Route path="/utilities" element={<UtilitiesPage />} />
-                <Route path="/multi-visit-passes" element={<MultiVisitPassesPage />} />
-                <Route path="/parking" element={<ParkingPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/sales" element={<SalesPage />} />
-                <Route path="/programs" element={<ProgramsPage />} />
-              {/* Add routes for other admin pages here */}
-            </Routes>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Sidebar>
+      <SidebarHeader>
+        <h2 className="text-xl font-bold px-4 py-2">Fitness Center Admin</h2>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarMenu>
+          {sidebarNavItems.map((item) => (
+            <SidebarMenuItem key={item.key}>
+              <SidebarMenuButton
+                onClick={() => setActiveSection(item.key)}
+              >
+                {item.title}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
+    </Sidebar>
   )
 }
+
+function AdminContent({ activeSection }) {
+  switch (activeSection) {
+    case 'home':
+      return <AdminHome />
+    case 'settings':
+      return <SettingsPage />
+    case 'access':
+      return <AccessTabs />
+    case 'accounting':
+      return <AccountingPage />
+    case 'calendars':
+      return <CalendarsPage />
+    case 'documents':
+      return <DocumentsPage />
+    case 'facility':
+      return <FacilityPage />
+    case 'guest-passes':
+      return <GuestPasses />
+    case 'integration':
+      return <IntegrationPage />
+    case 'kiosk':
+      return <KioskPage />
+    case 'locker-service':
+      return <LockerServicePage />
+    case 'memberships':
+      return <MembershipsPage />
+    case 'security':
+      return <SecurityPage />
+    case 'travel':
+      return <TravelPage />
+    case 'utilities':
+      return <UtilitiesPage />
+    case 'multi-visit-passes':
+      return <MultiVisitPassesPage />
+    case 'parking':
+      return <ParkingPage />
+    case 'products':
+      return <ProductsPage />
+    case 'sales':
+      return <SalesPage />
+    case 'programs':
+      return <ProgramsPage />
+    default:
+      return <AdminHome />
+  }
+}
+
+export default function AdminDashboard() {
+  const [activeSection, setActiveSection] = useState('home')
+  const [showSidebar, setShowSidebar] = useState(true)
+
+  const toggleSidebar = () => {
+    setShowSidebar(!showSidebar)
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen">
+        {showSidebar && <AdminSidebar setActiveSection={setActiveSection} />}
+        <div className="flex-1 p-8">
+          <header className="flex items-center justify-between mb-8">
+            <button onClick={toggleSidebar} className="p-2 rounded-md hover:bg-gray-200">
+              {showSidebar ? 'Hide Sidebar' : 'Show Sidebar'}
+            </button>
+            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          </header>
+          <AdminContent activeSection={activeSection} />
+        </div>
+      </div>
+    </SidebarProvider>
+  )
+}
+
