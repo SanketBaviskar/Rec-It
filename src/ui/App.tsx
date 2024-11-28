@@ -2,7 +2,7 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainWindow from "../Pages/MainWindow/MainWindow";
 import Login from "@/Pages/Login/Login";
-import AdminDashboard from "@/Pages/AdminDashboard/AdminDashboard";
+import AdminDashboard from "@/Admin/AdminDashboard";
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
         <Route path="/dashboard" element={<MainWindow />} />
 
         {/* Admin dashboard with nested routes */}
-        <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );
