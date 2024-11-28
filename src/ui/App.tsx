@@ -2,7 +2,7 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainWindow from "../Pages/MainWindow/MainWindow";
 import Login from "@/Pages/Login/Login";
-import AdminDashboard from "@/Admin/AdminDashboard";
+import AdminDashboard from "@/Admin/Layout/AdminDashboard";
 
 function App() {
   return (

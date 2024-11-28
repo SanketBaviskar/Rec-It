@@ -1,8 +1,8 @@
 import Logo from "./Logo";
-import UniversalSearch from "./UniversalSearch";
+import UniversalSearch from "./UniversalSearch"
 import RenderWindow from "./RenderWindow";
 import UserFeatures from "./UserFeatures";
-import Sidebar from "./SideBar";
+import Sidebar from "./SideBar/SideBar";
 
 
 export default function AdminDashboard() {
