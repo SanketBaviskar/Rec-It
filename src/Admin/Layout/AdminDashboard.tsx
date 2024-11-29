@@ -4,7 +4,7 @@ import UniversalSearch from "./UniversalSearch";
 import RenderWindow from "./RenderWindow";
 import UserFeatures from "./UserFeatures";
 import Sidebar from "./SideBar/SideBar";
-import ManageInventory from "./ManageInventory";
+import AdminDashboardFooter from "./Footer";
 
 export default function AdminDashboard() {
   // State to track the active component
@@ -31,14 +31,19 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content Section */}
-      <div className="flex flex-grow h-[93vh]">
-        <div className="w-[15%]">
-          <Sidebar onItemClick={handleSidebarClick} />
+      <main>
+        <div className="flex flex-grow h-[90vh]">
+          <div className="w-[15%]">
+            <Sidebar onItemClick={handleSidebarClick} />
+          </div>
+          <div className="flex-grow bg-gray-50">
+            <RenderWindow activeComponent={activeComponent} />
+          </div>
         </div>
-        <div className="flex-grow bg-gray-50">
-          <RenderWindow activeComponent={activeComponent} />
-        </div>
-      </div>
+      </main>
+
+      {/* Footer Section */}
+      <AdminDashboardFooter />
     </div>
   );
 }

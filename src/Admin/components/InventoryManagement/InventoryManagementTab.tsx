@@ -139,8 +139,8 @@ export default function InventoryManagementTab() {
     <div className="flex h-full">
       {/* Left sidebar */}
       <div className="w-64 border-r bg-background p-4">
-        <div className="flex justify-between items-center">
-          <div className="font-semibold mb-4">Equipment Categories</div>
+        <div className="flex justify-between items-center mb-4">
+          <div className="font-semibold">Equipment Categories</div>
           <div>
             <Button
               className="bg-gray-400 w-[1rem] h-[2rem]"
