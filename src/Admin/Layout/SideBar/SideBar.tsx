@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-const Sidebar = () => {
+const Sidebar = ({ onItemClick }) => {
+  
   const [openSections, setOpenSections] = useState({});
 
   const toggleSection = (sectionName) => {
@@ -24,6 +25,10 @@ const Sidebar = () => {
     { name: "Booking" },
     { name: "Guest Passes" },
     { name: "Integration" },
+    {
+      name: "Inventory Management",
+      subItems: ["Manage Inventory", "Reports"],
+    },
     { name: "Kiosk" },
     { name: "Locker Service" },
     { name: "Memberships" },
@@ -38,13 +43,16 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="h-screen w-64 bg-gray-800 text-white p-4 overflow-y-auto scrollbar-hide">
+    <div className="h-full bg-gray-800 text-white p-4 overflow-y-auto scrollbar-hide">
       <ul className="space-y-1">
         {menuItems.map((item) => (
           <li key={item.name} className="group">
             {/* Main Menu Item */}
             <div
-              onClick={() => item.subItems && toggleSection(item.name)}
+              onClick={() => {
+                if (!item.subItems) onItemClick(item.name);
+                toggleSection(item.name);
+              }}
               className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
                 item.subItems
                   ? "hover:bg-gray-700"
@@ -70,6 +78,7 @@ const Sidebar = () => {
                   <li
                     key={subItem}
                     className="p-2 text-sm rounded-md cursor-pointer hover:bg-gray-700"
+                    onClick={() => onItemClick(subItem)}
                   >
                     {subItem}
                   </li>

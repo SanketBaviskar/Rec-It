@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Toaster } from "@/components/ui/toaster"
-import { useToast } from "@/hooks/use-toast" // shadcn's useToast hook
+import { useToast } from "@/components/ui/hooks/use-toast" // shadcn's useToast hook
 import { Search } from 'lucide-react'
 
 interface EquipmentItem {
