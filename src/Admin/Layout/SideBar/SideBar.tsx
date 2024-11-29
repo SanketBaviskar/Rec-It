@@ -1,10 +1,14 @@
-import React, { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import React, { useState } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
-const Sidebar = () => {
-  const [openSections, setOpenSections] = useState({});
+interface SidebarProps {
+  onSelect: (item: string) => void;
+}
 
-  const toggleSection = (sectionName) => {
+const Sidebar: React.FC<SidebarProps> = ({ onSelect }) => {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (sectionName: string) => {
     setOpenSections((prev) => ({
       ...prev,
       [sectionName]: !prev[sectionName],
@@ -38,13 +42,18 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="h-screen w-64 bg-gray-800 text-white p-4 overflow-y-auto scrollbar-hide">
+    <div className="h-[calc(100vh-4rem)] bg-gray-800 text-white p-4 overflow-y-auto scrollbar-hide">
       <ul className="space-y-1">
         {menuItems.map((item) => (
           <li key={item.name} className="group">
-            {/* Main Menu Item */}
             <div
-              onClick={() => item.subItems && toggleSection(item.name)}
+              onClick={() => {
+                if (item.subItems) {
+                  toggleSection(item.name);
+                } else {
+                  onSelect(item.name);
+                }
+              }}
               className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
                 item.subItems
                   ? "hover:bg-gray-700"
@@ -62,14 +71,13 @@ const Sidebar = () => {
                 </span>
               )}
             </div>
-
-            {/* Submenu */}
             {item.subItems && openSections[item.name] && (
               <ul className="mt-1 ml-4 space-y-1">
                 {item.subItems.map((subItem) => (
                   <li
                     key={subItem}
                     className="p-2 text-sm rounded-md cursor-pointer hover:bg-gray-700"
+                    onClick={() => onSelect(subItem)}
                   >
                     {subItem}
                   </li>
