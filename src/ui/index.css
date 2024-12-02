@@ -175,3 +175,18 @@ button:focus-visible {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }
+
+
+form {
+  box-sizing: border-box; /* Ensure padding and borders are part of the width/height */
+  padding: 1rem;          /* Add padding inside the form to prevent cropping */
+  margin: 0 auto;         /* Center the form and avoid negative margins */
+}
+
+textarea, input {
+  box-sizing: border-box; /* Ensure no cropping within the input or textarea */
+  margin: 0;              /* Reset margins */
+  padding: 0.5rem;        /* Add space inside the fields */
+  border: 1px solid #ccc; /* Ensure consistent border width */
+  width: 100%;            /* Use the full width of the container */
+}

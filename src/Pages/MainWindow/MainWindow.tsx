@@ -9,21 +9,13 @@ import EquipmentTab from './EquipmentTab/EquipmentTab'
 import SearchTab from './SearchTab/SearchTab'
 import RecCenterFooter from "./Footer/Footer"
 
-function DashboardContent({ activeTab }: { activeTab: string }) {
-  switch (activeTab) {
-    case 'dashboard':
-      return <DashboardTab />
-    case 'calendar':
-      return <CalendarTab />
-    case 'sale':
-      return <SalesTab />
-    case 'equipment':
-      return <EquipmentTab />
-    case 'search':
-      return <SearchTab />
-    default:
-      return null
-  }
+// Component Mapping
+const componentMap: Record<string, React.ReactNode> = {
+  dashboard: <DashboardTab />,
+  calendar: <CalendarTab />,
+  sale: <SalesTab />,
+  equipment: <EquipmentTab />,
+  search: <SearchTab />
 }
 
 export default function Dashboard() {
@@ -36,10 +28,15 @@ export default function Dashboard() {
       
       {/* Main Content Area */}
       <main className="flex-1 pt-0"> {/* pt-0 accounts for the navbar height */}
-        <DashboardContent activeTab={activeTab} />
+        {componentMap[activeTab] || (
+          <p className="text-center text-muted-foreground">
+            No content available for this tab.
+          </p>
+        )}
       </main>
 
-      <RecCenterFooter></RecCenterFooter>
+      {/* Footer */}
+      <RecCenterFooter />
     </div>
   )
 }

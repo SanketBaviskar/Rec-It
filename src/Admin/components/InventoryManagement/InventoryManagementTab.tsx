@@ -1,17 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronRight, ChevronDown, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -37,15 +29,17 @@ interface Category {
   subCategories?: Category[];
 }
 
-export default function InventoryManagementTab() {
-  const [activeComponent, setActiveComponent] = useState<string | null>(null);
+type ActiveComponent = "addNewInventoryForm" | null;
 
+export default function InventoryManagementTab() {
+  const [activeComponent, setActiveComponent] = useState<ActiveComponent>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Categories data
   const categories: Category[] = [
     {
       id: "1",
@@ -65,43 +59,50 @@ export default function InventoryManagementTab() {
         { id: "2-2", name: "Rental Shop", items: 5 },
       ],
     },
-    // Add more categories as needed
   ];
 
-  const inventoryItems: InventoryItem[] = [
-    {
-      id: "1",
-      name: "Adjustable Wrench",
-      category: "BS Program Only",
-      brandName: "Craftsman",
-      introductionDate: "8/29/2023",
-      status: "active",
-    },
-    // Add more items as needed
-  ];
-
+  // Manage expanded categories
   const toggleCategory = (categoryId: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId);
-    } else {
-      newExpanded.add(categoryId);
-    }
-    setExpandedCategories(newExpanded);
+    setExpandedCategories((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(categoryId)) {
+        updated.delete(categoryId);
+      } else {
+        updated.add(categoryId);
+      }
+      return updated;
+    });
   };
 
+  // Map active components to the corresponding UI
   const renderActiveComponent = () => {
-    switch (activeComponent) {
-      case "addNewInventoryForm":
-        return <AddInventoryForm />;
-      default:
-        return <p>Select a component to display.</p>;
-    }
+    const componentMap: Record<string, React.ReactNode> = {
+      addNewInventoryForm: (
+        <AddInventoryForm
+          onComplete={() => {
+            setActiveComponent(null); // Reset to default view
+          }}
+        />
+      ),
+    };
+
+    return componentMap[activeComponent] || (
+      <p className="text-center text-muted-foreground">
+        Welcome to Inventory Management. Please select an action.
+      </p>
+    );
   };
 
+  // Render the category tree
   const renderCategoryTree = (categories: Category[], level = 0) => {
+    if (categories.length === 0) {
+      return (
+        <p className="text-muted-foreground text-sm">No categories available.</p>
+      );
+    }
+
     return categories.map((category) => (
-      <div key={category.id}>
+      <div key={category.id} role="treeitem" aria-expanded={expandedCategories.has(category.id)}>
         <div
           className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer ${
             selectedCategory === category.id ? "bg-accent" : ""
@@ -144,86 +145,46 @@ export default function InventoryManagementTab() {
           <div>
             <Button
               className="bg-gray-400 w-[1rem] h-[2rem]"
-              onClick={()=>setActiveComponent("addNewInventoryForm")}
+              onClick={() => setActiveComponent("addNewInventoryForm")}
+              aria-label="Add New Inventory"
             >
               <Plus />
             </Button>
           </div>
         </div>
-        {renderCategoryTree(categories)}
+        <div role="tree">{renderCategoryTree(categories)}</div>
       </div>
 
       {/* Main content */}
       <div className="flex-1 p-6 h-full overflow-hidden">
-        <div className="flex justify-between items-center mb-6">
-          <div className="relative w-96">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search equipment..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        {!activeComponent && (
+          <div className="flex justify-between items-center mb-6">
+            <div className="relative w-96">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search equipment..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search equipment"
+              />
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Equipment
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Add New Equipment</DialogTitle>
+                </DialogHeader>
+                {/* Add equipment form content */}
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Equipment
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add New Equipment</DialogTitle>
-              </DialogHeader>
-              {/* Add equipment form here */}
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Brand Name</TableHead>
-                <TableHead>Introduction Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {inventoryItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>{item.brandName}</TableCell>
-                  <TableCell>{item.introductionDate}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs capitalize
-                      ${
-                        item.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : item.status === "maintenance"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm">
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div> */}
+        )}
         <div className="h-full overflow-y-auto">{renderActiveComponent()}</div>
       </div>
     </div>

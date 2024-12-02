@@ -24,8 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/hooks/use-toast";
-
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -51,9 +57,14 @@ const formSchema = z.object({
   }),
 });
 
-export function AddInventoryForm() {
+interface AddInventoryFormProps {
+  onComplete: () => void; // Callback for when form is cancelled or completed
+}
+
+export function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast()
+  const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false); // State for the confirmation popup
+  const { toast } = useToast();
 
   const departmentOptions = [
     { value: "swimming", label: "Swimming" },
@@ -87,202 +98,213 @@ export function AddInventoryForm() {
       description: "New inventory has been successfully created.",
     });
     form.reset();
+    onComplete();
   }
+
+  const handleCancel = () => {
+    form.reset();
+    setIsCancelPopupOpen(false);
+    toast({
+      title: "Form Cancelled",
+      description: "You have cancelled the form.",
+    });
+    onComplete();
+  };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Inventory Name */}
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Inventory Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter inventory name" {...field} />
-              </FormControl>
-              <FormDescription>
-                The name of the new inventory category.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Description */}
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Describe the inventory category"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Provide a brief description of this inventory category.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Location */}
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter location" {...field} />
-              </FormControl>
-              <FormDescription>
-                Where is this inventory located within the rec center?
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Department */}
-        <FormField
-          control={form.control}
-          name="department"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Department</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+        {/* Grid layout for form fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Inventory Name */}
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Inventory Name</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a department" />
-                  </SelectTrigger>
+                  <Input placeholder="Enter inventory name" {...field} />
                 </FormControl>
-                <SelectContent>
-                  {departmentOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Select the department this inventory belongs to.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormDescription>
+                  The name of the new inventory category.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Manager */}
-        <FormField
-          control={form.control}
-          name="manager"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Manager</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter manager's name" {...field} />
-              </FormControl>
-              <FormDescription>
-                Who is responsible for managing this inventory?
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          {/* Description */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem className="col-span-1 md:col-span-2 lg:col-span-3">
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describe the inventory category"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Provide a brief description of this inventory category.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Quantity */}
-        <FormField
-          control={form.control}
-          name="quantity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Quantity</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Enter quantity"
-                  {...field}
-                  min={1}
-                />
-              </FormControl>
-              <FormDescription>
-                Specify the initial stock quantity for this inventory item.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          {/* Location */}
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter location" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Where is this inventory located within the rec center?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Cost */}
-        <FormField
-          control={form.control}
-          name="cost"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cost</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Enter cost"
-                  {...field}
-                  min={0}
-                  step={0.01}
-                />
-              </FormControl>
-              <FormDescription>
-                Specify the cost of this inventory item.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          {/* Department */}
+          <FormField
+            control={form.control}
+            name="department"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Department</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a department" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {departmentOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Select the department this inventory belongs to.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Submit and Reset Buttons */}
+          {/* Manager */}
+          <FormField
+            control={form.control}
+            name="manager"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Manager</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter manager's name" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Who is responsible for managing this inventory?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Quantity */}
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantity</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter quantity"
+                    {...field}
+                    min={1}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Specify the initial stock quantity for this inventory item.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Cost */}
+          <FormField
+            control={form.control}
+            name="cost"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cost</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter cost"
+                    {...field}
+                    min={0}
+                    step={0.01}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Specify the cost of this inventory item.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Submit and Cancel Buttons */}
         <div className="flex space-x-4">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <div className="flex items-center">
-                <svg
-                  className="animate-spin h-5 w-5 mr-2 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4l4-4-4-4v4a8 8 0 01-8 8H0l4 4 4-4H4z"
-                  ></path>
-                </svg>
-                Adding...
-              </div>
-            ) : (
-              "Add Inventory"
-            )}
+            {isSubmitting ? "Adding..." : "Add Inventory"}
           </Button>
           <Button
             type="button"
-            variant="secondary"
-            onClick={() => form.reset()}
+            variant="destructive"
+            onClick={() => setIsCancelPopupOpen(true)}
           >
-            Reset
+            Cancel
           </Button>
         </div>
       </form>
+
+      {/* Confirmation Popup */}
+      {isCancelPopupOpen && (
+        <Dialog open={isCancelPopupOpen} onOpenChange={setIsCancelPopupOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Cancellation</DialogTitle>
+              <p>Are you sure you want to cancel this form? Unsaved changes will be lost.</p>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setIsCancelPopupOpen(false)}>
+                No, Go Back
+              </Button>
+              <Button variant="destructive" onClick={handleCancel}>
+                Yes, Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </Form>
   );
 }
