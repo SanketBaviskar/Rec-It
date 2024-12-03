@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 const Sidebar = ({ onItemClick }) => {
-  
   const [openSections, setOpenSections] = useState({});
 
   const toggleSection = (sectionName) => {
@@ -37,6 +36,7 @@ const Sidebar = ({ onItemClick }) => {
     { name: "Products & Equipment" },
     { name: "Programs" },
     { name: "Sales" },
+    { name: "Services" },
     { name: "Security" },
     { name: "Towel Service" },
     { name: "Utilities" },
@@ -58,27 +58,35 @@ const Sidebar = ({ onItemClick }) => {
                   ? "hover:bg-gray-700"
                   : "hover:bg-gray-700 bg-transparent"
               }`}
+              role="menuitem"
+              aria-expanded={!!openSections[item.name]}
             >
               <span className="text-sm font-medium">{item.name}</span>
               {item.subItems && (
-                <span>
-                  {openSections[item.name] ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
+                <span
+                  className={`transform transition-transform duration-300 ${
+                    openSections[item.name] ? "rotate-90" : ""
+                  }`}
+                >
+                  <ChevronRight className="w-4 h-4" />
                 </span>
               )}
             </div>
 
-            {/* Submenu */}
-            {item.subItems && openSections[item.name] && (
-              <ul className="mt-1 ml-4 space-y-1">
+            {/* Submenu with Animation */}
+            {item.subItems && (
+              <ul
+                className={`mt-1 ml-4 space-y-1 submenu ${
+                  openSections[item.name] ? "submenu-expanded" : "submenu-collapsed"
+                }`}
+                role="menu"
+              >
                 {item.subItems.map((subItem) => (
                   <li
                     key={subItem}
                     className="p-2 text-sm rounded-md cursor-pointer hover:bg-gray-700"
                     onClick={() => onItemClick(subItem)}
+                    role="menuitem"
                   >
                     {subItem}
                   </li>

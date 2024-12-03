@@ -190,3 +190,24 @@ textarea, input {
   border: 1px solid #ccc; /* Ensure consistent border width */
   width: 100%;            /* Use the full width of the container */
 }
+
+
+/* Sidebar Animation */
+.submenu {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.submenu-collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.submenu-expanded {
+  max-height: 500px; /* Adjust based on content */
+  opacity: 1;
+}
+
+.rotate-90 {
+  transform: rotate(90deg);
+}
