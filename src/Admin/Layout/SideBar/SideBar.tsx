@@ -13,7 +13,9 @@ const Sidebar = ({ onItemClick }) => {
 
   const menuItems = [
     { name: "General Settings" },
-    { name: "Access" },
+    { name: "Access",
+      subItems: ["Access Settings", "Access Profiles", "Identification Types", "Suspension Settings"],
+    },
     { name: "Accounting" },
     { name: "Calendars" },
     { name: "Documents & Templates" },

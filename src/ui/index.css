@@ -16,6 +16,24 @@ input:focus {
   outline: #a8bbbf;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Ensures the content takes the full height of the viewport */
+  overflow: hidden; /* Prevents unwanted scrollbars */
+}
+
+#root, .app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.content {
+  flex-grow: 1;
+  overflow-y: auto; /* Allows vertical scrolling */
+}
+
 a {
   font-weight: 500;
   color: #646cff;
