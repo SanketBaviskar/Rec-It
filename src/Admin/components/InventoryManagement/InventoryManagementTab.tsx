@@ -31,11 +31,12 @@ export default function InventoryManagementTab() {
   const categories: Category[] = [
     {
       id: "1",
-      name: "Facility Access Sets",
-      items: 5,
+      name: "Outdoor Adventure",
+      items: 10,
       subCategories: [
-        { id: "1-1", name: "BS Program Only", items: 3 },
-        { id: "1-2", name: "CW Program Only", items: 2 },
+        { id: "2-1", name: "Basketball", items: 5 },
+        { id: "2-2", name: "Vollyball", items: 2 },
+        { id: "2-3", name: "Table Tennis", items: 8 },
       ],
     },
     {
