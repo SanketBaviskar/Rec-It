@@ -36,7 +36,7 @@ interface AccessSettingsFormProps {
   onComplete: () => void; // Callback for when form is cancelled or completed
 }
 
-export function AccessSettingsForm({ onComplete }: AccessSettingsFormProps) {
+export default function AccessSettingsTab({ onComplete }: AccessSettingsFormProps) {
   const [isSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({

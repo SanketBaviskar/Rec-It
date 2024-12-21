@@ -1,27 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import {AccessSettingsForm} from "./AccessSettingTab";
+import AccessSettingsTab from "./AccessSettingTab";
 // import AccessProfiles from "./AccessProfiles";
 // import IdentificationTypes from "./IdentificationTypes";
-// import SuspensionSettings from "./SuspensionSettings";
+import SuspensionSettingsTab from "./SuspensionSettingTab";
 
 type ActiveComponent =
-  | "accessSettingsForm"
+  | "accessSettingsTab"
   | "accessProfiles"
   | "identificationTypes"
-  | "suspensionSettings";
+  | "suspensionSettingsTab";
 
-export default function InventoryManagementTab() {
+export default function AccessManagementTab() {
   const [activeComponent, setActiveComponent] = useState<ActiveComponent>(
-    "accessSettingsForm"
+    "accessSettingsTab"
   ); // Default to the first component
 
   const renderActiveComponent = () => {
     const componentMap: Record<ActiveComponent, React.ReactNode> = {
-      accessSettingsForm: (
-        <AccessSettingsForm
-          onComplete={() => setActiveComponent("accessSettingsForm")}
+      accessSettingsTab: (
+        <AccessSettingsTab
+          onComplete={() => setActiveComponent("accessSettingsTab")}
         />
       ),
       // accessProfiles: (
@@ -34,11 +34,11 @@ export default function InventoryManagementTab() {
       //     onComplete={() => setActiveComponent("identificationTypes")}
       //   />
       // ),
-      // suspensionSettings: (
-      //   <SuspensionSettings
-      //     onComplete={() => setActiveComponent("suspensionSettings")}
-      //   />
-      // ),
+      suspensionSettingsTab: (
+        <SuspensionSettingsTab
+          onComplete={() => setActiveComponent("suspensionSettingsTab")}
+        />
+      ),
     };
 
     return componentMap[activeComponent];
