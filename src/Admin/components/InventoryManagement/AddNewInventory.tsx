@@ -222,53 +222,6 @@ export function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
               </FormItem>
             )}
           />
-
-          {/* Quantity */}
-          <FormField
-            control={form.control}
-            name="quantity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Quantity</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="Enter quantity"
-                    {...field}
-                    min={1}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Specify the initial stock quantity for this inventory item.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Cost */}
-          <FormField
-            control={form.control}
-            name="cost"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cost</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="Enter cost"
-                    {...field}
-                    min={0}
-                    step={0.01}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Specify the cost of this inventory item.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         {/* Submit and Cancel Buttons */}
@@ -292,10 +245,16 @@ export function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Confirm Cancellation</DialogTitle>
-              <p>Are you sure you want to cancel this form? Unsaved changes will be lost.</p>
+              <p>
+                Are you sure you want to cancel this form? Unsaved changes will
+                be lost.
+              </p>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setIsCancelPopupOpen(false)}>
+              <Button
+                variant="ghost"
+                onClick={() => setIsCancelPopupOpen(false)}
+              >
                 No, Go Back
               </Button>
               <Button variant="destructive" onClick={handleCancel}>

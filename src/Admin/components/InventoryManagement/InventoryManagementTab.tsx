@@ -1,18 +1,11 @@
-"use client";
-
 import { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import { AddInventoryForm } from "./AddNewInventory";
 import CategoryTree from "./CatagoryTree";
+import { AddNewEquipmentForm } from "./AddNewEquipment";
 
 interface Category {
   id: string;
@@ -59,12 +52,20 @@ export default function InventoryManagementTab() {
           }}
         />
       ),
+      addNewEquipmentForm: (
+        <AddNewEquipmentForm
+          categoryId={selectedCategory}
+          onComplete={() => setActiveComponent(null)}
+        />
+      ),
     };
 
-    return componentMap[activeComponent] || (
-      <p className="text-center text-muted-foreground">
-        Welcome to Inventory Management. Please select an action.
-      </p>
+    return (
+      componentMap[activeComponent] || (
+        <p className="text-center text-muted-foreground">
+          Welcome to Inventory Management. Please select an action.
+        </p>
+      )
     );
   };
 
@@ -102,19 +103,6 @@ export default function InventoryManagementTab() {
                 aria-label="Search equipment"
               />
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Equipment
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Add New Equipment</DialogTitle>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
           </div>
         )}
         <div className="h-full overflow-y-auto">{renderActiveComponent()}</div>

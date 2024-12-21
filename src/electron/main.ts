@@ -16,6 +16,7 @@ app.on('ready', () => {
       nodeIntegration: false, // Disable Node.js in Renderer
       contextIsolation: true, // Protect against prototype pollution
       preload: path.join(__dirname, 'preload.js') // Correct path to preload script
+      // for full width and height 
     }
   });
 
