@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -32,6 +32,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
+
+// Type for department from API
+interface Department {
+  id: number;
+  name: string;
+  departmentIcon: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -63,17 +74,39 @@ interface AddInventoryFormProps {
 
 export function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false); // State for the confirmation popup
+  const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
   const { toast } = useToast();
 
-  const departmentOptions = [
-    { value: "swimming", label: "Swimming" },
-    { value: "rockClimbing", label: "Rock Climbing" },
-    { value: "weightFloor", label: "Weight Floor" },
-    { value: "cardioFloor", label: "Cardio Floor" },
-    { value: "courts", label: "Courts" },
-    { value: "general", label: "General" },
-  ];
+  // Fetch departments on component mount
+  useEffect(() => {
+    const loadDepartments = async () => {
+      try {
+        setIsLoadingDepartments(true);
+        const response = await fetchInventoryCategories();
+        if (response.status === "success" && response.data?.items) {
+          setDepartments(response.data.items);
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to load departments",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load departments",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingDepartments(false);
+      }
+    };
+
+    loadDepartments();
+  }, [toast]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -183,18 +216,31 @@ export function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  disabled={isLoadingDepartments}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a department" />
+                      <SelectValue
+                        placeholder={
+                          isLoadingDepartments
+                            ? "Loading departments..."
+                            : "Select a department"
+                        }
+                      />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {departmentOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+                    {isLoadingDepartments ? (
+                      <div className="flex items-center justify-center p-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </div>
+                    ) : (
+                      departments.map((dept) => (
+                        <SelectItem key={dept.id} value={dept.id.toString()}>
+                          {dept.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
                 <FormDescription>
@@ -226,7 +272,7 @@ export function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
 
         {/* Submit and Cancel Buttons */}
         <div className="flex space-x-4">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting || isLoadingDepartments}>
             {isSubmitting ? "Adding..." : "Add Inventory"}
           </Button>
           <Button
