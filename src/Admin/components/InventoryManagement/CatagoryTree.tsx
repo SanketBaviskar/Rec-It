@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { ChevronRight, EllipsisVertical } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { ChevronRight, EllipsisVertical, Loader2 } from "lucide-react";
 
 interface Category {
   id: string;
@@ -11,13 +11,15 @@ interface Category {
 interface CategoryTreeProps {
   categories: Category[];
   onCategorySelect: (categoryId: string | null) => void;
-  onAddEquipment?: () => void;
+  onAddEquipment?: (categoryId: string) => void;
+  isLoading?: boolean;
 }
 
 const CategoryTree: React.FC<CategoryTreeProps> = ({
   categories,
   onCategorySelect,
-  onAddEquipment
+  onAddEquipment,
+  isLoading = false
 }) => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -34,7 +36,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = useCallback((id: string) => {
     setExpanded(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -44,24 +46,37 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
       }
       return newSet;
     });
-  };
+  }, []);
 
-  const handleCategoryClick = (category: Category) => {
+  const handleCategoryClick = useCallback((category: Category) => {
     onCategorySelect(category.id);
     if (category.subCategories?.length) toggleExpand(category.id);
-  };
+  }, [onCategorySelect, toggleExpand]);
 
-  const menuActions = [
-    { label: "Add Equipment", action: () => onAddEquipment?.() },
+  const menuActions = useMemo(() => [
+    { 
+      label: "Add Equipment", 
+      action: (categoryId: string) => onAddEquipment?.(categoryId) 
+    },
     { label: "Delete Equipment", action: () => {} },
     { label: "Rename", action: () => {} },
-  ];
+  ], [onAddEquipment]);
 
-  const renderCategory = (category: Category, level: number) => (
-    <div key={category.id} className="group">
-      <div className="flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-accent"
-           style={{ paddingLeft: `${level * 20 + 8}px` }}>
-        <div className="flex-1 flex items-center" onClick={() => handleCategoryClick(category)}>
+  const renderCategory = useCallback((category: Category, level: number) => (
+    <div key={category.id} className="group relative">
+      <div 
+        className="flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-accent"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleCategoryClick(category);
+          if (e.key === 'ArrowRight' && !expanded.has(category.id)) toggleExpand(category.id);
+          if (e.key === 'ArrowLeft' && expanded.has(category.id)) toggleExpand(category.id);
+        }}
+      >
+        <div 
+          className="flex-1 flex items-center" 
+          onClick={() => handleCategoryClick(category)}
+        >
           {category.subCategories?.length ? (
             <ChevronRight
               className={`h-4 w-4 transition-transform ${
@@ -91,13 +106,18 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
         <div
           ref={menuRef}
           className="absolute z-10 bg-white shadow-lg rounded-md p-2 border"
+          style={{
+            left: 'calc(100% - 16px)', // Adjust this value as needed
+            top: '0',
+            minWidth: '200px' // Ensure the menu has a minimum width
+          }}
         >
           {menuActions.map((item) => (
             <div
               key={item.label}
               className="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm"
               onClick={() => {
-                item.action();
+                item.action(category.id);
                 setActiveMenu(null);
               }}
             >
@@ -115,11 +135,15 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
         </div>
       )}
     </div>
-  );
+  ), [expanded, activeMenu, handleCategoryClick, menuActions, toggleExpand]);
 
   return (
     <div className="space-y-1" role="tree">
-      {categories.length > 0 ? (
+      {isLoading ? (
+        <div className="p-2 text-muted-foreground text-sm">
+          <Loader2 className="h-4 w-4 animate-spin" />
+        </div>
+      ) : categories.length > 0 ? (
         categories.map((category) => renderCategory(category, 0))
       ) : (
         <p className="text-muted-foreground text-sm px-2">

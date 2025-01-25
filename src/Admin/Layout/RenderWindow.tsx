@@ -27,7 +27,9 @@ export default function RenderWindow({ activeComponent }: { activeComponent: Reg
   
   return (
     <Suspense fallback={<LoadingSpinner />}>
-      <Component />
+      <Component onComplete={function (): void {
+        throw new Error("Function not implemented.");
+      } } categoryId={""} />
     </Suspense>
   );
 }
