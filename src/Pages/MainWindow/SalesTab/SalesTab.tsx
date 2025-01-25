@@ -1,17 +1,7 @@
-"use client";
-
 import { useState } from "react";
-import {
-  UserPlus,
-  Building2,
-  ShoppingCart,
-  X,
-  Plus,
-  Minus,
-} from "lucide-react";
+import { ShoppingCart, X, Plus, Minus } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
-import NewMemberForm from "@/components/AddNewMember/NewmemberForm"; // Adjust the path as needed
-import { NewOrgaAdd } from "@/components/AddNewOrg/NewOrgForm";
+
 
 interface CartItem {
   id: string;
@@ -55,8 +45,6 @@ export default function SalesTab() {
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState("quick");
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isNewMemberFormOpen, setIsNewMemberFormOpen] = useState(false);
-  const [isNewOrgFormOpen, setIsNewOrgFormOpen] = useState(false);
 
   const handleSelectCustomer = (user: any) => {
     setSelectedCustomer(user);
@@ -90,16 +78,6 @@ export default function SalesTab() {
     );
   };
 
-  const handleNewOrgSubmit = (values: {
-    name: string;
-    description?: string;
-    email: string;
-    phone?: string;
-  }) => {
-    setIsNewOrgFormOpen(false);
-    // Perform further actions like API calls here
-  };
-
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -117,21 +95,9 @@ export default function SalesTab() {
                 triggerSearchOnClick={true} // Search only on button click
               />
             </div>
-            <button
-              onClick={() => setIsNewMemberFormOpen(true)}
-              className="px-4 py-2 bg-green-500 text-white rounded-md flex items-center gap-2 hover:bg-green-600"
-            >
-              <UserPlus size={20} />
-              New Member
-            </button>
-            <button
-              onClick={() => setIsNewOrgFormOpen(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center gap-2 hover:bg-blue-600"
-            >
-              <Building2 size={20} />
-              New Organization
-            </button>
-            
+
+            {/* // add new member button
+            // add new org button */}
           </div>
         </div>
 
@@ -185,16 +151,16 @@ export default function SalesTab() {
               <div className="flex justify-between">
                 <h2 className="text-xl font-bold mb-4">Shopping Cart</h2>
                 <button
-              className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full"
-              onClick={() => setIsCartOpen(!isCartOpen)}
-            >
-              <ShoppingCart size={24} />
-              {cart.length > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  {cart.length}
-                </span>
-              )}
-            </button>
+                  className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+                  onClick={() => setIsCartOpen(!isCartOpen)}
+                >
+                  <ShoppingCart size={24} />
+                  {cart.length > 0 && (
+                    <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      {cart.length}
+                    </span>
+                  )}
+                </button>
                 {cart.length > 0 && (
                   <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                     {cart.length}
@@ -273,15 +239,6 @@ export default function SalesTab() {
           </div>
         </div>
       </div>
-      <NewMemberForm
-        isOpen={isNewMemberFormOpen}
-        onClose={() => setIsNewMemberFormOpen(false)}
-      />
-      <NewOrgaAdd
-        isOpen={isNewOrgFormOpen}
-        onClose={() => setIsNewOrgFormOpen(false)}
-        onSubmit={handleNewOrgSubmit}
-      />
     </>
   );
 }

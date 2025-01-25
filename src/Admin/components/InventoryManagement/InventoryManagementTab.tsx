@@ -2,11 +2,15 @@ import { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import { AddInventoryForm } from "./AddNewInventory";
 import CategoryTree from "./CatagoryTree";
 import { AddNewEquipmentForm } from "./AddNewEquipment";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 interface Category {
   id: string;
   name: string;
@@ -74,14 +78,23 @@ export default function InventoryManagementTab() {
       {/* Left sidebar */}
       <div className="w-64 border-r bg-background p-4">
         <div className="flex justify-between items-center mb-4">
-          <div className="font-semibold">Equipment Categories</div>
-          <Button
-            className="bg-gray-400 w-[1rem] h-[2rem]"
-            onClick={() => setActiveComponent("addNewInventoryForm")}
-            aria-label="Add New Inventory"
-          >
-            <Plus />
-          </Button>
+          <div className="font-semibold">Inventory List</div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  className="bg-gray-400 w-[1rem] h-[2rem]"
+                  onClick={() => setActiveComponent("addNewInventoryForm")}
+                  aria-label="Add New Inventory"
+                >
+                  <Plus />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add New Inventory</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <CategoryTree
           categories={categories}

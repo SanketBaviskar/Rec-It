@@ -21,7 +21,6 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
     new Set()
   );
 
-
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -56,12 +55,23 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
     }
   };
 
+  const OpenAddEquipmentForm = (e) => {
+    if(e == "true"){
+      // give command to inventorymanagegmenttab thet I want t open the form
+    }
+  };
+
+
+
   const renderMenu = (categoryId: string) => {
     if (activeMenu === categoryId) {
       return (
         <div className="menu" ref={menuRef}>
           <ul className="bg-white shadow-lg rounded-md p-2">
-            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={setActiveComponent("AddNewEquipment")}>
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={OpenAddEquipmentForm("true")}
+            >
               Add Equipment
             </li>
             <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
