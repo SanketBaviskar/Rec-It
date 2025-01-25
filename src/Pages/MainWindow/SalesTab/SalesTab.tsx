@@ -85,8 +85,8 @@ export default function SalesTab() {
       <div className="flex flex-col h-[90vh]">
         {/* Top Bar */}
         <div className="p-4 border-b">
-          <div className="flex items-center gap-4 mx-auto">
-            <div className="flex-1 relative mr-4">
+          <div className="flex gap-4 w-3/4">
+            <div className="flex-1 relative mr-4 ">
               <SearchBar
                 placeholder="Search customers or orders..."
                 onSelect={(user) => handleSelectCustomer(user)} // Set selected user
@@ -95,7 +95,9 @@ export default function SalesTab() {
                 triggerSearchOnClick={true} // Search only on button click
               />
             </div>
+            <div className="">
 
+            </div>
             {/* // add new member button
             // add new org button */}
           </div>

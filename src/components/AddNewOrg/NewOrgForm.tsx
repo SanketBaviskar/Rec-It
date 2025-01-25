@@ -39,7 +39,6 @@ interface NewOrgaAddProps {
 export function NewOrgaAdd({
   isOpen,
   onClose,
-  onSubmit,
   defaultValues = { name: '', description: '', email: '', phone: '' },
 }: NewOrgaAddProps) {
   const form = useForm<FormValues>({

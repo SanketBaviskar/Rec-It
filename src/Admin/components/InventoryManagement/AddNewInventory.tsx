@@ -72,7 +72,7 @@ interface AddInventoryFormProps {
   onComplete: () => void; // Callback for when form is cancelled or completed
 }
 
-export function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
+export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -94,7 +94,7 @@ export function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
             variant: "destructive",
           });
         }
-      } catch (error) {
+      } catch {
         toast({
           title: "Error",
           description: "Failed to load departments",

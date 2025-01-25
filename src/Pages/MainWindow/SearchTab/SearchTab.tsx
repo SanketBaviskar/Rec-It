@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EditMemberProfile from "@/components/EditMemberProfile/EditMemberProfile";
+import AddNewMemberBtn from "@/components/Buttons/AddNewMemberBtn";
+import AddNewOrgBtn from "@/components/Buttons/AddNewOrgBtn";
 
 interface User {
   id: string;
@@ -103,6 +105,11 @@ export default function SearchTab() {
             ))}
           </div>
         </ScrollArea>
+
+        <div className="flex gap-4">
+            <AddNewMemberBtn/>
+            <AddNewOrgBtn/>
+        </div>
       </div>
 
       {/* Right Side - Member Details */}

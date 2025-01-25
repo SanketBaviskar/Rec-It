@@ -4,7 +4,9 @@ import { useState } from "react";
 
 export default function AddNewOrgBtn() {
   const [isNewOrgFormOpen, setIsNewOrgFormOpen] = useState(false);
-
+  const handleNewOrgSubmit = () => {
+    alert("new form submitted")
+  }
   return (
     <>
       <button

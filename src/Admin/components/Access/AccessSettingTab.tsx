@@ -32,11 +32,7 @@ const formSchema = z.object({
   enableGroupAccessMembers: z.boolean().default(true),
 });
 
-interface AccessSettingsFormProps {
-  onComplete: () => void; // Callback for when form is cancelled or completed
-}
-
-export default function AccessSettingsTab({ onComplete }: AccessSettingsFormProps) {
+export default function AccessSettingsTab() {
   const [isSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -69,14 +65,14 @@ export default function AccessSettingsTab({ onComplete }: AccessSettingsFormProp
           {/* General Settings */}
           <FormField
             control={form.control}
-            name="name"
+            name="enableAccessEvents"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>General Settings</FormLabel>
                 <FormField
                   control={form.control}
                   name="enableAccessEvents"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem className="flex items-start space-x-3 space-y-0">
                       <FormControl>
                         <Checkbox
@@ -142,7 +138,7 @@ export default function AccessSettingsTab({ onComplete }: AccessSettingsFormProp
           {/* Forgot Access Media Settings */}
           <FormField
             control={form.control}
-            name="forgotAccessMediaSettings"
+            name="forgotAccessMediaLimit"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Forgot Access Media Settings</FormLabel>

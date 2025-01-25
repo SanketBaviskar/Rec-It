@@ -1,91 +1,72 @@
 import React, { useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { RegisteredComponents } from "./componentRegistry";
 
-const Sidebar = ({ onItemClick }) => {
-  const [openSections, setOpenSections] = useState({});
+interface SidebarProps {
+  onItemClick: (componentName: RegisteredComponents) => void;
+}
 
-  const toggleSection = (sectionName) => {
-    setOpenSections((prev) => ({
+const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (sectionName: string) => {
+    setOpenSections(prev => ({
       ...prev,
-      [sectionName]: !prev[sectionName],
+      [sectionName]: !prev[sectionName]
     }));
   };
 
   const menuItems = [
-    { name: "General Settings" },
-    { name: "Access",
-      subItems: ["Access Settings", "Access Profiles", "Identification Types", "Suspension Settings"],
+    { 
+      name: "General Settings",
+      subItems: [] as RegisteredComponents[]
     },
-    //{ name: "Accounting" },
-    //{ name: "Calendars" },
-    // { name: "Documents & Templates" },
-    //{      name: "Facility",      subItems: ["Facility Settings", "Facilities", "Facility Rental Products"],    },
-    // { name: "Booking" },
-    // { name: "Guest Passes" },
-    // { name: "Integration" },
+    { 
+      name: "Access",
+      subItems: [
+        "Access Settings",
+        "Access Profiles",
+        "Identification Types",
+        "Suspension Settings"
+      ] as RegisteredComponents[]
+    },
     {
       name: "Inventory Management",
-      subItems: ["Manage Inventory", "Reports"],
+      subItems: ["Manage Inventory", "Reports"] as RegisteredComponents[]
     },
-    // { name: "Kiosk" },
-    // { name: "Locker Service" },
-    // { name: "Memberships" },
-    // { name: "Multi-Visit Passes" },
-    // { name: "Parking Permits" },
-    // { name: "Products & Equipment" },
-    // { name: "Programs" },
-    // { name: "Sales" },
-    // { name: "Services" },
-    // { name: "Security" },
-    // { name: "Towel Service" },
-    // { name: "Utilities" },
   ];
 
   return (
-    <div className="h-full bg-gray-800 text-white p-4 overflow-y-auto scrollbar-hide">
-      <ul className="space-y-1">
+    <div className="h-full bg-gray-800 text-white p-4 overflow-y-auto">
+      <ul className="space-y-2">
         {menuItems.map((item) => (
-          <li key={item.name} className="group">
-            {/* Main Menu Item */}
+          <li key={item.name}>
             <div
               onClick={() => {
-                if (!item.subItems) onItemClick(item.name);
+                if (!item.subItems.length) onItemClick(item.name as RegisteredComponents);
                 toggleSection(item.name);
               }}
               className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
-                item.subItems
-                  ? "hover:bg-gray-700"
-                  : "hover:bg-gray-700 bg-transparent"
+                item.subItems.length ? "hover:bg-gray-700" : "hover:bg-gray-600"
               }`}
-              role="menuitem"
-              aria-expanded={!!openSections[item.name]}
             >
               <span className="text-sm font-medium">{item.name}</span>
-              {item.subItems && (
-                <span
-                  className={`transform transition-transform duration-300 ${
+              {item.subItems.length > 0 && (
+                <ChevronRight
+                  className={`w-4 h-4 transition-transform ${
                     openSections[item.name] ? "rotate-90" : ""
                   }`}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </span>
+                />
               )}
             </div>
 
-            {/* Submenu with Animation */}
-            {item.subItems && (
-              <ul
-                className={`mt-1 ml-4 space-y-1 submenu ${
-                  openSections[item.name] ? "submenu-expanded" : "submenu-collapsed"
-                }`}
-                role="menu"
-              >
+            {item.subItems.length > 0 && openSections[item.name] && (
+              <ul className="ml-4 space-y-1">
                 {item.subItems.map((subItem) => (
                   <li
                     key={subItem}
                     className="p-2 text-sm rounded-md cursor-pointer hover:bg-gray-700"
                     onClick={() => onItemClick(subItem)}
-                    role="menuitem"
                   >
                     {subItem}
                   </li>

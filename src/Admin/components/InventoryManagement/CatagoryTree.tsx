@@ -11,154 +11,123 @@ interface Category {
 interface CategoryTreeProps {
   categories: Category[];
   onCategorySelect: (categoryId: string | null) => void;
+  onAddEquipment?: () => void;
 }
 
 const CategoryTree: React.FC<CategoryTreeProps> = ({
   categories,
   onCategorySelect,
+  onAddEquipment
 }) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set()
-  );
-
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setActiveMenu(null); // Close the menu if clicking outside of it
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setActiveMenu(null);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleCategory = (categoryId: string) => {
-    setExpandedCategories((prev) => {
-      const updated = new Set(prev);
-      if (updated.has(categoryId)) {
-        updated.delete(categoryId);
+  const toggleExpand = (id: string) => {
+    setExpanded(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
       } else {
-        updated.add(categoryId);
+        newSet.add(id);
       }
-      return updated;
+      return newSet;
     });
   };
 
-  const handleMenuClick = (categoryId: string) => {
-    if (activeMenu === categoryId) {
-      setActiveMenu(null); // Close if already open
-    } else {
-      setActiveMenu(categoryId); // Open the menu for the clicked category
-    }
+  const handleCategoryClick = (category: Category) => {
+    onCategorySelect(category.id);
+    if (category.subCategories?.length) toggleExpand(category.id);
   };
 
-  const OpenAddEquipmentForm = (e) => {
-    if(e == "true"){
-      // give command to inventorymanagegmenttab thet I want t open the form
-    }
-  };
+  const menuActions = [
+    { label: "Add Equipment", action: () => onAddEquipment?.() },
+    { label: "Delete Equipment", action: () => {} },
+    { label: "Rename", action: () => {} },
+  ];
 
-
-
-  const renderMenu = (categoryId: string) => {
-    if (activeMenu === categoryId) {
-      return (
-        <div className="menu" ref={menuRef}>
-          <ul className="bg-white shadow-lg rounded-md p-2">
-            <li
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={OpenAddEquipmentForm("true")}
-            >
-              Add Equipment
-            </li>
-            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-              Delete Equipment
-            </li>
-            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-              Rename
-            </li>
-          </ul>
+  const renderCategory = (category: Category, level: number) => (
+    <div key={category.id} className="group">
+      <div className="flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-accent"
+           style={{ paddingLeft: `${level * 20 + 8}px` }}>
+        <div className="flex-1 flex items-center" onClick={() => handleCategoryClick(category)}>
+          {category.subCategories?.length ? (
+            <ChevronRight
+              className={`h-4 w-4 transition-transform ${
+                expanded.has(category.id) ? "rotate-90" : ""
+              }`}
+            />
+          ) : (
+            <div className="w-4" />
+          )}
+          <span className="ml-1">{category.name}</span>
         </div>
-      );
-    }
-  };
 
-  const renderCategoryTree = (categories: Category[], level = 0) => {
-    if (categories.length === 0) {
-      return (
-        <p className="text-muted-foreground text-sm">
-          No categories available.
-        </p>
-      );
-    }
-
-    return categories.map((category) => (
-      <div
-        key={category.id}
-        role="treeitem"
-        aria-expanded={expandedCategories.has(category.id)}
-      >
-        <div
-          className="flex items-center gap-1 px-2 py-1.5 cursor-pointer"
-          style={{ paddingLeft: `${level * 20 + 8}px` }}
-        >
-          {/* Left side: Chevron and Category Name */}
+        {category.subCategories?.length && (
           <div
-            className="flex-1 flex items-center hover:bg-accent cursor-pointer"
-            onClick={() => {
-              onCategorySelect(category.id);
-              if (category.subCategories?.length) {
-                toggleCategory(category.id);
-              }
+            className="p-2 hover:bg-accent/50 rounded-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveMenu(activeMenu === category.id ? null : category.id);
             }}
           >
-            {category.subCategories?.length ? (
-              <span
-                className={`transform transition-transform duration-300 p-1 ${
-                  expandedCategories.has(category.id) ? "rotate-90" : ""
-                }`}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </span>
-            ) : (
-              <div className="w-4" /> // Empty space when no subcategories exist
-            )}
-            <span>{category.name}</span>
-          </div>
-
-          {/* Right side: Menu Icon */}
-          {category.subCategories?.length > 0 && (
-            <div
-              className="hover:bg-accent p-2 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent category toggle when clicking the menu
-                handleMenuClick(category.id);
-              }}
-            >
-              <EllipsisVertical className="h-4 w-4" />
-            </div>
-          )}
-        </div>
-        {renderMenu(category.id)}
-        {expandedCategories.has(category.id) && category.subCategories && (
-          <div
-            className={`submenu ${
-              expandedCategories.has(category.id)
-                ? "submenu-expanded"
-                : "submenu-collapsed"
-            }`}
-          >
-            {renderCategoryTree(category.subCategories, level + 1)}
+            <EllipsisVertical className="h-4 w-4" />
           </div>
         )}
       </div>
-    ));
-  };
 
-  return <div role="tree">{renderCategoryTree(categories)}</div>;
+      {activeMenu === category.id && (
+        <div
+          ref={menuRef}
+          className="absolute z-10 bg-white shadow-lg rounded-md p-2 border"
+        >
+          {menuActions.map((item) => (
+            <div
+              key={item.label}
+              className="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm"
+              onClick={() => {
+                item.action();
+                setActiveMenu(null);
+              }}
+            >
+              {item.label}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {expanded.has(category.id) && category.subCategories && (
+        <div className="ml-4">
+          {category.subCategories.map((subCategory) =>
+            renderCategory(subCategory, level + 1)
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-1" role="tree">
+      {categories.length > 0 ? (
+        categories.map((category) => renderCategory(category, 0))
+      ) : (
+        <p className="text-muted-foreground text-sm px-2">
+          No categories available
+        </p>
+      )}
+    </div>
+  );
 };
 
 export default CategoryTree;

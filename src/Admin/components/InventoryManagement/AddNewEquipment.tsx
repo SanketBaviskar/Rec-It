@@ -37,7 +37,12 @@ const formSchema = z.object({
   location: z.string().min(2, { message: "Location must be at least 2 characters." }),
 });
 
-export function AddNewEquipmentForm({ onComplete , categoryId } ) {
+interface AddNewEquipmentFormProps {
+  onComplete: () => void;
+  categoryId: string;
+}
+
+export default function AddNewEquipmentForm({ onComplete }: AddNewEquipmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
   const { toast } = useToast();
