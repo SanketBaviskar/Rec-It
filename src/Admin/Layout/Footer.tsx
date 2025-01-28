@@ -1,20 +1,20 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { HelpCircle, Wifi, User } from 'lucide-react'
+import { HelpCircle, Wifi, User, ArrowBigLeft } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
+import { useNavigate } from "react-router-dom";
 export default function AdminDashboardFooter() {
   // These would typically come from your app's state or context
   const computerName = "REC-CENTER-PC1"
   const loggedInUser = "John Doe"
   const appVersion = "v1.0.3"
-
+  const navigate = useNavigate();
   return (
     <footer className="fixed bottom-0 left-0 right-0 border-t bg-background h-[3vh] px-1 text-[10px]">
       <div className="h-full mx-auto flex items-center justify-between">
@@ -22,9 +22,20 @@ export default function AdminDashboardFooter() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={() => navigate("/dashboard")}>
+                  <ArrowBigLeft className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>Back to Main Window</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
                   <HelpCircle className="h-3 w-3" />
-                  <span className="sr-only">Help</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top">

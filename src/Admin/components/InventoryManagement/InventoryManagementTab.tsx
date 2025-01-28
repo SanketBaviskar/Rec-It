@@ -5,42 +5,17 @@ import { Input } from "@/components/ui/input";
 import CategoryTree from "./CatagoryTree";
 import { RegisteredComponents } from "../componentRegistry";
 import RenderWindow from "@/Admin/Layout/RenderWindow";
-
-interface Category {
-  id: string;
-  name: string;
-  items: number;
-  subCategories?: Category[];
-}
+import { categories } from "./dummy";
 
 export default function InventoryManagementTab() {
   const [activeComponent, setActiveComponent] = useState<RegisteredComponents | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const categories: Category[] = [
-    {
-      id: "1",
-      name: "Sports Equipment",
-      items: 10,
-      subCategories: [
-        { id: "2-1", name: "Basketball", items: 5 },
-        { id: "2-2", name: "Volleyball", items: 2 },
-        { id: "2-3", name: "Table Tennis", items: 8 },
-      ],
-    },
-    {
-      id: "2",
-      name: "Outdoor Adventure",
-      items: 10,
-      subCategories: [
-        { id: "2-1", name: "Bike Shop", items: 5 },
-        { id: "2-2", name: "Rental Shop", items: 5 },
-      ],
-    },
-  ];
-
-  const handleFormComplete = () => setActiveComponent(null);
+  // Add a handler for category selection
+  const handleCategorySelect = (categoryId: string) => {
+    console.log("Selected category ID:", categoryId);
+    // Additional logic for handling category selection can be added here
+  };
 
   return (
     <div className="flex h-full">
@@ -59,7 +34,7 @@ export default function InventoryManagementTab() {
         </div>
         <CategoryTree
           categories={categories}
-          onCategorySelect={setSelectedCategory}
+          onCategorySelect={handleCategorySelect}
           onAddEquipment={() => setActiveComponent("AddNewEquipmentForm")}
         />
       </div>

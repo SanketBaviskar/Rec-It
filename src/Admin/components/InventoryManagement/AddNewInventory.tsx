@@ -1,10 +1,8 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -34,6 +32,7 @@ import {
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
+import { categories } from "./dummy";
 
 // Type for department from API
 interface Department {
@@ -43,6 +42,8 @@ interface Department {
   createdAt: string;
   updatedAt: string;
 }
+
+const allCategories = [...categories]; // Create a mutable copy of categories
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -60,10 +61,10 @@ const formSchema = z.object({
   manager: z.string().min(2, {
     message: "Manager name must be at least 2 characters.",
   }),
-  quantity: z.number().min(1, {
+  quantity: z.coerce.number().min(1, {
     message: "Quantity must be at least 1.",
   }),
-  cost: z.number().min(0, {
+  cost: z.coerce.number().min(0, {
     message: "Cost must be a positive value.",
   }),
 });
@@ -104,7 +105,6 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
         setIsLoadingDepartments(false);
       }
     };
-
     loadDepartments();
   }, [toast]);
 
@@ -122,9 +122,14 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulating API call
     console.log(values);
+
+    // Add the new inventory to allCategories array
+    createNewInventory(values);
+
     setIsSubmitting(false);
     toast({
       title: "Inventory Added",
@@ -142,6 +147,22 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
       description: "You have cancelled the form.",
     });
     onComplete();
+  };
+
+  // Create new inventory and add it to the allCategories array
+  const createNewInventory = (values: z.infer<typeof formSchema>) => {
+    const newCategory = {
+      id: allCategories.length + 1, // Assuming unique ID based on length
+      name: values.name,
+      description: values.description,
+      location: values.location,
+      department: values.department,
+      manager: values.manager,
+      quantity: values.quantity,
+      cost: values.cost,
+    };
+    allCategories.push(newCategory);
+    console.log("Updated Categories:", allCategories);
   };
 
   return (
@@ -166,7 +187,6 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
               </FormItem>
             )}
           />
-
           {/* Description */}
           <FormField
             control={form.control}
@@ -187,7 +207,6 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
               </FormItem>
             )}
           />
-
           {/* Location */}
           <FormField
             control={form.control}
@@ -205,7 +224,6 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
               </FormItem>
             )}
           />
-
           {/* Department */}
           <FormField
             control={form.control}
@@ -250,7 +268,6 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
               </FormItem>
             )}
           />
-
           {/* Manager */}
           <FormField
             control={form.control}
@@ -268,8 +285,41 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
               </FormItem>
             )}
           />
+          {/* Quantity */}
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantity</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormDescription>
+                  How many units of this inventory do you have?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* Cost */}
+          <FormField
+            control={form.control}
+            name="cost"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cost</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" {...field} />
+                </FormControl>
+                <FormDescription>
+                  What is the cost per unit of this inventory?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-
         {/* Submit and Cancel Buttons */}
         <div className="flex space-x-4">
           <Button type="submit" disabled={isSubmitting || isLoadingDepartments}>
@@ -284,7 +334,6 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
           </Button>
         </div>
       </form>
-
       {/* Confirmation Popup */}
       {isCancelPopupOpen && (
         <Dialog open={isCancelPopupOpen} onOpenChange={setIsCancelPopupOpen}>
