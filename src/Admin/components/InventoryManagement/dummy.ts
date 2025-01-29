@@ -35,6 +35,6 @@ export const categories: Category[] = [
     id: "3",
     name: "Clothing",
     items: 10,
-    subCategories: [],
+    subCategories: [{ id: "2-1", name: "Bike Shop", items: 5 },],
   },
 ];

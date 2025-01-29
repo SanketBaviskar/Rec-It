@@ -34,6 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       name: "Inventory Management",
       subItems: ["Manage Inventory", "Reports"] as RegisteredComponents[]
     },
+    {
+      name: "Memberships and Passes",
+      subItems: ["Membership Settings", "Passes Settings"] as RegisteredComponents[]
+    },
   ];
 
   return (

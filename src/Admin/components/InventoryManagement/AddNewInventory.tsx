@@ -32,8 +32,6 @@ import {
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
-import { categories } from "./dummy";
-
 // Type for department from API
 interface Department {
   id: number;
@@ -42,9 +40,6 @@ interface Department {
   createdAt: string;
   updatedAt: string;
 }
-
-const allCategories = [...categories]; // Create a mutable copy of categories
-
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Inventory name must be at least 2 characters.",
@@ -61,19 +56,15 @@ const formSchema = z.object({
   manager: z.string().min(2, {
     message: "Manager name must be at least 2 characters.",
   }),
-  quantity: z.coerce.number().min(1, {
-    message: "Quantity must be at least 1.",
-  }),
-  cost: z.coerce.number().min(0, {
-    message: "Cost must be a positive value.",
-  }),
 });
 
 interface AddInventoryFormProps {
   onComplete: () => void; // Callback for when form is cancelled or completed
 }
 
-export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) {
+export default function AddInventoryForm({
+  onComplete,
+}: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -115,14 +106,11 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
       description: "",
       location: "",
       department: "",
-      manager: "",
-      quantity: 1,
-      cost: 0,
+      manager: ""
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulating API call
     console.log(values);
@@ -151,18 +139,7 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
 
   // Create new inventory and add it to the allCategories array
   const createNewInventory = (values: z.infer<typeof formSchema>) => {
-    const newCategory = {
-      id: allCategories.length + 1, // Assuming unique ID based on length
-      name: values.name,
-      description: values.description,
-      location: values.location,
-      department: values.department,
-      manager: values.manager,
-      quantity: values.quantity,
-      cost: values.cost,
-    };
-    allCategories.push(newCategory);
-    console.log("Updated Categories:", allCategories);
+    console.log(values);
   };
 
   return (
@@ -280,40 +257,6 @@ export default function AddInventoryForm({ onComplete }: AddInventoryFormProps) 
                 </FormControl>
                 <FormDescription>
                   Who is responsible for managing this inventory?
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Quantity */}
-          <FormField
-            control={form.control}
-            name="quantity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Quantity</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormDescription>
-                  How many units of this inventory do you have?
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Cost */}
-          <FormField
-            control={form.control}
-            name="cost"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cost</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.01" {...field} />
-                </FormControl>
-                <FormDescription>
-                  What is the cost per unit of this inventory?
                 </FormDescription>
                 <FormMessage />
               </FormItem>

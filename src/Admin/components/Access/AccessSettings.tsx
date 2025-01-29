@@ -6,7 +6,7 @@ import AccessSettingsTab from "./AccessSettingTab";
 // import IdentificationTypes from "./IdentificationTypes";
 import SuspensionSettingsTab from "./SuspensionSettingTab";
 
-type ActiveComponent =
+export type ActiveComponent =
   | "accessSettingsTab"
   | "accessProfiles"
   | "identificationTypes"
