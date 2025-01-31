@@ -1,22 +1,25 @@
 // Import necessary React hooks and components
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronRight, EllipsisVertical, Loader2 } from "lucide-react";
-import { Category, CategoryTreeProps } from "./dummy";
+import { Category, InventoryListProps } from "./dummy";
 
-const CategoryTree: React.FC<CategoryTreeProps> = ({
+const InventoryList: React.FC<InventoryListProps> = ({
   categories,
   onAddEquipment,
   isLoading = false,
 }) => {
   // State management for expanded/collapsed categories
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
   // Track which category's context menu is active
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+
   // Store selected category details for modal display
   const [selectedCategory, setSelectedCategory] = useState<{
     name: string;
     id: string;
   } | null>(null);
+
   // Reference for detecting clicks outside context menu
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -104,15 +107,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
             >
               Add Equipment
             </div>
-            <div
-              className="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm"
-              onClick={() => {
-                console.log("Delete category", category.id);
-                setActiveMenu(null);
-              }}
-            >
-              Delete Category
-            </div>
+
           </div>
         )}
 
@@ -161,4 +156,4 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
   );
 };
 
-export default CategoryTree;
+export default InventoryList;

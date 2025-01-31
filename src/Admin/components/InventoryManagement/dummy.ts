@@ -4,7 +4,7 @@ export interface Category {
   items: number;
   subCategories?: Category[];
 }
-export interface CategoryTreeProps {
+export interface InventoryListProps {
     categories: Category[];
     onCategorySelect: (categoryId: string) => void;
     onAddEquipment?: (categoryId: string) => void;

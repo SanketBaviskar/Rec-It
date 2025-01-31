@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import CategoryTree from "./CatagoryTree";
+import InventoryList from "./InventoryList";
 import { RegisteredComponents } from "../componentRegistry";
 import RenderWindow from "@/Admin/Layout/RenderWindow";
 import { categories } from "./dummy";
@@ -32,7 +32,7 @@ export default function InventoryManagementTab() {
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <CategoryTree
+        <InventoryList
           categories={categories}
           onCategorySelect={handleCategorySelect}
           onAddEquipment={() => setActiveComponent("AddNewEquipmentForm")}

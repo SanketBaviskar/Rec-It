@@ -8,7 +8,8 @@ export const COMPONENT_REGISTRY = {
 //   "Reports": lazy(() => import("./Reports/ReportsTab")),
   "AddNewInventoryForm": lazy(() => import("./InventoryManagement/AddNewInventory")),
   "AddNewEquipmentForm": lazy(() => import("./InventoryManagement/AddNewEquipment")),
-  "MembershipSettings": lazy(() => import("./Membership/MembershipSettings"))
+  "Membership Settings": lazy(() => import("./Membership/MembershipSettings")),
+  "Pass Settings": lazy(() => import("./Membership/MembershipAndPasses"))
 } as const;
 
 export type RegisteredComponents = keyof typeof COMPONENT_REGISTRY;

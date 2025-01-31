@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { RegisteredComponents } from "./componentRegistry";
+import { RegisteredComponents } from "../../components/componentRegistry";
 
 interface SidebarProps {
   onItemClick: (componentName: RegisteredComponents) => void;
