@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -15,13 +15,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -29,16 +22,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
-// Type for department from API
-interface Department {
-  id: number;
-  name: string;
-  departmentIcon: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { addInventory } from "@/Services/Api/Admin/Inventory/addInventory";
+import { InventoryData } from "@/Interface/inventoryData";
+
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Inventory name must be at least 2 characters.",
@@ -48,9 +34,6 @@ const formSchema = z.object({
   }),
   location: z.string().min(2, {
     message: "Location must be at least 2 characters.",
-  }),
-  department: z.string({
-    required_error: "Please select a department.",
   }),
   manager: z.string().min(2, {
     message: "Manager name must be at least 2 characters.",
@@ -66,37 +49,9 @@ export default function AddInventoryForm({
 }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
+  const [isSuccessPopupOpen, setIsSuccessPopupOpen] = useState(false); // State for success popup
+  const [successMessage, setSuccessMessage] = useState(""); // State to store success message
   const { toast } = useToast();
-
-  // Fetch departments on component mount
-  useEffect(() => {
-    const loadDepartments = async () => {
-      try {
-        setIsLoadingDepartments(true);
-        const response = await fetchInventoryCategories();
-        if (response.status === "success" && response.data?.items) {
-          setDepartments(response.data.items);
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to load departments",
-            variant: "destructive",
-          });
-        }
-      } catch {
-        toast({
-          title: "Error",
-          description: "Failed to load departments",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoadingDepartments(false);
-      }
-    };
-    loadDepartments();
-  }, [toast]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -104,26 +59,44 @@ export default function AddInventoryForm({
       name: "",
       description: "",
       location: "",
-      department: "",
-      manager: ""
+      manager: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulating API call
-    console.log(values);
+    try {
+      const inventoryData: InventoryData = {
+        name: values.name,
+        description: values.description,
+        location: values.location,
+        manager: values.manager,
+      };
 
-    // Add the new inventory to allCategories array
-    createNewInventory(values);
+      const response = await addInventory(inventoryData);
+      console.log(response);
 
-    setIsSubmitting(false);
-    toast({
-      title: "Inventory Added",
-      description: "New inventory has been successfully created.",
-    });
-    form.reset();
-    onComplete();
+      // Set the success message from the API response
+      setSuccessMessage(response.message || "Inventory created successfully");
+
+      // Open the success popup
+      setIsSuccessPopupOpen(true);
+
+      form.reset();
+
+      if (onComplete) {
+        onComplete(); // Call the onComplete callback
+      }
+    } catch (error) {
+      console.error("Error adding inventory:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add inventory. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const handleCancel = () => {
@@ -133,12 +106,10 @@ export default function AddInventoryForm({
       title: "Form Cancelled",
       description: "You have cancelled the form.",
     });
-    onComplete();
-  };
 
-  // Create new inventory and add it to the allCategories array
-  const createNewInventory = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    if (onComplete) {
+      onComplete(); // Call the onComplete callback
+    }
   };
 
   return (
@@ -200,50 +171,6 @@ export default function AddInventoryForm({
               </FormItem>
             )}
           />
-          {/* Department */}
-          <FormField
-            control={form.control}
-            name="department"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Department</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isLoadingDepartments}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={
-                          isLoadingDepartments
-                            ? "Loading departments..."
-                            : "Select a department"
-                        }
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {isLoadingDepartments ? (
-                      <div className="flex items-center justify-center p-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      </div>
-                    ) : (
-                      departments.map((dept) => (
-                        <SelectItem key={dept.id} value={dept.id.toString()}>
-                          {dept.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Select the department this inventory belongs to.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           {/* Manager */}
           <FormField
             control={form.control}
@@ -264,7 +191,7 @@ export default function AddInventoryForm({
         </div>
         {/* Submit and Cancel Buttons */}
         <div className="flex space-x-4">
-          <Button type="submit" disabled={isSubmitting || isLoadingDepartments}>
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Adding..." : "Add Inventory"}
           </Button>
           <Button
@@ -276,7 +203,21 @@ export default function AddInventoryForm({
           </Button>
         </div>
       </form>
-      {/* Confirmation Popup */}
+
+      {/* Success Popup */}
+      <Dialog open={isSuccessPopupOpen} onOpenChange={setIsSuccessPopupOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Success</DialogTitle>
+          </DialogHeader>
+          <p>{successMessage}</p>
+          <DialogFooter>
+            <Button onClick={() => setIsSuccessPopupOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Popup for Cancellation */}
       {isCancelPopupOpen && (
         <Dialog open={isCancelPopupOpen} onOpenChange={setIsCancelPopupOpen}>
           <DialogContent>
