@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { RegisteredComponents } from "../componentRegistry";
 
-export default function MembershipAndPasses(){
+interface MembershipAndPassesProps {
+  onComplete: () => void;
+}
+
+export default function MembershipAndPasses({ onComplete }: MembershipAndPassesProps) {
     
     
     return(

@@ -3,5 +3,4 @@ export interface InventoryData {
   description: string,
   location: string,
   manager: string,
-  isInventory: boolean
 }

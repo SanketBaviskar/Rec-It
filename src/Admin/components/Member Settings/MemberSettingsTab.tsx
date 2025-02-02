@@ -1,18 +1,14 @@
 import { useState } from "react";
-import MembershipAndPasses from "./MembershipAndPasses";
-import MembershipSettings from "./MembershipSettings";
+import MemberTypes from "./MemberTypes";
 
-export type ActiveComponents = "membershipSettings" | "membershipAndPasses";
+export type ActiveComponents = "memberTypes";
 
-export default function MembershipTab() {
+export default function MemberSettingsTab() {
   const [activeComponent, setActiveComponent] = useState<ActiveComponents | null>(null);
   
-  const componentMap: Record<ActiveComponents, React.ReactNode> = {
-    membershipSettings: (
-      <MembershipSettings onComplete={() => setActiveComponent(null)} />
-    ),
-    membershipAndPasses: (
-      <MembershipAndPasses onComplete={() => setActiveComponent(null)} />
+  const componentMap = {
+    memberTypes: (
+      <MemberTypes onComplete={() => setActiveComponent(null)} />
     )
   };
 

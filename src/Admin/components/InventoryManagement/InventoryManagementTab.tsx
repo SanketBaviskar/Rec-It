@@ -5,33 +5,35 @@ import { Input } from "@/components/ui/input";
 import InventoryList from "./InventoryList";
 import { RegisteredComponents } from "../componentRegistry";
 import RenderWindow from "@/Admin/Layout/RenderWindow";
-import { dummy_categories } from "./dummy";
 import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
 
 export default function InventoryManagementTab() {
   const [activeComponent, setActiveComponent] = useState<RegisteredComponents | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categories, setCategories] = useState<[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   // Add a handler for category selection
   const handleCategorySelect = (categoryId: string) => {
     console.log("Selected category ID:", categoryId);
     // Additional logic for handling category selection can be added here
   };
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const response = await fetchInventoryCategories();
-        if(response.status === "success" && response.data?.items){
-          setCategories(response.data.items);
-        }
-      } catch (error) {
-        console.error("Error loading categories:", error);
+  // Make this function available to child components
+  const loadCategories = async () => {
+    try {
+      const response = await fetchInventoryCategories();
+      if(response.status === "success" && response.data?.items){
+        setCategories(response.data.items);
       }
-    };
+    } catch (error) {
+      console.error("Error loading categories:", error);
+    }
+  };
+
+  useEffect(() => {
     loadCategories();
   }, []);
  
+  
   return (
     <div className="flex h-full">
       {/* Left sidebar */}
@@ -71,7 +73,15 @@ export default function InventoryManagementTab() {
         )}
         <div className="h-full overflow-y-auto">
           {activeComponent ? (
-            <RenderWindow activeComponent={activeComponent} />
+            <RenderWindow 
+              activeComponent={activeComponent}
+              componentProps={{
+                onComplete: () => {
+                  setActiveComponent(null);
+                  loadCategories(); // Refresh categories when closing
+                }
+              }}
+            />
           ) : (
             <p className="text-center text-muted-foreground">
               Welcome to Inventory Management. Please select an action.

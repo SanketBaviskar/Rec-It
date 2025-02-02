@@ -22,14 +22,6 @@ interface Department {
   updatedAt: string;
 }
 
-interface ApiResponse {
-  status: string;
-  code: number;
-  data: {
-    items: Department[];
-  };
-  message: string;
-}
 
 export default function EquipmentNavBar() {
   const [activeSection, setActiveSection] = useState("inventory");
@@ -52,9 +44,7 @@ export default function EquipmentNavBar() {
       try {
         setIsLoading(true);
         setError(null);
-
         const response = await fetchInventoryCategories();
-
         // Check if the response is successful
         if (response.status === "success" && response.data?.items) {
           setCategories(response.data.items);
@@ -65,9 +55,9 @@ export default function EquipmentNavBar() {
         } else {
           throw new Error(response.message || "Failed to load departments");
         }
-      } catch (err: any) {
-        setError(err.message || "Failed to load departments");
-        console.error("Error loading departments:", err);
+      } catch (error) {
+        setError(error.message || "Failed to load departments");
+        console.error("Error loading departments:", error);
       } finally {
         setIsLoading(false);
       }

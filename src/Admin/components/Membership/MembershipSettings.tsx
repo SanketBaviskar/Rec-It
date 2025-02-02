@@ -2,12 +2,24 @@ import type React from "react"
 import { useState } from "react"
 import { Edit, Trash2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
+import * as z from "zod"
+import AddMembershipTypeForm from "./AddMembershipTypeForm"
+
+// Define form schema for type safety
+type FormSchema = z.infer<typeof formSchema>;
+
+const formSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  introDate: z.string(),
+  maxMembers: z.number().nullable(),
+  categories: z.array(z.object({
+    name: z.enum(["Student", "AHEC Affiliate", "GT34", "Senior", "Adult", "Youth"]),
+    price: z.number()
+  })).min(1)
+});
 
 type AccessCategory = "Student" | "AHEC Affiliate" | "GT34" | "Senior" | "Adult" | "Youth"
 
@@ -23,7 +35,11 @@ type MembershipType = {
 
 const allAccessCategories: AccessCategory[] = ["Student", "AHEC Affiliate", "GT34", "Senior", "Adult", "Youth"]
 
-const MembershipSettings = () => {
+interface MembershipSettingsProps {
+  onComplete: () => void;
+}
+
+const MembershipSettings = ({ onComplete }: MembershipSettingsProps) => {
   const [membershipTypes, setMembershipTypes] = useState<MembershipType[]>([
     {
       id: "1",
@@ -48,28 +64,27 @@ const MembershipSettings = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingMembership, setEditingMembership] = useState<MembershipType | null>(null)
 
-  const handleAddOrUpdate = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const formData = new FormData(event.currentTarget)
+  const handleFormSubmit = (values: FormSchema) => {
     const newMembership: MembershipType = {
       id: editingMembership?.id || Date.now().toString(),
-      name: formData.get("name") as string,
-      accessCategories: allAccessCategories.filter((cat) => formData.get(cat) === "on"),
-      pricePerMonth: Number.parseFloat(formData.get("pricePerMonth") as string),
-      introDate: formData.get("introDate") as string,
-      maxMembers: formData.get("maxMembers") ? Number.parseInt(formData.get("maxMembers") as string) : null,
-      description: formData.get("description") as string,
-    }
+      name: values.name,
+      accessCategories: values.categories.map(c => c.name),
+      pricePerMonth: values.categories[0].price,
+      introDate: values.introDate,
+      maxMembers: values.maxMembers,
+      description: values.description,
+    };
 
     if (editingMembership) {
-      setMembershipTypes(membershipTypes.map((m) => (m.id === editingMembership.id ? newMembership : m)))
+      setMembershipTypes(membershipTypes.map(m => m.id === editingMembership.id ? newMembership : m));
     } else {
-      setMembershipTypes([...membershipTypes, newMembership])
+      setMembershipTypes([...membershipTypes, newMembership]);
     }
 
-    setEditingMembership(null)
-    setIsDialogOpen(false)
-  }
+    setIsDialogOpen(false);
+    setEditingMembership(null);
+    onComplete(); // Call onComplete after successful submission
+  };
 
   const handleEdit = (membership: MembershipType) => {
     setEditingMembership(membership)
@@ -79,121 +94,104 @@ const MembershipSettings = () => {
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this membership type?")) {
       setMembershipTypes(membershipTypes.filter((m) => m.id !== id))
+      onComplete(); // Call onComplete after successful deletion
     }
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Membership Types</h2>
+    <div className="p-6 bg-white rounded-lg shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+        <h2 className="text-2xl font-bold text-gray-900">Membership Management</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingMembership(null)}>
+            <Button className="sm:w-auto w-full">
               <Plus className="w-4 h-4 mr-2" />
-              Add New Membership Type
+              Add Membership Type
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[700px]">
             <DialogHeader>
-              <DialogTitle>{editingMembership ? "Edit Membership Type" : "Add New Membership Type"}</DialogTitle>
+              <DialogTitle className="text-lg font-semibold">
+                {editingMembership ? "Edit Membership" : "Create New Membership"}
+              </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleAddOrUpdate} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" defaultValue={editingMembership?.name} required />
-              </div>
-              <div>
-                <Label>Access Categories</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {allAccessCategories.map((category) => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={category}
-                        name={category}
-                        defaultChecked={editingMembership?.accessCategories.includes(category)}
-                      />
-                      <Label htmlFor={category}>{category}</Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="pricePerMonth">Price per Month</Label>
-                <Input
-                  id="pricePerMonth"
-                  name="pricePerMonth"
-                  type="number"
-                  step="0.01"
-                  defaultValue={editingMembership?.pricePerMonth}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="introDate">Intro Date</Label>
-                <Input
-                  id="introDate"
-                  name="introDate"
-                  type="date"
-                  defaultValue={editingMembership?.introDate}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="maxMembers">Max Members (optional)</Label>
-                <Input
-                  id="maxMembers"
-                  name="maxMembers"
-                  type="number"
-                  defaultValue={editingMembership?.maxMembers || ""}
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea id="description" name="description" defaultValue={editingMembership?.description} required />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">{editingMembership ? "Update" : "Add"} Membership Type</Button>
-              </div>
-            </form>
+            <AddMembershipTypeForm
+              initialData={editingMembership ? {
+                name: editingMembership.name,
+                description: editingMembership.description,
+                introDate: editingMembership.introDate,
+                maxMembers: editingMembership.maxMembers,
+                categories: editingMembership.accessCategories.map(name => ({
+                  name,
+                  price: editingMembership.pricePerMonth
+                }))
+              } : undefined}
+              onSubmit={handleFormSubmit}
+              onCancel={() => {
+                setIsDialogOpen(false);
+                setEditingMembership(null);
+              }}
+            />
           </DialogContent>
         </Dialog>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Access Categories</TableHead>
-            <TableHead>Price/Month</TableHead>
-            <TableHead>Intro Date</TableHead>
-            <TableHead>Max Members</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {membershipTypes.map((membership) => (
-            <TableRow key={membership.id}>
-              <TableCell>{membership.name}</TableCell>
-              <TableCell>{membership.accessCategories.join(", ")}</TableCell>
-              <TableCell>${membership.pricePerMonth.toFixed(2)}</TableCell>
-              <TableCell>{membership.introDate}</TableCell>
-              <TableCell>{membership.maxMembers || "Unlimited"}</TableCell>
-              <TableCell>
-                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(membership)}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(membership.id)}>
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </Button>
-              </TableCell>
+
+      <div className="border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader className="bg-gray-50">
+            <TableRow>
+              <TableHead className="w-[200px]">Membership</TableHead>
+              <TableHead>Access</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Since</TableHead>
+              <TableHead>Limit</TableHead>
+              <TableHead className="w-[150px]">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {membershipTypes.map((membership) => (
+              <TableRow key={membership.id} className="hover:bg-gray-50">
+                <TableCell className="font-medium">{membership.name}</TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {membership.accessCategories.map((cat) => (
+                      <span 
+                        key={cat} 
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>${membership.pricePerMonth.toFixed(2)}</TableCell>
+                <TableCell>{new Date(membership.introDate).toLocaleDateString()}</TableCell>
+                <TableCell>{membership.maxMembers || "∞"}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleEdit(membership)}
+                      className="hover:bg-gray-100"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => handleDelete(membership.id)}
+                      className="hover:bg-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }

@@ -49,8 +49,6 @@ export default function AddInventoryForm({
 }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
-  const [isSuccessPopupOpen, setIsSuccessPopupOpen] = useState(false); // State for success popup
-  const [successMessage, setSuccessMessage] = useState(""); // State to store success message
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -64,38 +62,44 @@ export default function AddInventoryForm({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    // Set submitting state
     setIsSubmitting(true);
+
     try {
+      // Prepare inventory data
       const inventoryData: InventoryData = {
         name: values.name,
         description: values.description,
         location: values.location,
         manager: values.manager,
-        isInventory: true
       };
 
+      // Call API to add inventory
       const response = await addInventory(inventoryData);
       console.log(response);
-
-      // Set the success message from the API response
-      setSuccessMessage(response.message || "Inventory created successfully");
-
-      // Open the success popup
-      setIsSuccessPopupOpen(true);
-
-      form.reset();
-
-      if (onComplete) {
-        onComplete(); // Call the onComplete callback
+      if (response?.status === "success") {
+        // Show success toast message
+        toast({
+          title: "Inventory Added Successfully",
+          description: `New inventory named "${values.name}" has been added successfully.`,
+          variant: "default",
+        });
+        form.reset();
+        onComplete();
+      } else {
+        throw new Error("Failed to add inventory"); // Handle failure if response status is not success
       }
     } catch (error) {
       console.error("Error adding inventory:", error);
+
+      // Show error toast message
       toast({
         title: "Error",
         description: "Failed to add inventory. Please try again.",
         variant: "destructive",
       });
     } finally {
+      // Reset submitting state
       setIsSubmitting(false);
     }
   }
@@ -204,20 +208,6 @@ export default function AddInventoryForm({
           </Button>
         </div>
       </form>
-
-      {/* Success Popup */}
-      <Dialog open={isSuccessPopupOpen} onOpenChange={setIsSuccessPopupOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Success</DialogTitle>
-          </DialogHeader>
-          <p>{successMessage}</p>
-          <DialogFooter>
-            <Button onClick={() => setIsSuccessPopupOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Confirmation Popup for Cancellation */}
       {isCancelPopupOpen && (
         <Dialog open={isCancelPopupOpen} onOpenChange={setIsCancelPopupOpen}>

@@ -1,4 +1,3 @@
-// Import necessary React hooks and components
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronRight, EllipsisVertical, Loader2 } from "lucide-react";
 import { Category, InventoryListProps } from "./dummy";
@@ -8,22 +7,14 @@ const InventoryList: React.FC<InventoryListProps> = ({
   onAddEquipment,
   isLoading = false,
 }) => {
-  // State management for expanded/collapsed categories
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  // Track which category's context menu is active
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-
-  // Store selected category details for modal display
   const [selectedCategory, setSelectedCategory] = useState<{
     name: string;
     id: string;
   } | null>(null);
-
-  // Reference for detecting clicks outside context menu
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Effect to close context menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -34,7 +25,6 @@ const InventoryList: React.FC<InventoryListProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Toggle expand/collapse state for categories
   const toggleExpand = (id: string) => {
     setExpanded((prev) =>
       new Set(prev).has(id)
@@ -43,7 +33,6 @@ const InventoryList: React.FC<InventoryListProps> = ({
     );
   };
 
-  // Handle category click - expand if has children, else select
   const handleCategoryAction = (category: Category) => {
     if (category.subCategories?.length) {
       toggleExpand(category.id);
@@ -52,21 +41,17 @@ const InventoryList: React.FC<InventoryListProps> = ({
     }
   };
 
-  // Recursive function to render categories and their subcategories
   const renderCategory = (category: Category) => {
     const hasChildren =
       category.subCategories && category.subCategories.length > 0;
-
     return (
       <div key={category.id} className="group relative">
-        {/* Category row with interactive elements */}
         <div
           className="flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-accent"
           onClick={() => handleCategoryAction(category)}
           onKeyDown={(e) => e.key === "Enter" && handleCategoryAction(category)}
           tabIndex={0}
         >
-          {/* Expand/collapse chevron icon */}
           {hasChildren ? (
             <ChevronRight
               className={`h-4 w-4 transition-transform ${
@@ -74,11 +59,9 @@ const InventoryList: React.FC<InventoryListProps> = ({
               }`}
             />
           ) : (
-            <div className="w-4" /> // Spacer for alignment
+            <div className="w-4" />
           )}
           <span className="ml-1">{category.name}</span>
-
-          {/* Context menu trigger for parent categories */}
           {hasChildren && (
             <div
               className="p-2 hover:bg-accent/50 rounded-sm ml-auto"
@@ -91,8 +74,6 @@ const InventoryList: React.FC<InventoryListProps> = ({
             </div>
           )}
         </div>
-
-        {/* Context menu with actions */}
         {activeMenu === category.id && (
           <div
             ref={menuRef}
@@ -107,11 +88,8 @@ const InventoryList: React.FC<InventoryListProps> = ({
             >
               Add Equipment
             </div>
-
           </div>
         )}
-
-        {/* Recursively render subcategories if expanded */}
         {expanded.has(category.id) && hasChildren && (
           <div className="ml-4">
             {category.subCategories?.map(renderCategory)}
@@ -123,7 +101,6 @@ const InventoryList: React.FC<InventoryListProps> = ({
 
   return (
     <div className="space-y-1" role="tree">
-      {/* Modal for displaying selected category details */}
       {selectedCategory && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full">
@@ -139,17 +116,14 @@ const InventoryList: React.FC<InventoryListProps> = ({
           </div>
         </div>
       )}
-
-      {/* Loading state */}
       {isLoading ? (
-        <div className="p-2 text-sm">
+        <div className="p-2 text-sm flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading categories...</span>
         </div>
       ) : categories.length > 0 ? (
-        // Render category tree
         categories.map(renderCategory)
       ) : (
-        // Empty state
         <p className="text-sm px-2">No categories available</p>
       )}
     </div>

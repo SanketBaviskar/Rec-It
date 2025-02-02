@@ -38,6 +38,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       name: "Memberships and Passes",
       subItems: ["Membership Settings", "Passes Settings"] as RegisteredComponents[]
     },
+    {
+      name: "Member Settings",
+      subItems: ["Member Types"]
+    }
   ];
 
   return (
