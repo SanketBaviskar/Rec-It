@@ -71,6 +71,7 @@ export default function AddInventoryForm({
         description: values.description,
         location: values.location,
         manager: values.manager,
+        isInventory: true
       };
 
       const response = await addInventory(inventoryData);

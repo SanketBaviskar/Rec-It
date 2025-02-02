@@ -3,7 +3,14 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { EquipmentInventory } from "./EquipmentInventory";
 import { EquipmentManage } from "./EquipmentManage";
-import { Volleyball, Mountain, Key, PenTool, User, Loader2 } from "lucide-react";
+import {
+  Volleyball,
+  Mountain,
+  Key,
+  PenTool,
+  User,
+  Loader2,
+} from "lucide-react";
 import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
 
 // Type definitions based on your API response
@@ -45,9 +52,9 @@ export default function EquipmentNavBar() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const response = await fetchInventoryCategories();
-        
+
         // Check if the response is successful
         if (response.status === "success" && response.data?.items) {
           setCategories(response.data.items);
@@ -56,7 +63,7 @@ export default function EquipmentNavBar() {
             setActiveCategory(response.data.items[0].name);
           }
         } else {
-          throw new Error(response.message || 'Failed to load departments');
+          throw new Error(response.message || "Failed to load departments");
         }
       } catch (err: any) {
         setError(err.message || "Failed to load departments");
@@ -163,6 +170,7 @@ export default function EquipmentNavBar() {
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
+
         {/* Left Vertical Navbar (Inventory Categories) */}
         {activeSection === "inventory" && (
           <nav className="w-48 bg-white border-r">
@@ -173,10 +181,10 @@ export default function EquipmentNavBar() {
             ) : error ? (
               <div className="p-4 flex flex-col items-center">
                 <div className="text-red-500 mb-4">{error}</div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handleRetry}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 "
                 >
                   <Loader2 className="h-4 w-4" /> Retry
                 </Button>
@@ -189,13 +197,21 @@ export default function EquipmentNavBar() {
                     <li key={department.id} className="py-1">
                       <Button
                         variant="ghost"
-                        className={`w-full justify-start py-2 px-4 ${
-                          activeCategory === department.name ? "bg-gray-200" : ""
-                        }`}
+                        className={`w-full justify-start py-2 px-4 text-left min-h-[50px] h-auto flex items-center gap-2`}
                         onClick={() => setActiveCategory(department.name)}
                       >
-                        <IconComponent className="mr-2" />
-                        {department.name}
+                        <IconComponent className="mr-2 flex-shrink-0" />{" "}
+                        {/* Icon */}
+                        <div className="flex flex-col min-w-0">
+                          {department.name.split(" ").map((word, index) => (
+                            <span
+                              key={index}
+                              className="whitespace-nowrap overflow-hidden text-ellipsis"
+                            >
+                              {word}
+                            </span>
+                          ))}
+                        </div>
                       </Button>
                     </li>
                   );
@@ -206,7 +222,9 @@ export default function EquipmentNavBar() {
         )}
 
         {/* Right Content Area */}
-        <main className={`flex-1 ${activeSection !== "inventory" ? "w-full" : ""}`}>
+        <main
+          className={`flex-1 ${activeSection !== "inventory" ? "w-full" : ""}`}
+        >
           {/* Inventory Section */}
           {activeSection === "inventory" && (
             <div className="h-full flex flex-col">
@@ -233,6 +251,7 @@ export default function EquipmentNavBar() {
             </div>
           )}
         </main>
+
       </div>
     </div>
   );

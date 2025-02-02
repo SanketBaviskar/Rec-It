@@ -1,22 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import InventoryList from "./InventoryList";
 import { RegisteredComponents } from "../componentRegistry";
 import RenderWindow from "@/Admin/Layout/RenderWindow";
-import { categories } from "./dummy";
+import { dummy_categories } from "./dummy";
+import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
 
 export default function InventoryManagementTab() {
   const [activeComponent, setActiveComponent] = useState<RegisteredComponents | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [categories, setCategories] = useState<[]>([]);
   // Add a handler for category selection
   const handleCategorySelect = (categoryId: string) => {
     console.log("Selected category ID:", categoryId);
     // Additional logic for handling category selection can be added here
   };
 
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetchInventoryCategories();
+        if(response.status === "success" && response.data?.items){
+          setCategories(response.data.items);
+        }
+      } catch (error) {
+        console.error("Error loading categories:", error);
+      }
+    };
+    loadCategories();
+  }, []);
+ 
   return (
     <div className="flex h-full">
       {/* Left sidebar */}

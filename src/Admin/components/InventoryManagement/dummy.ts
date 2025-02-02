@@ -11,13 +11,13 @@ export interface InventoryListProps {
     onDeleteCategory?: (categoryId: string) => void; // Add this
     isLoading?: boolean;
   }
-export const categories: Category[] = [
+export const dummy_categories: Category[] = [
   {
     id: "1",
     name: "Sports Equipment",
     items: 10,
     subCategories: [
-      { id: "1-1", name: "Basketball", items: 5 },
+      { id: "1-1", name: "Basketball", items: 5 , subCategories: []},
       { id: "1-2", name: "Volleyball", items: 2 },
       { id: "1-3", name: "Table Tennis", items: 8 },
     ],
