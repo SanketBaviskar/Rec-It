@@ -8,9 +8,7 @@ import * as z from "zod"
 import AddMembershipTypeForm from "./AddMembershipTypeForm"
 
 // Define form schema for type safety
-type FormSchema = z.infer<typeof formSchema>;
-
-const formSchema = z.object({
+export const formSchema = z.object({
   name: z.string(),
   description: z.string(),
   introDate: z.string(),
@@ -33,7 +31,7 @@ type MembershipType = {
   description: string
 }
 
-const allAccessCategories: AccessCategory[] = ["Student", "AHEC Affiliate", "GT34", "Senior", "Adult", "Youth"]
+export const allAccessCategories: AccessCategory[] = ["Student", "AHEC Affiliate", "GT34", "Senior", "Adult", "Youth"]
 
 interface MembershipSettingsProps {
   onComplete: () => void;
@@ -64,11 +62,22 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingMembership, setEditingMembership] = useState<MembershipType | null>(null)
 
-  const handleFormSubmit = (values: FormSchema) => {
+  type FormValues = {
+    name: string
+    description: string
+    introDate: string
+    maxMembers: number | null
+    categories: {
+      name: AccessCategory
+      price: number
+    }[]
+  }
+
+  const handleFormSubmit = (values: FormValues) => {
     const newMembership: MembershipType = {
       id: editingMembership?.id || Date.now().toString(),
       name: values.name,
-      accessCategories: values.categories.map(c => c.name),
+      accessCategories: values.categories.map((category: {name: AccessCategory}) => category.name),
       pricePerMonth: values.categories[0].price,
       introDate: values.introDate,
       maxMembers: values.maxMembers,
@@ -116,16 +125,6 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps) => {
               </DialogTitle>
             </DialogHeader>
             <AddMembershipTypeForm
-              initialData={editingMembership ? {
-                name: editingMembership.name,
-                description: editingMembership.description,
-                introDate: editingMembership.introDate,
-                maxMembers: editingMembership.maxMembers,
-                categories: editingMembership.accessCategories.map(name => ({
-                  name,
-                  price: editingMembership.pricePerMonth
-                }))
-              } : undefined}
               onSubmit={handleFormSubmit}
               onCancel={() => {
                 setIsDialogOpen(false);

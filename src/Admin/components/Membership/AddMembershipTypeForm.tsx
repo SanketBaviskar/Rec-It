@@ -6,18 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 
-const accessCategories = ["Student", "AHEC Affiliate", "GT34", "Senior", "Adult", "Youth"] as const;
-type AccessCategory = typeof accessCategories[number];
-
+const memberType = ["Student", "AHEC Affiliate", "GT34", "Senior", "Adult", "Youth"] as const;
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   introDate: z.string().date(),
   maxMembers: z.number().nullable(),
   categories: z.array(z.object({
-    name: z.enum(accessCategories),
+    name: z.enum(memberType),
     price: z.number().min(0, "Price must be positive")
   })).nonempty("Select at least one category")
 });
@@ -92,6 +90,7 @@ export default function AddMembershipTypeForm({ initialData, onSubmit, onCancel 
                   <Input
                     type="number"
                     {...field}
+                    value={field.value ?? ''} 
                     onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                     placeholder="Unlimited"
                   />
@@ -106,7 +105,7 @@ export default function AddMembershipTypeForm({ initialData, onSubmit, onCancel 
         <div className="space-y-4">
           <Label>Category Pricing *</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {accessCategories.map(category => (
+            {memberType.map(category => (
               <div key={category} className="flex items-center gap-4 p-4 border rounded-lg">
                 <Checkbox
                   checked={selectedCategories.some(c => c.name === category)}

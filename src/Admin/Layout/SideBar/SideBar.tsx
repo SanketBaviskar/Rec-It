@@ -74,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
                   <li
                     key={subItem}
                     className="p-2 text-sm rounded-md cursor-pointer hover:bg-gray-700"
-                    onClick={() => onItemClick(subItem)}
+                    onClick={() => onItemClick(subItem as RegisteredComponents)}
                   >
                     {subItem}
                   </li>

@@ -3,7 +3,7 @@ import { COMPONENT_REGISTRY, RegisteredComponents } from "../components/componen
 import LoadingSpinner from "@/components/ui/loadingSpinner";
 
 // 1. Add proper component type
-type LazyComponent = React.LazyExoticComponent<React.ComponentType<any>>;
+type LazyComponent = React.LazyExoticComponent<React.ComponentType<Record<string, unknown>>>;
 
 // 2. Make props more type-safe
 interface RenderWindowProps {
@@ -22,13 +22,11 @@ export default function RenderWindow({
   return (
     <Suspense 
       fallback={
-        // 5. Improve loading state
         <div className="h-full flex items-center justify-center">
-          <LoadingSpinner size="lg" />
+          <LoadingSpinner />
         </div>
       }
     >
-      {/* 6. Remove hardcoded props and use spread operator */}
       <Component {...componentProps} />
     </Suspense>
   );
