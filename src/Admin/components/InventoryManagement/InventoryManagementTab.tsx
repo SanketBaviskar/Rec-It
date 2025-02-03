@@ -6,35 +6,75 @@ import InventoryList from "./InventoryList";
 import { RegisteredComponents } from "../componentRegistry";
 import RenderWindow from "@/Admin/Layout/RenderWindow";
 import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
+import { deleteInventory } from "@/Services/Api/Admin/Inventory/deleteInventory"; // Add this import
+import { useToast } from "@/components/ui/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function InventoryManagementTab() {
+  const { toast } = useToast()
   const [activeComponent, setActiveComponent] = useState<RegisteredComponents | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
+  const [deletingCategory, setDeletingCategory] = useState<number | null>(null);
+
   // Add a handler for category selection
   const handleCategorySelect = (categoryId: string) => {
     console.log("Selected category ID:", categoryId);
-    // Additional logic for handling category selection can be added here
-  };
-
-  // Make this function available to child components
-  const loadCategories = async () => {
-    try {
-      const response = await fetchInventoryCategories();
-      if(response.status === "success" && response.data?.items){
-        setCategories(response.data.items);
-      }
-    } catch (error) {
-      console.error("Error loading categories:", error);
-    }
   };
 
   useEffect(() => {
     loadCategories();
   }, []);
- 
-  
-  return (
+
+  const handleConfirmDelete = async () => {
+    if (!deletingCategory) return;
+    
+    try {
+      const response = await deleteInventory(deletingCategory);
+      toast({
+        title: response.status === "success" ? "Success" : "Error",
+        description: response.message || "Inventory deleted successfully",
+        variant: response.status === "success" ? "default" : "destructive",
+      });
+      await loadCategories(); 
+      
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete inventory",
+        variant: "destructive",
+      });
+      console.error('Delete inventory error:', error);
+    } finally {
+      setDeletingCategory(null);
+    }
+  };
+
+  // Update loadCategories to handle cache properly
+  const loadCategories = async () => {
+    try {
+      // Add cache-buster to prevent stale data
+      const response = await fetchInventoryCategories({ ts: Date.now() });
+      if(response.status === "success"){
+        setCategories(response.data?.items || []);
+      }
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      setCategories([]);
+    }
+  };
+
+
+  return (    
     <div className="flex h-full">
       {/* Left sidebar */}
       <div className="w-64 border-r bg-background p-4">
@@ -53,6 +93,7 @@ export default function InventoryManagementTab() {
           categories={categories}
           onCategorySelect={handleCategorySelect}
           onAddEquipment={() => setActiveComponent("AddNewEquipmentForm")}
+          onDeleteCategory={(id) => setDeletingCategory(id)}
         />
       </div>
 
@@ -89,6 +130,29 @@ export default function InventoryManagementTab() {
           )}
         </div>
       </div>
+
+      <AlertDialog open={!!deletingCategory}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the inventory
+              and remove all associated equipment.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingCategory(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Inventory
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
