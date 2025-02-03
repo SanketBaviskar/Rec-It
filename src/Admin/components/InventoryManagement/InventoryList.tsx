@@ -34,7 +34,8 @@ const InventoryList: React.FC<InventoryListProps> = ({
   };
 
   const handleCategoryAction = (category: Category) => {
-    if (category.subCategories?.length) {
+    // Check if category has equipment to toggle expand
+    if (category.equipments && category.equipments.length > 0) {
       toggleExpand(category.id);
     } else {
       setSelectedCategory({ name: category.name, id: category.id });
@@ -42,8 +43,8 @@ const InventoryList: React.FC<InventoryListProps> = ({
   };
 
   const renderCategory = (category: Category) => {
-    const hasChildren =
-      category.subCategories && category.subCategories.length > 0;
+    // Check for equipment to determine if we show chevron
+    const hasChildren = category.equipments && category.equipments.length > 0;
     return (
       <div key={category.id} className="group relative">
         <div
@@ -62,7 +63,8 @@ const InventoryList: React.FC<InventoryListProps> = ({
             <div className="w-4" />
           )}
           <span className="ml-1">{category.name}</span>
-          {hasChildren && (
+          {/* Always show action menu if onAddEquipment exists */}
+          {onAddEquipment && (
             <div
               className="p-2 hover:bg-accent/50 rounded-sm ml-auto"
               onClick={(e) => {
@@ -90,9 +92,17 @@ const InventoryList: React.FC<InventoryListProps> = ({
             </div>
           </div>
         )}
+        {/* Show equipment list when expanded */}
         {expanded.has(category.id) && hasChildren && (
           <div className="ml-4">
-            {category.subCategories?.map(renderCategory)}
+            {category.equipments?.map((equipment) => (
+              <div
+                key={equipment.id}
+                className="flex items-center gap-1 px-2 py-1.5"
+              >
+                <span className="ml-4">{equipment.name}</span>
+              </div>
+            ))}
           </div>
         )}
       </div>
