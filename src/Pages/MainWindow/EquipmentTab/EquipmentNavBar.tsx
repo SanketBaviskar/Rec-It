@@ -22,7 +22,6 @@ interface Department {
   updatedAt: string;
 }
 
-
 export default function EquipmentNavBar() {
   const [activeSection, setActiveSection] = useState("inventory");
   const [activeCategory, setActiveCategory] = useState("");
@@ -160,8 +159,8 @@ export default function EquipmentNavBar() {
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-
         {/* Left Vertical Navbar (Inventory Categories) */}
+
         {activeSection === "inventory" && (
           <nav className="w-48 bg-white border-r">
             {isLoading ? (
@@ -180,7 +179,7 @@ export default function EquipmentNavBar() {
                 </Button>
               </div>
             ) : (
-              <ul className="py-4 px-4">
+              <ul className="py-4 px-4 max-h-[100%] overflow-y-auto scrollbar-hide">
                 {categories.map((department) => {
                   const IconComponent = getDepartmentIcon(department.name);
                   return (
@@ -241,7 +240,6 @@ export default function EquipmentNavBar() {
             </div>
           )}
         </main>
-
       </div>
     </div>
   );

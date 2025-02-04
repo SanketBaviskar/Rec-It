@@ -24,6 +24,14 @@ import {
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { addInventory } from "@/Services/Api/Admin/Inventory/addInventory";
 import { InventoryData } from "@/Interface/inventoryData";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import * as LucideIcons from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -38,7 +46,15 @@ const formSchema = z.object({
   manager: z.string().min(2, {
     message: "Manager name must be at least 2 characters.",
   }),
+  icon: z.string().min(1, {
+    message: "Please select an icon",
+  }),
 });
+
+// Get all icon names from Lucide
+const iconNames = Object.keys(LucideIcons).filter(
+  (key) => typeof LucideIcons[key] === "function" && key !== "createLucideIcon"
+);
 
 interface AddInventoryFormProps {
   onComplete: () => void; // Callback for when form is cancelled or completed
@@ -58,6 +74,7 @@ export default function AddInventoryForm({
       description: "",
       location: "",
       manager: "",
+      icon: "",
     },
   });
 
@@ -72,6 +89,7 @@ export default function AddInventoryForm({
         description: values.description,
         location: values.location,
         manager: values.manager,
+        icon: values.icon,
       };
 
       // Call API to add inventory
@@ -193,6 +211,44 @@ export default function AddInventoryForm({
               </FormItem>
             )}
           />
+          {/* This is new form field which is Icon */}
+          {/* <FormField
+            control={form.control}
+            name="icon"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Icon</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an icon" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-h-[300px]">
+                    {iconNames.map((iconName) => {
+                      const IconComponent = LucideIcons[iconName as keyof typeof LucideIcons];
+                      return (
+                        <SelectItem 
+                          key={iconName} 
+                          value={iconName}
+                          className="flex items-center gap-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            {typeof IconComponent === 'function' && <IconComponent className="h-4 w-4" />}
+                            <span>{iconName}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Choose an icon for this inventory category
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          /> */}
         </div>
         {/* Submit and Cancel Buttons */}
         <div className="flex space-x-4">
