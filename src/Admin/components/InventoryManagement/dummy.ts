@@ -14,7 +14,8 @@ export interface InventoryListProps {
   categories: Category[];
   onCategorySelect: (categoryId: string) => void;
   onAddEquipment?: (categoryId: string) => void;
-  onDeleteCategory?: (categoryId: string) => void; // Add this
+  onDeleteCategory?: (categoryId: string) => void;
+  onEditEquipment?: (equipmentId: string) => void;
   isLoading?: boolean;
 }
 export const dummy_categories: Category[] = [

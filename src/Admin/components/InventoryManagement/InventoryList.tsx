@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronRight, EllipsisVertical, Loader2 } from "lucide-react";
+import { ChevronRight, EllipsisVertical, Loader2, Pencil } from "lucide-react";
 import { Category, InventoryListProps } from "./dummy";
 
 const InventoryList: React.FC<InventoryListProps> = ({
   categories,
   onAddEquipment,
+  onEditEquipment,
   onDeleteCategory,
   isLoading = false,
 }) => {
@@ -56,8 +57,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
         >
           {hasChildren ? (
             <ChevronRight
-              className={`h-4 w-4 transition-transform ${
-                expanded.has(category.id) ? "rotate-90" : ""
+              className={`h-4 w-4 transition-transform ${expanded.has(category.id) ? "rotate-90" : ""
                 }`}
             />
           ) : (
@@ -110,9 +110,19 @@ const InventoryList: React.FC<InventoryListProps> = ({
             {category.equipments?.map((equipment) => (
               <div
                 key={equipment.id}
-                className="flex items-center gap-1 px-2 py-1.5"
+                className="flex items-center gap-1 px-2 py-1.5 hover:bg-accent cursor-pointer group"
+                onClick={() => onEditEquipment?.(equipment.id)}
               >
-                <span className="ml-4">{equipment.name}</span>
+                <span className="ml-4 flex-1">{equipment.name}</span>
+                <button
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-accent/50 rounded-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditEquipment?.(equipment.id);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
               </div>
             ))}
           </div>
