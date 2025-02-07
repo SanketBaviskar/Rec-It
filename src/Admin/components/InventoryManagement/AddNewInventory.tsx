@@ -24,14 +24,8 @@ import {
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { addInventory } from "@/Services/Api/Admin/Inventory/addInventory";
 import { InventoryData } from "@/Interface/inventoryData";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import * as LucideIcons from "lucide-react";
+import { Toaster } from "@/components/ui/toaster";
+
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -46,15 +40,10 @@ const formSchema = z.object({
   manager: z.string().min(2, {
     message: "Manager name must be at least 2 characters.",
   }),
-  icon: z.string().min(1, {
-    message: "Please select an icon",
-  }),
 });
 
 // Get all icon names from Lucide
-const iconNames = Object.keys(LucideIcons).filter(
-  (key) => typeof LucideIcons[key] === "function" && key !== "createLucideIcon"
-);
+
 
 interface AddInventoryFormProps {
   onComplete: () => void; // Callback for when form is cancelled or completed
@@ -74,7 +63,6 @@ export default function AddInventoryForm({
       description: "",
       location: "",
       manager: "",
-      icon: "",
     },
   });
 
@@ -89,7 +77,6 @@ export default function AddInventoryForm({
         description: values.description,
         location: values.location,
         manager: values.manager,
-        icon: values.icon,
       };
 
       // Call API to add inventory
@@ -103,7 +90,7 @@ export default function AddInventoryForm({
           variant: "default",
         });
         form.reset();
-        onComplete();
+        // onComplete();
       } else {
         throw new Error("Failed to add inventory"); // Handle failure if response status is not success
       }
@@ -136,6 +123,7 @@ export default function AddInventoryForm({
   };
 
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {/* Grid layout for form fields */}
@@ -264,6 +252,7 @@ export default function AddInventoryForm({
           </Button>
         </div>
       </form>
+      
       {/* Confirmation Popup for Cancellation */}
       {isCancelPopupOpen && (
         <Dialog open={isCancelPopupOpen} onOpenChange={setIsCancelPopupOpen}>
@@ -290,5 +279,7 @@ export default function AddInventoryForm({
         </Dialog>
       )}
     </Form>
+    <Toaster />
+    </>
   );
 }

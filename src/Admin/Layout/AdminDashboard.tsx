@@ -48,8 +48,6 @@ export default function AdminDashboard() {
       <main className="flex-1 flex overflow-hidden">
         <Sidebar 
           onItemClick={handleSidebarClick} 
-          isOpen={isSidebarOpen}
-          onToggle={toggleSidebar}
         />
         <div className="flex-1 bg-gray-50 overflow-auto">
           <RenderWindow activeComponent={activeComponent} />

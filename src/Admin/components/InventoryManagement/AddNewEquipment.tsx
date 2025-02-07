@@ -2,7 +2,6 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -23,17 +22,26 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 const formSchema = z.object({
-  equipmentName: z.string().min(2, { message: "Equipment name must be at least 2 characters." }),
+  equipmentName: z
+    .string()
+    .min(2, { message: "Equipment name must be at least 2 characters." }),
   equipmentCode: z.string().min(1, { message: "Equipment code is required." }),
   equipmentImage: z.string().optional(),
-  description: z.string().min(10, { message: "Description must be at least 10 characters." }),
+  description: z
+    .string()
+    .min(10, { message: "Description must be at least 10 characters." }),
   quantity: z.number().min(1, { message: "Quantity must be at least 1." }),
   price: z.number().min(0, { message: "Price must be a positive value." }),
-  replacementFees: z.number().min(0, { message: "Replacement fees must be a positive value." }),
+  replacementFees: z
+    .number()
+    .min(0, { message: "Replacement fees must be a positive value." }),
   department: z.string().min(1, { message: "Department is required." }),
-  location: z.string().min(2, { message: "Location must be at least 2 characters." }),
+  location: z
+    .string()
+    .min(2, { message: "Location must be at least 2 characters." }),
 });
 
 interface AddNewEquipmentFormProps {
@@ -41,7 +49,10 @@ interface AddNewEquipmentFormProps {
   categoryId: string; // Received from parent component
 }
 
-export default function AddNewEquipmentForm({ onComplete, categoryId }: AddNewEquipmentFormProps) {
+export default function AddNewEquipmentForm({
+  onComplete,
+  categoryId,
+}: AddNewEquipmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
   const { toast } = useToast();
@@ -63,15 +74,16 @@ export default function AddNewEquipmentForm({ onComplete, categoryId }: AddNewEq
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    
+
     // Simulated API call with categoryId
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       console.log("Adding to category:", categoryId, values);
-      
+      console.log(form);
       toast({
         title: "Equipment Added",
-        description: "New equipment has been successfully added to the category.",
+        description:
+          "New equipment has been successfully added to the category.",
       });
       form.reset();
       onComplete();
@@ -138,7 +150,12 @@ export default function AddNewEquipmentForm({ onComplete, categoryId }: AddNewEq
               <FormItem>
                 <FormLabel>Equipment Image</FormLabel>
                 <FormControl>
-                  <Input id="picture" type="file" placeholder="Upload equipment image" {...field} />
+                  <Input
+                    id="picture"
+                    type="file"
+                    placeholder="Upload equipment image"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -152,12 +169,12 @@ export default function AddNewEquipmentForm({ onComplete, categoryId }: AddNewEq
               <FormItem>
                 <FormLabel>Quantity</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="Enter quantity" 
-                    {...field} 
+                  <Input
+                    type="number"
+                    placeholder="Enter quantity"
+                    {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value))}
-                    min={1} 
+                    min={1}
                   />
                 </FormControl>
                 <FormMessage />
@@ -257,21 +274,24 @@ export default function AddNewEquipmentForm({ onComplete, categoryId }: AddNewEq
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Adding..." : "Add Equipment"}
           </Button>
-          <Button 
-            type="button" 
-            variant="destructive" 
+          <Button
+            type="button"
+            variant="destructive"
             onClick={() => setIsCancelPopupOpen(true)}
           >
             Cancel
           </Button>
         </div>
       </form>
-
+      <Toaster />
       <Dialog open={isCancelPopupOpen} onOpenChange={setIsCancelPopupOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Cancellation</DialogTitle>
-            <p>Are you sure you want to cancel this form? Unsaved changes will be lost.</p>
+            <p>
+              Are you sure you want to cancel this form? Unsaved changes will be
+              lost.
+            </p>
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsCancelPopupOpen(false)}>
