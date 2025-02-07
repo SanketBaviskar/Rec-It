@@ -118,6 +118,7 @@ export default function InventoryManagementTab() {
               activeComponent={activeComponent}
               componentProps={{
                 onComplete: () => {
+                  
                   setActiveComponent(null);
                   loadCategories(); // Refresh categories when closing
                 }
