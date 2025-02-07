@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronRight, EllipsisVertical, Loader2, Pencil } from "lucide-react";
+import { ChevronRight, EllipsisVertical, Loader2, Trash } from "lucide-react";
 import { Category, InventoryListProps } from "./dummy";
+import { deleteEquipmentById } from "@/Services/Api/Admin/Equipment/deleteEquipment";
 
 const InventoryList: React.FC<InventoryListProps> = ({
   categories,
   onAddEquipment,
   onEditEquipment,
+  onDeleteEquipment,
   onDeleteCategory,
   isLoading = false,
 }) => {
@@ -116,12 +118,17 @@ const InventoryList: React.FC<InventoryListProps> = ({
                 <span className="ml-4 flex-1">{equipment.name}</span>
                 <button
                   className="opacity-0 group-hover:opacity-100 p-1 hover:bg-accent/50 rounded-sm"
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
-                    onEditEquipment?.(equipment.id);
+                    try {
+                      await deleteEquipmentById(equipment.id); // Call the API
+                      onDeleteEquipment?.(equipment.id); // Update the UI
+                    } catch (error) {
+                      console.error("Failed to delete equipment:", error);
+                    }
                   }}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                 </button>
               </div>
             ))}
