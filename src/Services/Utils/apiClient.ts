@@ -1,5 +1,4 @@
 import axios, { AxiosInstance } from "axios";
-
 // Create an Axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: "http://54.153.65.57/api", // Set base URL from environment variables

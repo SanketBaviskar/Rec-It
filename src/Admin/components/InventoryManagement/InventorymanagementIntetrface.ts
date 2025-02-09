@@ -5,19 +5,15 @@ export interface Category {
   equipments?: Equipment[];
 }
 export interface Equipment {
-  id: number;
   name: string;
   code: string;
   image?: any;
   quantity: number;
   price: number;
-  replacementFees: number;
-  description: string;
+  replacementFees?: number;
+  description?: string;
   location: string;
   inventoryId: number;
-  createdAt?: true;
-  updatedAt?: true;
-  isInventory: true;
 }
 export interface InventoryListProps {
   categories: Category[];

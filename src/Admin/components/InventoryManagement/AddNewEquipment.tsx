@@ -40,7 +40,7 @@ const formSchema = z.object({
   replacementFees: z
     .number()
     .min(0, { message: "Replacement fees must be a positive value." }),
-  department: z.string().min(1, { message: "Department is required." }),
+  department: z.string(),
   location: z
     .string()
     .min(2, { message: "Location must be at least 2 characters." }),
@@ -87,22 +87,21 @@ export default function AddNewEquipmentForm({
         price: values.price,
         replacementFees: values.replacementFees,
         location: values.location,
+        inventoryId: parseInt(categoryId)
       }
-      const response = await createEquipment(categoryId, EquipmentDetails);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Adding to category:", categoryId, values);
-      console.log(form);
+      const response = await createEquipment(EquipmentDetails);
       toast({
-        title: "Equipment Added",
-        description:
-          "New equipment has been successfully added to the category.",
+        title: response.status === "success" ? "Success" : "Error",
+        description: response.message || "Inventory deleted successfully",
+        variant: response.status === "success" ? "default" : "destructive",
       });
       form.reset();
       onComplete();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add equipment",
+        description:
+        error.response?.data?.message || "Failed ",
         variant: "destructive",
       });
     } finally {
