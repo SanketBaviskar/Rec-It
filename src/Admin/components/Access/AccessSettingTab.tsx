@@ -54,7 +54,7 @@ export default function AccessSettingsTab() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+
   }
 
   return (

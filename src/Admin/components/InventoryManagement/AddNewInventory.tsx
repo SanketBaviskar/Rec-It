@@ -81,7 +81,6 @@ export default function AddInventoryForm({
 
       // Call API to add inventory
       const response = await addInventory(inventoryData);
-      console.log(response);
       if (response?.status === "success") {
         // Show success toast message
         toast({

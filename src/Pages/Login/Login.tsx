@@ -28,7 +28,6 @@ export default function Login() {
   };
 
   const handleExternalLogin = (provider: string) => {
-    console.log(`login attempted`);
   };
 
   return (

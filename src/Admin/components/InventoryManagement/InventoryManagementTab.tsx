@@ -33,8 +33,7 @@ export default function InventoryManagementTab() {
 
   // Add a handler for category selection
   const handleCategorySelect = (categoryId: string) => {
-    console.log("Selected category ID:", categoryId);
-    console.log("seleted category name:", categories.find((cat)=>cat.id==categoryId).name);
+    
   };
 
   useEffect(() => {
@@ -100,8 +99,7 @@ export default function InventoryManagementTab() {
           onAddEquipment={(id, name) => {
             setActiveComponent("AddNewEquipmentForm");
             setComponentProps({ categoryId: id, catagoryName:name});
-            console.log(id,  "on Add equipment");
-            console.log(name,  "on Add equipment");
+            
           }}
           onDeleteCategory={(id) => setDeletingCategory(id)}
         />

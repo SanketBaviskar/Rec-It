@@ -61,7 +61,6 @@ export default function NewMemberForm({ isOpen, onClose }: NewMemberFormProps) {
     try {
       // Call the API to add a member
       const response = await addMember(formData);
-      console.log("Member added successfully:", response);
       setSubmitMessage("Member added successfully!"); // Show success message
       //setIsSubmitting(false);
       onClose(); // Close the form

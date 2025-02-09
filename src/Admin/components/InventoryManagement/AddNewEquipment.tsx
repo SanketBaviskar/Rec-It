@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {Equipment} from "./InventorymanagementIntetrface"
+import { Equipment } from "./InventorymanagementIntetrface";
 import { createEquipment } from "@/Services/Api/Admin/Equipment/createEquipment";
 import {
   Form,
@@ -49,12 +49,13 @@ const formSchema = z.object({
 interface AddNewEquipmentFormProps {
   onComplete: () => void;
   categoryId: string;
-  categoryName:string // Received from parent component
+  categoryName: string; // Received from parent component
 }
 
 export default function AddNewEquipmentForm({
   onComplete,
-  categoryId, categoryName
+  categoryId,
+  categoryName,
 }: AddNewEquipmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
@@ -87,21 +88,21 @@ export default function AddNewEquipmentForm({
         price: values.price,
         replacementFees: values.replacementFees,
         location: values.location,
-        inventoryId: parseInt(categoryId)
-      }
+        inventoryId: parseInt(categoryId),
+      };
       const response = await createEquipment(EquipmentDetails);
-      toast({
-        title: response.status === "success" ? "Success" : "Error",
-        description: response.message || "Inventory deleted successfully",
-        variant: response.status === "success" ? "default" : "destructive",
-      });
-      form.reset();
-      onComplete();
-    } catch (error) {
+      if (response.status === "success") {
+        toast({
+          title: response.status === "success" ? "Success" : "Error",
+          description: "Equipment added successfully",
+          variant: response.status === "success" ? "success" : "destructive",
+        });
+        form.reset();
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description:
-        error.response?.data?.message || "Failed ",
+        description: error.response?.data?.message || "Failed ",
         variant: "destructive",
       });
     } finally {

@@ -53,7 +53,6 @@ export default function SuspensionSettingsTab({ onComplete }: SuspensionSettings
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     onComplete(); // Call onComplete after submitting
   }
 
