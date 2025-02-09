@@ -17,11 +17,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 export default function InventoryManagementTab() {
-  const { toast } = useToast()
-  const [activeComponent, setActiveComponent] = useState<RegisteredComponents | null>(null);
+  const { toast } = useToast();
+  const [activeComponent, setActiveComponent] =
+    useState<RegisteredComponents | null>(null);
+  const [componentProps, setComponentProps] = useState<Record<string, unknown>>(
+    {}
+  );
+
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [deletingCategory, setDeletingCategory] = useState<number | null>(null);
@@ -29,6 +34,7 @@ export default function InventoryManagementTab() {
   // Add a handler for category selection
   const handleCategorySelect = (categoryId: string) => {
     console.log("Selected category ID:", categoryId);
+    console.log("seleted category name:", categories.find((cat)=>cat.id==categoryId).name);
   };
 
   useEffect(() => {
@@ -37,7 +43,7 @@ export default function InventoryManagementTab() {
 
   const handleConfirmDelete = async () => {
     if (!deletingCategory) return;
-    
+
     try {
       const response = await deleteInventory(deletingCategory);
       toast({
@@ -45,15 +51,15 @@ export default function InventoryManagementTab() {
         description: response.message || "Inventory deleted successfully",
         variant: response.status === "success" ? "default" : "destructive",
       });
-      await loadCategories(); 
-      
+      await loadCategories();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to delete inventory",
+        description:
+          error.response?.data?.message || "Failed to delete inventory",
         variant: "destructive",
       });
-      console.error('Delete inventory error:', error);
+      console.error("Delete inventory error:", error);
     } finally {
       setDeletingCategory(null);
     }
@@ -64,7 +70,7 @@ export default function InventoryManagementTab() {
     try {
       // Add cache-buster to prevent stale data
       const response = await fetchInventoryCategories({ ts: Date.now() });
-      if(response.status === "success"){
+      if (response.status === "success") {
         setCategories(response.data?.items || []);
       }
     } catch (error) {
@@ -73,8 +79,7 @@ export default function InventoryManagementTab() {
     }
   };
 
-
-  return (    
+  return (
     <div className="flex h-full">
       {/* Left sidebar */}
       <div className="w-64 border-r bg-background p-4">
@@ -92,7 +97,12 @@ export default function InventoryManagementTab() {
         <InventoryList
           categories={categories}
           onCategorySelect={handleCategorySelect}
-          onAddEquipment={() => setActiveComponent("AddNewEquipmentForm")}
+          onAddEquipment={(id, name) => {
+            setActiveComponent("AddNewEquipmentForm");
+            setComponentProps({ categoryId: id, catagoryName:name});
+            console.log(id,  "on Add equipment");
+            console.log(name,  "on Add equipment");
+          }}
           onDeleteCategory={(id) => setDeletingCategory(id)}
         />
       </div>
@@ -114,14 +124,15 @@ export default function InventoryManagementTab() {
         )}
         <div className="h-full overflow-y-auto">
           {activeComponent ? (
-            <RenderWindow 
+            <RenderWindow
               activeComponent={activeComponent}
               componentProps={{
                 onComplete: () => {
-                  
                   setActiveComponent(null);
                   loadCategories(); // Refresh categories when closing
-                }
+                },
+                categoryId: componentProps.categoryId,
+                categoryName: componentProps.catagoryName,
               }}
             />
           ) : (
@@ -137,15 +148,15 @@ export default function InventoryManagementTab() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the inventory
-              and remove all associated equipment.
+              This action cannot be undone. This will permanently delete the
+              inventory and remove all associated equipment.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDeletingCategory(null)}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

@@ -3,6 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import {Equipment} from "./InventorymanagementIntetrface"
+import { createEquipment } from "@/Services/Api/Admin/Equipment/createEquipment";
 import {
   Form,
   FormControl,
@@ -46,12 +48,13 @@ const formSchema = z.object({
 
 interface AddNewEquipmentFormProps {
   onComplete: () => void;
-  categoryId: string; // Received from parent component
+  categoryId: string;
+  categoryName:string // Received from parent component
 }
 
 export default function AddNewEquipmentForm({
   onComplete,
-  categoryId,
+  categoryId, categoryName
 }: AddNewEquipmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
@@ -74,9 +77,18 @@ export default function AddNewEquipmentForm({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-
-    // Simulated API call with categoryId
     try {
+      const EquipmentDetails: Equipment = {
+        name: values.equipmentName,
+        code: values.equipmentCode,
+        image: values.equipmentImage,
+        description: values.description,
+        quantity: values.quantity,
+        price: values.price,
+        replacementFees: values.replacementFees,
+        location: values.location,
+      }
+      const response = await createEquipment(categoryId, EquipmentDetails);
       await new Promise((resolve) => setTimeout(resolve, 2000));
       console.log("Adding to category:", categoryId, values);
       console.log(form);
@@ -240,15 +252,14 @@ export default function AddNewEquipmentForm({
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="department"
-            render={({ field }) => (
+            render={() => (
               <FormItem>
                 <FormLabel>Department</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter department" {...field} />
+                  <Input value={categoryName} disabled />
                 </FormControl>
                 <FormMessage />
               </FormItem>

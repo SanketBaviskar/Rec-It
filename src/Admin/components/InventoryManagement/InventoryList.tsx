@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronRight, EllipsisVertical, Loader2, Trash } from "lucide-react";
-import { Category, InventoryListProps } from "./dummy";
+import { Category, InventoryListProps } from "./InventorymanagementIntetrface";
 import { deleteEquipmentById } from "@/Services/Api/Admin/Equipment/deleteEquipment";
 
 const InventoryList: React.FC<InventoryListProps> = ({
@@ -85,15 +85,17 @@ const InventoryList: React.FC<InventoryListProps> = ({
             className="absolute left-full top-0 ml-1 z-10 bg-white shadow-lg rounded-md p-2 border min-w-[200px]"
           >
             <div
+            //add equipment code
               className="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm"
               onClick={() => {
-                onAddEquipment?.(category.id);
-                setActiveMenu(null);
+              onAddEquipment?.(category.id, category.name);
+              setActiveMenu(null);
               }}
             >
               Add Equipment
             </div>
             {onDeleteCategory && (
+              //delete equipment code
               <div
                 className="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm text-destructive font-medium"
                 onClick={() => {
