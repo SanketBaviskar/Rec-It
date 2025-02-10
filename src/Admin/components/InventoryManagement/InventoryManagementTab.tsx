@@ -33,7 +33,7 @@ export default function InventoryManagementTab() {
 
   // Add a handler for category selection
   const handleCategorySelect = (categoryId: string) => {
-    
+    console.log("Selected category ID:", categoryId);
   };
 
   useEffect(() => {
@@ -98,8 +98,12 @@ export default function InventoryManagementTab() {
           onCategorySelect={handleCategorySelect}
           onAddEquipment={(id, name) => {
             setActiveComponent("AddNewEquipmentForm");
-            setComponentProps({ categoryId: id, catagoryName:name});
-            
+            setComponentProps({ categoryId: id, categoryName: name , mode:"create"});
+          }}
+          
+          onOpenEquipment={(id) => {
+            setActiveComponent("Equipment");
+            setComponentProps({ equipmentId: id });
           }}
           onDeleteCategory={(id) => setDeletingCategory(id)}
         />
@@ -129,8 +133,14 @@ export default function InventoryManagementTab() {
                   setActiveComponent(null);
                   loadCategories(); // Refresh categories when closing
                 },
-                categoryId: componentProps.categoryId,
-                categoryName: componentProps.catagoryName,
+                ...(activeComponent === "AddNewEquipmentForm" ? {
+                  categoryId: componentProps.categoryId,
+                  categoryName: componentProps.categoryName,
+                  mode: componentProps.mode,
+                } : {}),
+                ...(activeComponent === "Equipment" ? {
+                  equipmentId: componentProps.equipmentId,
+                } : {})
               }}
             />
           ) : (

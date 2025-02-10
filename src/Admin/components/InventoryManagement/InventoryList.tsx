@@ -6,9 +6,9 @@ import { deleteEquipmentById } from "@/Services/Api/Admin/Equipment/deleteEquipm
 const InventoryList: React.FC<InventoryListProps> = ({
   categories,
   onAddEquipment,
-  onEditEquipment,
   onDeleteEquipment,
   onDeleteCategory,
+  onOpenEquipment,
   isLoading = false,
 }) => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -59,8 +59,9 @@ const InventoryList: React.FC<InventoryListProps> = ({
         >
           {hasChildren ? (
             <ChevronRight
-              className={`h-4 w-4 transition-transform ${expanded.has(category.id) ? "rotate-90" : ""
-                }`}
+              className={`h-4 w-4 transition-transform ${
+                expanded.has(category.id) ? "rotate-90" : ""
+              }`}
             />
           ) : (
             <div className="w-4" />
@@ -85,11 +86,11 @@ const InventoryList: React.FC<InventoryListProps> = ({
             className="absolute left-full top-0 ml-1 z-10 bg-white shadow-lg rounded-md p-2 border min-w-[200px]"
           >
             <div
-            //add equipment code
+              //add equipment code
               className="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm"
               onClick={() => {
-              onAddEquipment?.(category.id, category.name);
-              setActiveMenu(null);
+                onAddEquipment?.(category.id, category.name);
+                setActiveMenu(null);
               }}
             >
               Add Equipment
@@ -115,9 +116,16 @@ const InventoryList: React.FC<InventoryListProps> = ({
               <div
                 key={equipment.id}
                 className="flex items-center gap-1 px-2 py-1.5 hover:bg-accent cursor-pointer group"
-                onClick={() => onEditEquipment?.(equipment.id)}
+                
               >
-                <span className="ml-4 flex-1">{equipment.name}</span>
+                <span
+                  className="ml-4 flex-1"
+                  onClick={() => {
+                    onOpenEquipment?.(equipment.id);
+                  }}
+                >
+                  {equipment.name}
+                </span>
                 <button
                   className="opacity-0 group-hover:opacity-100 p-1 hover:bg-accent/50 rounded-sm"
                   onClick={async (e) => {
@@ -147,7 +155,6 @@ const InventoryList: React.FC<InventoryListProps> = ({
           <div className="bg-white p-6 rounded-lg max-w-md w-full">
             <h3 className="text-lg font-semibold mb-4">Category Details</h3>
             <p className="font-medium">Name: {selectedCategory.name}</p>
-            <p className="font-medium">ID: {selectedCategory.id}</p>
             <button
               onClick={() => setSelectedCategory(null)}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

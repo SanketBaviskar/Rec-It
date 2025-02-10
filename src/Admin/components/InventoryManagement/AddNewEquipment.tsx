@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Equipment } from "./InventorymanagementIntetrface";
+import {
+  AddNewEquipmentFormProps,
+  Equipment,
+} from "./InventorymanagementIntetrface";
 import { createEquipment } from "@/Services/Api/Admin/Equipment/createEquipment";
 import {
   Form,
@@ -25,6 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { updateEquipment } from "@/Services/Api/Admin/Equipment/updateEquipment";
+import { deleteEquipmentById } from "@/Services/Api/Admin/Equipment/deleteEquipment";
 
 const formSchema = z.object({
   equipmentName: z
@@ -46,16 +51,13 @@ const formSchema = z.object({
     .min(2, { message: "Location must be at least 2 characters." }),
 });
 
-interface AddNewEquipmentFormProps {
-  onComplete: () => void;
-  categoryId: string;
-  categoryName: string; // Received from parent component
-}
-
 export default function AddNewEquipmentForm({
   onComplete,
   categoryId,
   categoryName,
+  mode,
+  equipment,
+  equipmentId,
 }: AddNewEquipmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
@@ -76,6 +78,44 @@ export default function AddNewEquipmentForm({
     },
   });
 
+  useEffect(() => {
+    if (mode === "edit") {
+      form.reset({
+        equipmentName: equipment?.name || "",
+        equipmentCode: equipment?.code || "",
+        equipmentImage: equipment?.image || "",
+        description: equipment?.description || "",
+        quantity: equipment?.quantity || 1,
+        price: equipment?.price || 0,
+        replacementFees: equipment?.replacementFees || 0,
+        department: equipment?.inventory.name || "",
+        location: equipment?.location || "",
+      });
+      console.log("Form Values", form.getValues());
+    }
+  }, [mode, equipment, form]);
+
+  async function saveEdited(formVal: any) {
+    try {
+      const response = await updateEquipment(equipmentId, { formVal });
+      if (response.status === "success") {
+        toast({
+          title: "Success",
+          description: "Equipment Updated successfully",
+          variant: "success",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to add or update equipment",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
@@ -88,21 +128,22 @@ export default function AddNewEquipmentForm({
         price: values.price,
         replacementFees: values.replacementFees,
         location: values.location,
-        inventoryId: parseInt(categoryId),
+        inventoryId: parseInt(categoryId || "", 10),
       };
       const response = await createEquipment(EquipmentDetails);
       if (response.status === "success") {
         toast({
-          title: response.status === "success" ? "Success" : "Error",
+          title: "Success",
           description: "Equipment added successfully",
-          variant: response.status === "success" ? "success" : "destructive",
+          variant: "success",
         });
         form.reset();
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed ",
+        description:
+          error.response?.data?.message || "Failed to add or update equipment",
         variant: "destructive",
       });
     } finally {
@@ -120,6 +161,28 @@ export default function AddNewEquipmentForm({
     onComplete();
   };
 
+  async function deleteEquipment(id) {
+    const response = await deleteEquipmentById(id);
+    try {
+      if (response.status === "success") {
+        toast({
+          title: "Success",
+          description: "Equipment Deleted successfully",
+          variant: "destructive",
+        });
+        onComplete();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to add or update equipment",
+        variant: "destructive",
+      });
+    } finally {
+     console.log("success")
+    }
+  }
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -255,11 +318,14 @@ export default function AddNewEquipmentForm({
           <FormField
             control={form.control}
             name="department"
-            render={() => (
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>Department</FormLabel>
                 <FormControl>
-                  <Input value={categoryName} disabled />
+                  <Input
+                    value={mode === "create" ? categoryName : field.value}
+                    disabled
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -282,16 +348,38 @@ export default function AddNewEquipmentForm({
         </div>
 
         <div className="flex space-x-4">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Adding..." : "Add Equipment"}
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setIsCancelPopupOpen(true)}
-          >
-            Cancel
-          </Button>
+          {mode === "create" && (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Equipment"}
+            </Button>
+          )}
+          {mode === "edit" && (
+            <Button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => saveEdited(form.getValues())}
+            >
+              {isSubmitting ? "Saving..." : "Save Equipment"}
+            </Button>
+          )}
+          {mode === "create" && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setIsCancelPopupOpen(true)}
+            >
+              Cancel
+            </Button>
+          )}
+          {mode === "edit" && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => deleteEquipment(equipmentId)}
+            >
+              Delete Equipment
+            </Button>
+          )}
         </div>
       </form>
       <Toaster />

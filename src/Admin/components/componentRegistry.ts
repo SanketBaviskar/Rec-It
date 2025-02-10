@@ -11,6 +11,7 @@ export const COMPONENT_REGISTRY = {
   "Membership Settings": lazy(() => import("./Membership/MembershipSettings")),
   "Pass Settings": lazy(() => import("./Membership/MembershipAndPasses")),
   "Member Types": lazy(() => import("./Member Settings/MemberTypes")),
+  "Equipment": lazy(() => import("./InventoryManagement/Equipment")),
 } as const;
 
 export type RegisteredComponents = keyof typeof COMPONENT_REGISTRY;
