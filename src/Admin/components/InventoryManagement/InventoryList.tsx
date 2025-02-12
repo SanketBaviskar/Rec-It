@@ -1,19 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronRight, EllipsisVertical, Loader2, Trash } from "lucide-react";
-import { Category, InventoryListProps } from "./InventorymanagementIntetrface";
+import { Inventory, InventoryListProps } from "./InventorymanagementIntetrface";
 import { deleteEquipmentById } from "@/Services/Api/Admin/Equipment/deleteEquipment";
 
 const InventoryList: React.FC<InventoryListProps> = ({
   categories,
   onAddEquipment,
   onDeleteEquipment,
-  onDeleteCategory,
+  onDeleteInventory,
   onOpenEquipment,
+  onComplete,
   isLoading = false,
 }) => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<{
+  const [selectedInventory, setSelectedInventory] = useState<{
     name: string;
     id: string;
   } | null>(null);
@@ -37,50 +38,50 @@ const InventoryList: React.FC<InventoryListProps> = ({
     );
   };
 
-  const handleCategoryAction = (category: Category) => {
-    // Check if category has equipment to toggle expand
-    if (category.equipments && category.equipments.length > 0) {
-      toggleExpand(category.id);
+  const handleInventoryAction = (inventory: Inventory) => {
+    // Check if Inventory has equipment to toggle expand
+    if (inventory.equipments && inventory.equipments.length > 0) {
+      toggleExpand(inventory.id);
     } else {
-      setSelectedCategory({ name: category.name, id: category.id });
+      setSelectedInventory({ name: inventory.name, id: inventory.id });
     }
   };
 
-  const renderCategory = (category: Category) => {
+  const renderInventory = (inventory: Inventory) => {
     // Check for equipment to determine if we show chevron
-    const hasChildren = category.equipments && category.equipments.length > 0;
+    const hasChildren = inventory.equipments && inventory.equipments.length > 0;
     return (
-      <div key={category.id} className="group relative">
+      <div key={inventory.id} className="group relative">
         <div
           className="flex items-center gap-1 px-2 py-1.5 cursor-pointer hover:bg-accent"
-          onClick={() => handleCategoryAction(category)}
-          onKeyDown={(e) => e.key === "Enter" && handleCategoryAction(category)}
+          onClick={() => handleInventoryAction(inventory)}
+          onKeyDown={(e) => e.key === "Enter" && handleInventoryAction(inventory)}
           tabIndex={0}
         >
           {hasChildren ? (
             <ChevronRight
               className={`h-4 w-4 transition-transform ${
-                expanded.has(category.id) ? "rotate-90" : ""
+                expanded.has(inventory.id) ? "rotate-90" : ""
               }`}
             />
           ) : (
             <div className="w-4" />
           )}
-          <span className="ml-1">{category.name}</span>
+          <span className="ml-1">{inventory.name}</span>
           {/* Always show action menu if onAddEquipment exists */}
           {onAddEquipment && (
             <div
               className="p-2 hover:bg-accent/50 rounded-sm ml-auto"
               onClick={(e) => {
                 e.stopPropagation();
-                setActiveMenu(activeMenu === category.id ? null : category.id);
+                setActiveMenu(activeMenu === inventory.id ? null : inventory.id);
               }}
             >
               <EllipsisVertical className="h-4 w-4" />
             </div>
           )}
         </div>
-        {activeMenu === category.id && (
+        {activeMenu === inventory.id && (
           <div
             ref={menuRef}
             className="absolute left-full top-0 ml-1 z-10 bg-white shadow-lg rounded-md p-2 border min-w-[200px]"
@@ -89,18 +90,18 @@ const InventoryList: React.FC<InventoryListProps> = ({
               //add equipment code
               className="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm"
               onClick={() => {
-                onAddEquipment?.(category.id, category.name);
+                onAddEquipment?.(inventory.id, inventory.name);
                 setActiveMenu(null);
               }}
             >
               Add Equipment
             </div>
-            {onDeleteCategory && (
+            {onDeleteInventory && (
               //delete equipment code
               <div
                 className="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm text-destructive font-medium"
                 onClick={() => {
-                  onDeleteCategory(category.id);
+                  onDeleteInventory(inventory.id);
                   setActiveMenu(null);
                 }}
               >
@@ -110,9 +111,9 @@ const InventoryList: React.FC<InventoryListProps> = ({
           </div>
         )}
         {/* Show equipment list when expanded */}
-        {expanded.has(category.id) && hasChildren && (
+        {expanded.has(inventory.id) && hasChildren && (
           <div className="ml-4">
-            {category.equipments?.map((equipment) => (
+            {inventory.equipments?.map((equipment) => (
               <div
                 key={equipment.id}
                 className="flex items-center gap-1 px-2 py-1.5 hover:bg-accent cursor-pointer group"
@@ -150,13 +151,13 @@ const InventoryList: React.FC<InventoryListProps> = ({
 
   return (
     <div className="space-y-1" role="tree">
-      {selectedCategory && (
+      {selectedInventory && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-4">Category Details</h3>
-            <p className="font-medium">Name: {selectedCategory.name}</p>
+            <h3 className="text-lg font-semibold mb-4">Inventory Details</h3>
+            <p className="font-medium">Name: {selectedInventory.name}</p>
             <button
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => setSelectedInventory(null)}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
               Close
@@ -170,7 +171,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
           <span>Loading categories...</span>
         </div>
       ) : categories.length > 0 ? (
-        categories.map(renderCategory)
+        categories.map(renderInventory)
       ) : (
         <p className="text-sm px-2">No categories available</p>
       )}

@@ -138,7 +138,7 @@ export default function AddInventoryForm({
                   <Input placeholder="Enter inventory name" {...field} />
                 </FormControl>
                 <FormDescription>
-                  The name of the new inventory category.
+                  The name of the new inventory.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -153,12 +153,12 @@ export default function AddInventoryForm({
                 <FormLabel>Description</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Describe the inventory category"
+                    placeholder="Describe the inventory "
                     {...field}
                   />
                 </FormControl>
                 <FormDescription>
-                  Provide a brief description of this inventory category.
+                  Provide a brief description of this inventory .
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -230,7 +230,7 @@ export default function AddInventoryForm({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Choose an icon for this inventory category
+                  Choose an icon for this inventory 
                 </FormDescription>
                 <FormMessage />
               </FormItem>

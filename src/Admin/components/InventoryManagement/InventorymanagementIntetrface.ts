@@ -1,4 +1,4 @@
-export interface Category {
+export interface Inventory {
   id: string;
   name: string;
   items: number;
@@ -16,20 +16,21 @@ export interface Equipment {
   inventoryId: number;
 }
 export interface InventoryListProps {
-  categories: Category[];
-  onCategorySelect: (categoryId: string) => void;
-  onAddEquipment?: (categoryId: string, catagoryName: string) => void;
+  categories: Inventory[];
+  onComplete:() => void;
+  onInventorySelect: (inventoryId: string) => void;
+  onAddEquipment?: (inventoryId: string, inventoryName: string) => void;
   onEditEquipment?: (equipmentId: string) => void;
   onDeleteEquipment?: (equipmentId: string) => void;
-  onDeleteCategory?: (categoryId: string) => void;
+  onDeleteInventory?: (inventoryId: string) => void;
   onOpenEquipment?: (equipmentId: string) => void;
   isLoading?: boolean;
 }
 
 export interface AddNewEquipmentFormProps {
   onComplete: () => void;
-  categoryId?: string;
-  categoryName?: string;
+  inventoryId?: string;
+  inventoryName?: string;
   mode?: 'create' | 'edit' ;// Received from parent component
   equipment:any;
   equipmentId:string;

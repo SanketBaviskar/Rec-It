@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+
 export default function InventoryManagementTab() {
   const { toast } = useToast();
   const [activeComponent, setActiveComponent] =
@@ -28,12 +29,12 @@ export default function InventoryManagementTab() {
   );
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [deletingCategory, setDeletingCategory] = useState<number | null>(null);
+  const [categories, setCategories] = useState<Inventory[]>([]);
+  const [deletingInventory, setDeletingInventory] = useState<number | null>(null);
 
-  // Add a handler for category selection
-  const handleCategorySelect = (categoryId: string) => {
-    console.log("Selected category ID:", categoryId);
+  // Add a handler for Inventory selection
+  const handleInventorySelect = (inventoryId: string) => {
+    console.log("Selected Inventory ID:", inventoryId);
   };
 
   useEffect(() => {
@@ -41,10 +42,10 @@ export default function InventoryManagementTab() {
   }, []);
 
   const handleConfirmDelete = async () => {
-    if (!deletingCategory) return;
+    if (!deletingInventory) return;
 
     try {
-      const response = await deleteInventory(deletingCategory);
+      const response = await deleteInventory(deletingInventory);
       toast({
         title: response.status === "success" ? "Success" : "Error",
         description: response.message || "Inventory deleted successfully",
@@ -60,7 +61,7 @@ export default function InventoryManagementTab() {
       });
       console.error("Delete inventory error:", error);
     } finally {
-      setDeletingCategory(null);
+      setDeletingInventory(null);
     }
   };
 
@@ -95,17 +96,18 @@ export default function InventoryManagementTab() {
         </div>
         <InventoryList
           categories={categories}
-          onCategorySelect={handleCategorySelect}
+          onInventorySelect={handleInventorySelect}
+          onComplete={loadCategories} // Pass loadCategories as onComplete callback
           onAddEquipment={(id, name) => {
             setActiveComponent("AddNewEquipmentForm");
-            setComponentProps({ categoryId: id, categoryName: name , mode:"create"});
+            setComponentProps({ inventoryId: id, inventoryName: name , mode:"create"});
           }}
           
           onOpenEquipment={(id) => {
             setActiveComponent("Equipment");
             setComponentProps({ equipmentId: id });
           }}
-          onDeleteCategory={(id) => setDeletingCategory(id)}
+          onDeleteInventory={(id) => setDeletingInventory(id)}
         />
       </div>
 
@@ -134,8 +136,8 @@ export default function InventoryManagementTab() {
                   loadCategories(); // Refresh categories when closing
                 },
                 ...(activeComponent === "AddNewEquipmentForm" ? {
-                  categoryId: componentProps.categoryId,
-                  categoryName: componentProps.categoryName,
+                  inventoryId: componentProps.inventoryId,
+                  inventoryName: componentProps.inventoryName,
                   mode: componentProps.mode,
                 } : {}),
                 ...(activeComponent === "Equipment" ? {
@@ -151,7 +153,7 @@ export default function InventoryManagementTab() {
         </div>
       </div>
 
-      <AlertDialog open={!!deletingCategory}>
+      <AlertDialog open={!!deletingInventory}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -161,7 +163,7 @@ export default function InventoryManagementTab() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingCategory(null)}>
+            <AlertDialogCancel onClick={() => setDeletingInventory(null)}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

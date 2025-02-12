@@ -45,7 +45,7 @@ const formSchema = z.object({
   replacementFees: z
     .number()
     .min(0, { message: "Replacement fees must be a positive value." }),
-  department: z.string(),
+  inventoryName: z.string(),
   location: z
     .string()
     .min(2, { message: "Location must be at least 2 characters." }),
@@ -53,8 +53,8 @@ const formSchema = z.object({
 
 export default function AddNewEquipmentForm({
   onComplete,
-  categoryId,
-  categoryName,
+  inventoryId,
+  inventoryName,
   mode,
   equipment,
   equipmentId,
@@ -73,7 +73,7 @@ export default function AddNewEquipmentForm({
       quantity: 1,
       price: 0,
       replacementFees: 0,
-      department: "",
+      inventoryName: "",
       location: "",
     },
   });
@@ -88,7 +88,7 @@ export default function AddNewEquipmentForm({
         quantity: equipment?.quantity || 1,
         price: equipment?.price || 0,
         replacementFees: equipment?.replacementFees || 0,
-        department: equipment?.inventory.name || "",
+        inventoryName: equipment?.inventory.name || "",
         location: equipment?.location || "",
       });
       console.log("Form Values", form.getValues());
@@ -128,7 +128,7 @@ export default function AddNewEquipmentForm({
         price: values.price,
         replacementFees: values.replacementFees,
         location: values.location,
-        inventoryId: parseInt(categoryId || "", 10),
+        inventoryId: parseInt(inventoryId || "", 10),
       };
       const response = await createEquipment(EquipmentDetails);
       if (response.status === "success") {
@@ -138,6 +138,7 @@ export default function AddNewEquipmentForm({
           variant: "success",
         });
         form.reset();
+        onComplete();
       }
     } catch (error: any) {
       toast({
@@ -161,7 +162,7 @@ export default function AddNewEquipmentForm({
     onComplete();
   };
 
-  async function deleteEquipment(id) {
+  async function deleteEquipment(id:string) {
     const response = await deleteEquipmentById(id);
     try {
       if (response.status === "success") {
@@ -170,7 +171,6 @@ export default function AddNewEquipmentForm({
           description: "Equipment Deleted successfully",
           variant: "destructive",
         });
-        onComplete();
       }
     } catch (error: any) {
       toast({
@@ -197,7 +197,7 @@ export default function AddNewEquipmentForm({
                   <Input placeholder="Enter equipment name" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Name of the equipment within the category.
+                  Name of the equipment within the inventory.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -317,13 +317,13 @@ export default function AddNewEquipmentForm({
           />
           <FormField
             control={form.control}
-            name="department"
+            name="inventoryName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Department</FormLabel>
+                <FormLabel>inventoryName</FormLabel>
                 <FormControl>
                   <Input
-                    value={mode === "create" ? categoryName : field.value}
+                    value={mode === "create" ? inventoryName : field.value}
                     disabled
                   />
                 </FormControl>
@@ -348,6 +348,7 @@ export default function AddNewEquipmentForm({
         </div>
 
         <div className="flex space-x-4">
+          
           {mode === "create" && (
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Adding..." : "Add Equipment"}
