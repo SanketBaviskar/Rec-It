@@ -43,78 +43,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { sampleFacilities } from "./SampleData";
 
-type Facility = {
-  id: string;
-  name: string;
-  type: string;
-  capacity: number;
-  available: boolean;
-  location: string;
-  equipment: string[];
-  color: string;
-};
-
-type Booking = {
-  id: string;
-  title: string;
-  facility: string;
-  start: Date;
-  end: Date;
-  type: "booking" | "maintenance" | "event";
-  status: "pending" | "confirmed" | "cancelled";
-  description?: string;
-  attendees?: number;
-  instructor?: string;
-  createdAt: Date;
-  recurring?: {
-    frequency: "daily" | "weekly" | "monthly";
-    endDate: Date;
-  };
-};
-
-const sampleFacilities: Facility[] = [
-  {
-    id: "1",
-    name: "Main Basketball Court",
-    type: "court",
-    capacity: 30,
-    available: true,
-    location: "Ground Floor",
-    equipment: ["Basketballs", "Scoreboard"],
-    color: "#4CAF50", // Green
-  },
-  {
-    id: "2",
-    name: "Swimming Pool",
-    type: "pool",
-    capacity: 40,
-    available: true,
-    location: "Basement Level",
-    equipment: ["Lane Dividers", "Life Jackets"],
-    color: "#2196F3", // Blue
-  },
-  {
-    id: "3",
-    name: "Fitness Studio",
-    type: "studio",
-    capacity: 20,
-    available: true,
-    location: "Second Floor",
-    equipment: ["Yoga Mats", "Sound System"],
-    color: "#FFC107", // Amber
-  },
-  {
-    id: "4",
-    name: "Weight Room",
-    type: "gym",
-    capacity: 25,
-    available: true,
-    location: "First Floor",
-    equipment: ["Free Weights", "Machines"],
-    color: "#9C27B0", // Purple
-  },
-];
 
 export default function CalendarTab() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -143,11 +73,7 @@ export default function CalendarTab() {
   const handlePreviousDay = () => {
     setCurrentDate((prev) => subDays(prev, 1))
   }
-  /*************  ✨ Codeium Command ⭐  *************/
-  /**
-   * Sets the current date to the next day
-   */
-  /******  40ee3015-5554-4c2b-b1ea-d7e596e0411f  *******/
+
   const handleNextDay = () => {
     setCurrentDate((prev) => addDays(prev, 1))
   }
@@ -411,7 +337,7 @@ export default function CalendarTab() {
       const scrollTop = calendarRef.current.scrollTop;
       const y = e.clientY - rect.top + scrollTop;
       setMouseY(y);
-      
+
       const minutes = Math.floor(y / 2); // Since each pixel represents 0.5 minutes
       const newDate = new Date(currentDate);
       const hours = Math.floor(minutes / 60);
@@ -446,11 +372,11 @@ export default function CalendarTab() {
 
     return (
       <div
-      className="relative"
-      onClick={handleCalendarClick}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
+        className="relative"
+        onClick={handleCalendarClick}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         {/* Time grid lines */}
         {intervals.map((interval, index) => (
           <div
@@ -481,14 +407,14 @@ export default function CalendarTab() {
 
         {/* Time indicator line */}
         {mouseTime && (
-        <div 
-          className="absolute left-0 right-0 flex items-center pointer-events-none"
-          style={{
-            top: `${(mouseY||0) - 28}px`,
-            zIndex: 20,
-            transition: isHovering ? 'none' : 'top 0.1s ease-out'
-          }}
-        >
+          <div
+            className="absolute left-0 right-0 flex items-center pointer-events-none"
+            style={{
+              top: `${(mouseY || 0) - 28}px`,
+              zIndex: 20,
+              transition: isHovering ? 'none' : 'top 0.1s ease-out'
+            }}
+          >
             <div className="w-14 pr-2 text-right">
               <span className="bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
                 {format(mouseTime, "HH:mm")}
@@ -513,7 +439,7 @@ export default function CalendarTab() {
       </div>
     );
   };
-  
+
   const getUpcomingEvents = () => {
     const now = new Date()
     const twoHoursLater = addMinutes(now, 120)
