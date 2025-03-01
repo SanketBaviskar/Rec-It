@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 #root{
   width: 100vw;
   height:100vh;
@@ -36,4 +40,62 @@
 
 .read-the-docs {
   color: #888;
+}
+@layer components {
+  .widget {
+    @apply bg-card text-card-foreground rounded-lg border shadow-sm overflow-hidden transition-all duration-200 flex flex-col;
+  }
+  
+  .widget-header {
+    @apply flex items-center justify-between p-4 border-b;
+  }
+  
+  .widget-title {
+    @apply text-lg font-semibold;
+  }
+  
+  .widget-content {
+    @apply p-4 flex-1;
+  }
+  
+  .animate-on-change {
+    animation: wiggle 0.5s ease-in-out;
+  }
+  
+  .entrance-animation {
+    @apply opacity-0;
+    animation: fade-in 0.5s ease-out forwards;
+  }
+  
+  .grid-placeholder {
+    @apply border-2 border-dashed border-border rounded-lg bg-muted/30 flex items-center justify-center h-40 min-h-full;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .dashboard-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .dashboard-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .dashboard-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-md dark:bg-black/40;
+  }
 }
