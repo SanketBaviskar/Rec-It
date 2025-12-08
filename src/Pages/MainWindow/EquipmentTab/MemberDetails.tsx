@@ -3,7 +3,7 @@ import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Uncomment this for future use when the UserData type is defined
-// import { UserData } from "@/Interface/memberData";
+// import { UserData } from "@/types/memberData";
 
 export default function MemberDetails({ userDetails }: any) {
 

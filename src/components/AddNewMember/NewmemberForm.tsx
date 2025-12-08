@@ -14,8 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { addMember } from "@/Services/Api/addNewMember"; // Adjust the path as needed
-import { MemberData } from "@/Interface/memberData";
+import { addMember } from "@/services/Api/addNewMember"; // Adjust the path as needed
+import { MemberData } from "@/types/memberData";
 
 
 interface NewMemberFormProps {

@@ -1,5 +1,5 @@
-import { InventoryData } from "@/Interface/inventoryData";
-import apiClient from "@/Services/Utils/apiClient"
+import { InventoryData } from "@/types/inventoryData";
+import apiClient from "@/services/Utils/apiClient"
 
 export const addInventory = async (inventoryData: InventoryData) => {
   try {
