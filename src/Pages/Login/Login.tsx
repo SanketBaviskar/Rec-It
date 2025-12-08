@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { LoginFormValues } from "@/types/loginData";
 import { Toaster } from "@/components/ui/toaster";
 
+import { ModeToggle } from "@/components/mode-toggle";
+
 export default function Login() {
 	const {
 		register,
@@ -26,16 +28,19 @@ export default function Login() {
 		}
 	};
 
-	const handleExternalLogin = (provider: string) => {};
+	const handleExternalLogin = (_provider: string) => {};
 
 	return (
-		<div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
+		<div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 dark:bg-none dark:bg-background">
 			<header className="flex justify-between items-center p-4">
-				<div className="text-white text-2xl font-bold">Rec-It</div>
+				<div className="text-white dark:text-foreground text-2xl font-bold">
+					Rec-It
+				</div>
+				<ModeToggle />
 			</header>
 			<main className="flex-grow flex items-center justify-center px-4">
 				<div className="w-full max-w-md">
-					<div className="bg-white shadow-xl rounded-lg p-8">
+					<div className="bg-card text-card-foreground shadow-xl rounded-lg p-8 border dark:border-border">
 						<div className="flex justify-center mb-8">
 							<DumbbellIcon className="h-12 w-12 text-blue-500" />
 						</div>
@@ -174,7 +179,7 @@ export default function Login() {
 	);
 }
 
-function loginToast({ messege }) {
+function loginToast({ messege }: { messege: string }) {
 	return (
 		<html lang="en">
 			<head />
