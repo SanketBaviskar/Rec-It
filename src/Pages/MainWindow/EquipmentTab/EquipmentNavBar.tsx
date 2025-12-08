@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { EquipmentInventory } from "./EquipmentInventory";
 import { EquipmentManage } from "./EquipmentManage";
 import {
@@ -10,8 +11,12 @@ import {
 	PenTool,
 	User,
 	Loader2,
+	Package,
+	ClipboardList,
+	Settings,
 } from "lucide-react";
 import { fetchInventoryCategories } from "@/services/Api/Equipment/inventorySidebar";
+import { IndividualEquipment } from "./types";
 
 // Type definitions based on your API response
 interface Department {
@@ -22,9 +27,28 @@ interface Department {
 	updatedAt: string;
 }
 
-export default function EquipmentNavBar() {
+interface SelectedMember {
+	id: string;
+	firstName: string;
+	lastName: string;
+	avatarUrl?: string;
+	membershipType: string;
+	studentId?: string;
+}
+
+interface EquipmentNavBarProps {
+	selectedMember: SelectedMember | null;
+	onCheckout: (items: IndividualEquipment[]) => void;
+}
+
+export default function EquipmentNavBar({
+	selectedMember,
+	onCheckout,
+}: EquipmentNavBarProps) {
 	const [activeSection, setActiveSection] = useState("inventory");
-	const [activeCategory, setActiveCategory] = useState("");
+	const [activeCategory, setActiveCategory] = useState<Department | null>(
+		null
+	);
 	const [categories, setCategories] = useState<Department[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -38,18 +62,15 @@ export default function EquipmentNavBar() {
 		Staff: User,
 	};
 
-	// Define loadCategories at component level so it can be used by both useEffect and handleRetry
 	const loadCategories = async () => {
 		try {
 			setIsLoading(true);
 			setError(null);
 			const response = await fetchInventoryCategories();
-			// Check if the response is successful
 			if (response.status === "success" && response.data?.items) {
 				setCategories(response.data.items);
-				// Set initial active category if none is selected
 				if (!activeCategory && response.data.items.length > 0) {
-					setActiveCategory(response.data.items[0].name);
+					setActiveCategory(response.data.items[0]);
 				}
 			} else {
 				throw new Error(
@@ -72,7 +93,6 @@ export default function EquipmentNavBar() {
 		loadCategories();
 	}, []);
 
-	// Add a retry function
 	const handleRetry = () => {
 		setIsLoading(true);
 		setError(null);
@@ -122,51 +142,49 @@ export default function EquipmentNavBar() {
 		},
 	];
 
-	const handleSectionChange = (section: string, category: string = "") => {
+	const handleSectionChange = (section: string) => {
 		setActiveSection(section);
-		if (section === "inventory") {
-			setActiveCategory(category || (categories[0]?.name ?? ""));
-		} else {
-			setActiveCategory("");
-		}
 	};
 
-	// Get the appropriate icon component for a department
 	const getDepartmentIcon = (departmentName: string) => {
-		const IconComponent = iconMap[departmentName] || User;
+		const IconComponent = iconMap[departmentName] || Package;
 		return IconComponent;
 	};
 
+	const navItems = [
+		{ id: "inventory", label: "Inventory", icon: Package },
+		{ id: "reserve", label: "Reserve", icon: ClipboardList },
+		{ id: "manage", label: "Manage", icon: Settings },
+	];
+
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col h-full bg-background">
 			{/* Top Navbar */}
-			<nav className="border-b">
-				<div className="container mx-auto px-4">
-					<div className="flex justify-start items-center h-16">
-						<ul className="flex space-x-4 py-4">
-							{["Inventory", "Reserve", "Manage"].map(
-								(section) => (
-									<li key={section}>
-										<Button
-											variant="ghost"
-											className={`${
-												activeSection ===
-												section.toLowerCase()
-													? "bg-accent text-accent-foreground"
-													: ""
-											}`}
-											onClick={() =>
-												handleSectionChange(
-													section.toLowerCase()
-												)
-											}
-										>
-											{section}
-										</Button>
-									</li>
-								)
-							)}
-						</ul>
+			<nav className="border-b bg-card">
+				<div className="px-4">
+					<div className="flex items-center h-14 gap-1">
+						{navItems.map((item) => {
+							const Icon = item.icon;
+							return (
+								<Button
+									key={item.id}
+									variant={
+										activeSection === item.id
+											? "default"
+											: "ghost"
+									}
+									className={`flex items-center gap-2 ${
+										activeSection === item.id
+											? "bg-primary text-primary-foreground"
+											: "hover:bg-accent"
+									}`}
+									onClick={() => handleSectionChange(item.id)}
+								>
+									<Icon className="h-4 w-4" />
+									{item.label}
+								</Button>
+							);
+						})}
 					</div>
 				</div>
 			</nav>
@@ -174,95 +192,95 @@ export default function EquipmentNavBar() {
 			{/* Main Content */}
 			<div className="flex flex-1 overflow-hidden">
 				{/* Left Vertical Navbar (Inventory Categories) */}
-
 				{activeSection === "inventory" && (
-					<nav className="w-48 bg-card border-r">
+					<nav className="w-52 bg-card border-r flex-shrink-0">
 						{isLoading ? (
-							<div className="flex justify-center items-center h-full">
-								<Loader2 className="animate-spin" />
+							<div className="flex justify-center items-center h-32">
+								<Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
 							</div>
 						) : error ? (
-							<div className="p-4 flex flex-col items-center">
-								<div className="text-red-500 mb-4">{error}</div>
+							<div className="p-4 flex flex-col items-center text-center">
+								<p className="text-sm text-destructive mb-3">
+									{error}
+								</p>
 								<Button
 									variant="outline"
+									size="sm"
 									onClick={handleRetry}
-									className="flex items-center gap-2 "
+									className="flex items-center gap-2"
 								>
 									<Loader2 className="h-4 w-4" /> Retry
 								</Button>
 							</div>
 						) : (
-							<ul className="py-4 px-4 max-h-[100%] overflow-y-auto scrollbar-hide">
+							<div className="py-3 px-2 space-y-1">
+								<div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+									Categories
+								</div>
 								{categories.map((department) => {
 									const IconComponent = getDepartmentIcon(
 										department.name
 									);
+									const isActive =
+										activeCategory?.id === department.id;
 									return (
-										<li
+										<Button
 											key={department.id}
-											className="py-1"
+											variant={
+												isActive ? "secondary" : "ghost"
+											}
+											className={`w-full justify-start gap-3 h-10 ${
+												isActive
+													? "bg-secondary font-medium"
+													: "text-muted-foreground hover:text-foreground"
+											}`}
+											onClick={() =>
+												setActiveCategory(department)
+											}
 										>
-											<Button
-												variant="ghost"
-												className={`w-full justify-start py-2 px-4 text-left min-h-[50px] h-auto flex items-center gap-2`}
-												onClick={() =>
-													setActiveCategory(
-														department.name
-													)
-												}
-											>
-												<IconComponent className="mr-2 flex-shrink-0" />{" "}
-												{/* Icon */}
-												<div className="flex flex-col min-w-0">
-													{department.name
-														.split(" ")
-														.map((word, index) => (
-															<span
-																key={index}
-																className="whitespace-nowrap overflow-hidden text-ellipsis"
-															>
-																{word}
-															</span>
-														))}
-												</div>
-											</Button>
-										</li>
+											<IconComponent className="h-4 w-4 flex-shrink-0" />
+											<span className="truncate">
+												{department.name}
+											</span>
+										</Button>
 									);
 								})}
-							</ul>
+							</div>
 						)}
 					</nav>
 				)}
 
 				{/* Right Content Area */}
-				<main
-					className={`flex-1 ${
-						activeSection !== "inventory" ? "w-full" : ""
-					}`}
-				>
-					{/* Inventory Section */}
+				<main className="flex-1 overflow-hidden bg-background">
 					{activeSection === "inventory" && (
-						<div className="h-full flex flex-col">
-							{activeCategory && (
-								<div className="flex-1">
-									<EquipmentInventory />
-								</div>
-							)}
-						</div>
-					)}
-
-					{/* Reserve Section */}
-					{activeSection === "reserve" && (
-						<div className="p-4 h-full">
-							<h2 className="text-2xl font-bold mb-4">Reserve</h2>
-							{/* Reserve section content */}
-						</div>
-					)}
-
-					{/* Manage Section */}
-					{activeSection === "manage" && (
 						<div className="h-full">
+							<EquipmentInventory
+								categoryId={activeCategory?.id}
+								selectedMember={selectedMember}
+								onCheckout={onCheckout}
+							/>
+						</div>
+					)}
+
+					{activeSection === "reserve" && (
+						<div className="h-full p-6">
+							<Card>
+								<CardContent className="p-8 text-center">
+									<ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+									<h2 className="text-xl font-semibold mb-2">
+										Reserve Equipment
+									</h2>
+									<p className="text-muted-foreground">
+										Select a member from the left panel to
+										reserve equipment for them.
+									</p>
+								</CardContent>
+							</Card>
+						</div>
+					)}
+
+					{activeSection === "manage" && (
+						<div className="h-full overflow-auto">
 							<EquipmentManage
 								initialItems={initialCheckedOutItems}
 							/>
