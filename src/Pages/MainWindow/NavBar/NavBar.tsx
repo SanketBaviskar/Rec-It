@@ -34,6 +34,7 @@ import {
 	MenuIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/hooks/use-toast";
 
 const tabs = [
 	{ name: "dashboard", icon: LayoutDashboard, tooltip: "View Dashboard" },

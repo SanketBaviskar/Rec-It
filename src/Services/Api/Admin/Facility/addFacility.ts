@@ -1,5 +1,5 @@
 import apiClient from "@/Services/Utils/apiClient";
-import { Facility } from "@/Services/Api/Facility/facilityApi";
+import { Facility } from "@/services/Api/Facility/facilityApi";
 
 export interface CreateFacilityDto {
 	name: string;
@@ -8,6 +8,8 @@ export interface CreateFacilityDto {
 	location: string;
 	manager: string;
 	type: string;
+	categoryId?: number;
+	quantity?: number;
 }
 
 export const addFacility = async (

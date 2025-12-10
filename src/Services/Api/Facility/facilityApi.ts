@@ -8,6 +8,7 @@ export interface Facility {
 	location: string;
 	manager: string;
 	type: string | null;
+	categoryId: number | null;
 	createdAt: string;
 	updatedAt: string;
 }

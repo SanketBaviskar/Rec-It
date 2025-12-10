@@ -4,177 +4,204 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import InventoryList from "./InventoryList";
 import { RegisteredComponents } from "../componentRegistry";
-import RenderWindow from "@/features/admin/Layout/RenderWindow";
+import AddNewInventoryForm from "./AddNewInventory";
+import AddNewEquipmentForm from "./AddNewEquipment";
+import EquipmentDetail from "./Equipment";
 import { fetchInventoryCategories } from "@/services/Api/Equipment/inventorySidebar";
-import { deleteInventory } from "@/services/Api/Admin/Inventory/deleteInventory"; // Add this import
+import { deleteInventory } from "@/services/Api/Admin/Inventory/deleteInventory";
 import { useToast } from "@/components/ui/hooks/use-toast";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-
 export default function InventoryManagementTab() {
-  const { toast } = useToast();
-  const [activeComponent, setActiveComponent] =
-    useState<RegisteredComponents | null>(null);
-  const [componentProps, setComponentProps] = useState<Record<string, unknown>>(
-    {}
-  );
+	const { toast } = useToast();
+	const [activeComponent, setActiveComponent] =
+		useState<RegisteredComponents | null>(null);
+	const [componentProps, setComponentProps] = useState<
+		Record<string, unknown>
+	>({});
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categories, setCategories] = useState<Inventory[]>([]);
-  const [deletingInventory, setDeletingInventory] = useState<number | null>(null);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [categories, setCategories] = useState<any[]>([]); // simplified type for now
+	const [deletingInventory, setDeletingInventory] = useState<number | null>(
+		null
+	);
 
-  // Add a handler for Inventory selection
-  const handleInventorySelect = (inventoryId: string) => {
-    console.log("Selected Inventory ID:", inventoryId);
-  };
+	const handleInventorySelect = (inventoryId: string) => {
+		console.log("Selected Inventory ID:", inventoryId);
+	};
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
+	useEffect(() => {
+		loadCategories();
+	}, []);
 
-  const handleConfirmDelete = async () => {
-    if (!deletingInventory) return;
+	const handleConfirmDelete = async () => {
+		if (!deletingInventory) return;
 
-    try {
-      const response = await deleteInventory(deletingInventory);
-      toast({
-        title: response.status === "success" ? "Success" : "Error",
-        description: response.message || "Inventory deleted successfully",
-        variant: response.status === "success" ? "default" : "destructive",
-      });
-      await loadCategories();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to delete inventory",
-        variant: "destructive",
-      });
-      console.error("Delete inventory error:", error);
-    } finally {
-      setDeletingInventory(null);
-    }
-  };
+		try {
+			const response = await deleteInventory(deletingInventory);
+			toast({
+				title: response.status === "success" ? "Success" : "Error",
+				description:
+					response.message || "Inventory deleted successfully",
+				variant:
+					response.status === "success" ? "default" : "destructive",
+			});
+			await loadCategories();
+		} catch (error: any) {
+			const errorMessage =
+				error?.response?.data?.message || "Failed to delete inventory";
+			toast({
+				title: "Error",
+				description: errorMessage,
+				variant: "destructive",
+			});
+			console.error("Delete inventory error:", error);
+		} finally {
+			setDeletingInventory(null);
+		}
+	};
 
-  // Update loadCategories to handle cache properly
-  const loadCategories = async () => {
-    try {
-      // Add cache-buster to prevent stale data
-      const response = await fetchInventoryCategories({ ts: Date.now() });
-      if (response.status === "success") {
-        setCategories(response.data?.items || []);
-      }
-    } catch (error) {
-      console.error("Error loading categories:", error);
-      setCategories([]);
-    }
-  };
+	const loadCategories = async () => {
+		try {
+			const response = await fetchInventoryCategories({ ts: Date.now() });
+			if (response.status === "success") {
+				setCategories(response.data?.items || []);
+			}
+		} catch (error) {
+			console.error("Error loading categories:", error);
+			setCategories([]);
+		}
+	};
 
-  return (
-    <div className="flex h-full">
-      {/* Left sidebar */}
-      <div className="w-64 border-r bg-background p-4">
-        <div className="flex justify-between items-center mb-4">
-          <div className="font-semibold">Inventory List</div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setActiveComponent("AddNewInventoryForm")}
-            aria-label="Add New Inventory"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-        <InventoryList
-          categories={categories}
-          onInventorySelect={handleInventorySelect}
-          onComplete={loadCategories} // Pass loadCategories as onComplete callback
-          onAddEquipment={(id, name) => {
-            setActiveComponent("AddNewEquipmentForm");
-            setComponentProps({ inventoryId: id, inventoryName: name , mode:"create"});
-          }}
-          
-          onOpenEquipment={(id) => {
-            setActiveComponent("Equipment");
-            setComponentProps({ equipmentId: id });
-          }}
-          onDeleteInventory={(id) => setDeletingInventory(id)}
-        />
-      </div>
+	return (
+		<div className="flex h-full">
+			{/* Left sidebar */}
+			<div className="w-64 border-r bg-background p-4">
+				<div className="flex justify-between items-center mb-4">
+					<div className="font-semibold">Inventory List</div>
+					<Button
+						variant="outline"
+						size="icon"
+						onClick={() =>
+							setActiveComponent("AddNewInventoryForm")
+						}
+						aria-label="Add New Inventory"
+					>
+						<Plus className="h-4 w-4" />
+					</Button>
+				</div>
+				<InventoryList
+					categories={categories}
+					onInventorySelect={handleInventorySelect}
+					onComplete={loadCategories}
+					onAddEquipment={(id, name) => {
+						setActiveComponent("AddNewEquipmentForm");
+						setComponentProps({
+							inventoryId: id,
+							inventoryName: name,
+							mode: "create",
+						});
+					}}
+					onOpenEquipment={(id) => {
+						setActiveComponent("Equipment");
+						setComponentProps({ equipmentId: id });
+					}}
+					onDeleteInventory={(id) => setDeletingInventory(id)}
+				/>
+			</div>
 
-      {/* Main content */}
-      <div className="flex-1 p-6 h-full overflow-hidden">
-        {!activeComponent && (
-          <div className="flex justify-between items-center mb-6">
-            <div className="relative w-96">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search equipment..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
-        <div className="h-full overflow-y-auto">
-          {activeComponent ? (
-            <RenderWindow
-              activeComponent={activeComponent}
-              componentProps={{
-                onComplete: () => {
-                  setActiveComponent(null);
-                  loadCategories(); // Refresh categories when closing
-                },
-                ...(activeComponent === "AddNewEquipmentForm" ? {
-                  inventoryId: componentProps.inventoryId,
-                  inventoryName: componentProps.inventoryName,
-                  mode: componentProps.mode,
-                } : {}),
-                ...(activeComponent === "Equipment" ? {
-                  equipmentId: componentProps.equipmentId,
-                } : {})
-              }}
-            />
-          ) : (
-            <p className="text-center text-muted-foreground">
-              Welcome to Inventory Management. Please select an action.
-            </p>
-          )}
-        </div>
-      </div>
+			{/* Main content */}
+			<div className="flex-1 p-6 h-full overflow-hidden">
+				{!activeComponent && (
+					<div className="flex justify-between items-center mb-6">
+						<div className="relative w-96">
+							<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder="Search equipment..."
+								className="pl-8"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+							/>
+						</div>
+					</div>
+				)}
+				<div className="h-full overflow-y-auto">
+					{activeComponent === "AddNewInventoryForm" && (
+						<AddNewInventoryForm
+							onComplete={() => {
+								setActiveComponent(null);
+								loadCategories();
+							}}
+						/>
+					)}
 
-      <AlertDialog open={!!deletingInventory}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              inventory and remove all associated equipment.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingInventory(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete Inventory
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
+					{activeComponent === "AddNewEquipmentForm" && (
+						<AddNewEquipmentForm
+							onComplete={() => {
+								setActiveComponent(null);
+								loadCategories();
+							}}
+							inventoryId={componentProps.inventoryId as string}
+							inventoryName={
+								componentProps.inventoryName as string
+							}
+							mode={componentProps.mode as "create" | "edit"}
+							equipment={componentProps.equipment as any}
+							equipmentId={componentProps.equipmentId as string}
+						/>
+					)}
+
+					{activeComponent === "Equipment" && (
+						<EquipmentDetail
+							equipmentId={componentProps.equipmentId as string}
+						/>
+					)}
+
+					{!activeComponent && (
+						<p className="text-center text-muted-foreground">
+							Welcome to Inventory Management. Please select an
+							action.
+						</p>
+					)}
+				</div>
+			</div>
+
+			<AlertDialog open={!!deletingInventory}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							Are you absolutely sure?
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							This action cannot be undone. This will permanently
+							delete the inventory and remove all associated
+							equipment.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							onClick={() => setDeletingInventory(null)}
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleConfirmDelete}
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+						>
+							Delete Inventory
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</div>
+	);
 }

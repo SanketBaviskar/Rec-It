@@ -4,7 +4,7 @@ export interface FacilityCategory {
 	id: number;
 	name: string;
 	description?: string;
-	location?: string;
+	location: string;
 	manager?: string;
 	capacity?: number;
 	facilities?: any[]; // Keep flexible or use Facility interface
@@ -28,7 +28,7 @@ export const getFacilityCategories = async (): Promise<FacilityCategory[]> => {
 export const createFacilityCategory = async (data: {
 	name: string;
 	description?: string;
-	location?: string;
+	location: string;
 	manager?: string;
 	capacity?: number;
 }): Promise<FacilityCategory> => {

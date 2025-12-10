@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { RegisteredComponents } from "../../components/componentRegistry";
+import { NavLink } from "react-router-dom";
 
+// Sidebar no longer needs external props for navigation
 interface SidebarProps {
-	onItemClick: (componentName: RegisteredComponents) => void;
+	onItemClick?: (componentName: string) => void; // Optional for backward compatibility if needed, but mostly unused now
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
+const Sidebar: React.FC<SidebarProps> = () => {
 	const [openSections, setOpenSections] = useState<Record<string, boolean>>(
 		{}
 	);
@@ -21,40 +22,46 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
 	const menuItems = [
 		{
 			name: "General Settings",
-			subItems: [] as RegisteredComponents[],
+			// Pointing to root of admin dashboard which renders DefaultView
+			path: ".",
+			subItems: [],
 		},
 		{
 			name: "Access",
 			subItems: [
-				"Access Settings",
-				"Access Profiles",
-				"Identification Types",
-				"Suspension Settings",
-			] as RegisteredComponents[],
+				{ name: "Access Settings", path: "access" },
+				{ name: "Suspension Settings", path: "suspension" },
+				// Placeholders for unimplemented features
+				{ name: "Access Profiles", path: "#" },
+				{ name: "Identification Types", path: "#" },
+			],
 		},
 		{
 			name: "Facility Management",
 			subItems: [
-				"Facility Management",
-				"Facility Categories",
-				"Manage Inventory",
-				"Reports",
-			] as RegisteredComponents[],
+				{ name: "Facility Management", path: "facilities" },
+				{ name: "Facility Categories", path: "facility-categories" },
+				{ name: "Manage Inventory", path: "inventory" }, // Seems shared or miscategorized in original, keeping as is
+				{ name: "Reports", path: "#" },
+			],
 		},
 		{
 			name: "Inventory Management",
-			subItems: ["Manage Inventory", "Reports"] as RegisteredComponents[],
+			subItems: [
+				{ name: "Manage Inventory", path: "inventory" },
+				{ name: "Reports", path: "#" },
+			],
 		},
 		{
 			name: "Memberships and Passes",
 			subItems: [
-				"Membership Settings",
-				"Passes Settings",
-			] as RegisteredComponents[],
+				{ name: "Membership Settings", path: "memberships" },
+				{ name: "Passes Settings", path: "passes" },
+			],
 		},
 		{
 			name: "Member Settings",
-			subItems: ["Member Types"],
+			subItems: [{ name: "Member Types", path: "member-types" }],
 		},
 	];
 
@@ -63,24 +70,30 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
 			<ul className="space-y-2">
 				{menuItems.map((item) => (
 					<li key={item.name}>
-						<div
-							onClick={() => {
-								if (!item.subItems.length)
-									onItemClick(
-										item.name as RegisteredComponents
-									);
-								toggleSection(item.name);
-							}}
-							className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
-								item.subItems.length
-									? "hover:bg-gray-700"
-									: "hover:bg-gray-600"
-							}`}
-						>
-							<span className="text-sm font-medium">
-								{item.name}
-							</span>
-							{item.subItems.length > 0 && (
+						{/* Parent Item */}
+						{item.subItems.length === 0 ? (
+							<NavLink
+								to={item.path || "#"}
+								className={({ isActive }) =>
+									`flex items-center justify-between p-2 rounded-md cursor-pointer ${
+										isActive
+											? "bg-gray-700"
+											: "hover:bg-gray-700"
+									}`
+								}
+							>
+								<span className="text-sm font-medium">
+									{item.name}
+								</span>
+							</NavLink>
+						) : (
+							<div
+								onClick={() => toggleSection(item.name)}
+								className={`flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-gray-700`}
+							>
+								<span className="text-sm font-medium">
+									{item.name}
+								</span>
 								<ChevronRight
 									className={`w-4 h-4 transition-transform ${
 										openSections[item.name]
@@ -88,23 +101,28 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
 											: ""
 									}`}
 								/>
-							)}
-						</div>
+							</div>
+						)}
 
+						{/* Dropdown Items */}
 						{item.subItems.length > 0 &&
 							openSections[item.name] && (
 								<ul className="ml-4 space-y-1">
 									{item.subItems.map((subItem) => (
-										<li
-											key={subItem}
-											className="p-2 text-sm rounded-md cursor-pointer hover:bg-gray-700"
-											onClick={() =>
-												onItemClick(
-													subItem as RegisteredComponents
-												)
-											}
-										>
-											{subItem}
+										<li key={subItem.name}>
+											<NavLink
+												to={subItem.path}
+												className={({ isActive }) =>
+													`block p-2 text-sm rounded-md cursor-pointer ${
+														isActive &&
+														subItem.path !== "#"
+															? "bg-gray-600 font-medium"
+															: "hover:bg-gray-700"
+													}`
+												}
+											>
+												{subItem.name}
+											</NavLink>
 										</li>
 									))}
 								</ul>
