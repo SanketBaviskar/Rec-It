@@ -30,9 +30,10 @@ import {
 	MessagesSquare,
 	UserCircle,
 	Settings,
+	LogOut,
 	MenuIcon,
 } from "lucide-react";
-import { Logout } from "@/components/Auth/Logout";
+import { useNavigate } from "react-router-dom";
 
 const tabs = [
 	{ name: "dashboard", icon: LayoutDashboard, tooltip: "View Dashboard" },
@@ -50,6 +51,17 @@ export default function Navbar({
 	setActiveTab: (tab: string) => void;
 }) {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const navigate = useNavigate();
+	const { toast } = useToast();
+
+	const handleLogout = () => {
+		localStorage.removeItem("token");
+		toast({
+			title: "Logged out",
+			description: "See you soon!",
+		});
+		navigate("/login");
+	};
 
 	return (
 		<header className="sticky top-0 z-50 border-b w-100 border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
@@ -207,10 +219,9 @@ export default function Navbar({
 								<span>Settings</span>
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								onSelect={(e) => e.preventDefault()} // Prevent instant close for click handling inside
-							>
-								<Logout />
+							<DropdownMenuItem onClick={handleLogout}>
+								<LogOut className="mr-2 h-4 w-4" />
+								<span>Log out</span>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
