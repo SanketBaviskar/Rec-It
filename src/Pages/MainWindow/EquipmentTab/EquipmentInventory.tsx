@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
 	Card,
 	CardContent,
@@ -9,33 +9,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Package } from "lucide-react";
+import { Search, Package, Loader2, AlertCircle } from "lucide-react";
 import { EquipmentItem, IndividualEquipment } from "./types";
 import { EquipmentDetailDialog } from "./EquipmentDetailDialog";
 import React from "react";
+import {
+	fetchEquipments,
+	Equipment,
+} from "@/services/Api/Equipment/fetchEquipments";
+import { fetchEquipmentItems } from "@/services/Api/Equipment/checkoutApi";
 
-// Mock data - replace with API call using categoryId
-const sportsEquipment: EquipmentItem[] = [
-	{ id: "1", name: "Basketball", quantity: 15, photoUrl: "" },
-	{ id: "2", name: "Volleyball", quantity: 12, photoUrl: "" },
-	{ id: "3", name: "Tennis Racket", quantity: 8, photoUrl: "" },
-	{ id: "4", name: "Jump Rope", quantity: 20, photoUrl: "" },
-	{ id: "5", name: "Yoga Mat", quantity: 25, photoUrl: "" },
-	{ id: "6", name: "Resistance Bands", quantity: 30, photoUrl: "" },
-];
-
-// Generate individual items for each equipment type
-const generateIndividualItems = (
-	equipment: EquipmentItem
-): IndividualEquipment[] => {
-	const prefix = equipment.name.substring(0, 2).toUpperCase();
-	return Array.from({ length: equipment.quantity }, (_, i) => ({
-		id: `${prefix}${String(i + 1).padStart(3, "0")}`,
-		equipmentTypeId: equipment.id,
-		equipmentName: equipment.name,
-		status: "available" as const,
-	}));
-};
+// Helper to map API equipment to UI type
+const mapEquipmentToUI = (eq: Equipment): EquipmentItem => ({
+	id: eq.id.toString(),
+	name: eq.name,
+	photoUrl: eq.image || "",
+	quantity: eq.quantity,
+});
 
 interface SelectedMember {
 	id: string;
@@ -55,29 +45,96 @@ export function EquipmentInventory({
 	onCheckout,
 }: EquipmentInventoryProps) {
 	const [searchQuery, setSearchQuery] = useState("");
+	const [equipments, setEquipments] = useState<EquipmentItem[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
 	const [selectedEquipment, setSelectedEquipment] =
 		useState<EquipmentItem | null>(null);
+	const [selectedEquipmentItems, setSelectedEquipmentItems] = useState<
+		IndividualEquipment[]
+	>([]);
+	const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 	const [dialogOpen, setDialogOpen] = useState(false);
+
+	// Fetch equipments when category changes
+	useEffect(() => {
+		const loadEquipments = async () => {
+			if (!categoryId) return;
+
+			try {
+				setIsLoading(true);
+				setError(null);
+				const response = await fetchEquipments(categoryId);
+				if (response.status === "success" && response.data) {
+					setEquipments(response.data.map(mapEquipmentToUI));
+				}
+			} catch (err) {
+				console.error("Failed to load equipments:", err);
+				setError("Failed to load equipment list. Please try again.");
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		loadEquipments();
+	}, [categoryId]);
 
 	const filteredItems = useMemo(
 		() =>
-			sportsEquipment.filter((item) =>
+			equipments.filter((item) =>
 				item.name.toLowerCase().includes(searchQuery.toLowerCase())
 			),
-		[searchQuery]
+		[equipments, searchQuery]
 	);
 
-	const handleCardClick = (item: EquipmentItem) => {
+	const handleCardClick = async (item: EquipmentItem) => {
 		setSelectedEquipment(item);
-		setDialogOpen(true);
+		try {
+			setIsLoadingDetails(true);
+			// Fetch individual items for this equipment type
+			const response = await fetchEquipmentItems(parseInt(item.id));
+			if (response.status === "success" && response.data) {
+				const items: IndividualEquipment[] = response.data.map(
+					(eqItem) => ({
+						id: eqItem.id.toString(), // Use the EquipmentItem ID
+						equipmentTypeId: item.id,
+						equipmentName: item.name,
+						status:
+							eqItem.status === "available"
+								? "available"
+								: "checked-out",
+						// We could also map 'maintenance' etc if UI supported it
+					})
+				);
+				setSelectedEquipmentItems(items);
+				setDialogOpen(true);
+			}
+		} catch (err) {
+			console.error("Failed to load item details:", err);
+			// Ideally show a toast here
+		} finally {
+			setIsLoadingDetails(false);
+		}
 	};
 
 	const handleCheckout = (items: IndividualEquipment[]) => {
 		onCheckout(items);
+		setDialogOpen(false); // Close dialog on checkout
 	};
 
 	return (
-		<div className="h-full flex flex-col">
+		<div className="h-full flex flex-col relative">
+			{/* Loading Overlay for Details */}
+			{isLoadingDetails && (
+				<div className="absolute inset-0 z-50 bg-background/50 backdrop-blur-sm flex items-center justify-center">
+					<div className="bg-card p-4 rounded-lg shadow-lg flex items-center gap-3 border">
+						<Loader2 className="h-6 w-6 animate-spin text-primary" />
+						<span className="font-medium">Loading items...</span>
+					</div>
+				</div>
+			)}
+
 			{/* Search Header */}
 			<div className="p-4 border-b bg-card sticky top-0 z-10">
 				<div className="flex items-center gap-4">
@@ -92,7 +149,7 @@ export function EquipmentInventory({
 						/>
 					</div>
 					<Badge variant="secondary" className="px-3 py-1">
-						{filteredItems.length} items
+						{filteredItems.length} types
 					</Badge>
 					{selectedMember && (
 						<Badge variant="default" className="px-3 py-1">
@@ -104,12 +161,29 @@ export function EquipmentInventory({
 
 			{/* Equipment Grid */}
 			<div className="flex-1 overflow-y-auto p-4">
-				{filteredItems.length === 0 ? (
+				{isLoading ? (
+					<div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+						<Loader2 className="h-8 w-8 mb-4 animate-spin" />
+						<p>Loading equipment...</p>
+					</div>
+				) : error ? (
+					<div className="flex flex-col items-center justify-center h-64 text-destructive">
+						<AlertCircle className="h-10 w-10 mb-3" />
+						<p className="font-medium">{error}</p>
+						<Button
+							variant="outline"
+							className="mt-4"
+							onClick={() => window.location.reload()} // Simple retry
+						>
+							Retry
+						</Button>
+					</div>
+				) : filteredItems.length === 0 ? (
 					<div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
 						<Package className="h-12 w-12 mb-3 opacity-50" />
 						<p className="font-medium">No equipment found</p>
 						<p className="text-sm mt-1">
-							Try a different search term
+							Try a different search term or category
 						</p>
 					</div>
 				) : (
@@ -131,7 +205,7 @@ export function EquipmentInventory({
 					open={dialogOpen}
 					onOpenChange={setDialogOpen}
 					equipmentName={selectedEquipment.name}
-					items={generateIndividualItems(selectedEquipment)}
+					items={selectedEquipmentItems}
 					onCheckout={handleCheckout}
 					memberSelected={!!selectedMember}
 				/>

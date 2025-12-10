@@ -23,6 +23,7 @@ function App() {
 					<Routes>
 						{/* Root login page */}
 						<Route path="/" element={<Login />} />
+						<Route path="/login" element={<Login />} />
 
 						{/* Main dashboard */}
 						<Route path="/dashboard" element={<MainWindow />} />

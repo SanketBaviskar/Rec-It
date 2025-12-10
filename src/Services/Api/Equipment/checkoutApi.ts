@@ -1,4 +1,4 @@
-import apiClient from "@/services/Utils/apiClient";
+import apiClient from "@/Services/Utils/apiClient";
 
 // Types for API responses
 export interface EquipmentItemResponse {

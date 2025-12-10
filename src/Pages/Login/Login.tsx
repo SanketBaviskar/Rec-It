@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/hooks/use-toast";
 import { login } from "@/services/Api/login";
 import { Label } from "@/components/ui/label";
 import { DumbbellIcon, Mail } from "lucide-react";
@@ -18,13 +19,25 @@ export default function Login() {
 
 	const navigate = useNavigate(); // Initialize useNavigate
 
+	const { toast } = useToast();
+
 	const onSubmit = async (data: LoginFormValues) => {
 		try {
-			const response = await login(data.email, data.password);
+			await login(data.email, data.password);
+			toast({
+				title: "Welcome back!",
+				description: "Login successful.",
+			});
 			navigate("/dashboard");
-			loginToast(response);
-		} catch (error) {
+		} catch (error: any) {
 			console.error("Error during login:", error);
+			const errorMessage =
+				error.response?.data?.message || "Invalid email or password.";
+			toast({
+				title: "Login Failed",
+				description: errorMessage,
+				variant: "destructive",
+			});
 		}
 	};
 
@@ -171,22 +184,11 @@ export default function Login() {
 						</div>
 					</div>
 				</div>
+				<Toaster />
 			</main>
 			<footer className="text-center p-4 text-white text-sm">
 				© {new Date().getFullYear()} Rec-It. All rights reserved.
 			</footer>
 		</div>
-	);
-}
-
-function loginToast({ messege }: { messege: string }) {
-	return (
-		<html lang="en">
-			<head />
-			<body>
-				<main>{messege}</main>
-				<Toaster />
-			</body>
-		</html>
 	);
 }

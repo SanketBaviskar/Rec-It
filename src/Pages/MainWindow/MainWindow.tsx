@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "./NavBar/NavBar";
-import { DashboardProvider } from './Dashboard/DashboardContext';
+import { DashboardProvider } from "./Dashboard/DashboardContext";
 import Dashboard from "./Dashboard/Dashboard";
 import CalendarTab from "./CalenderTab/CalenderTab";
 import SalesTab from "./SalesTab/SalesTab";
@@ -12,37 +12,43 @@ import RecCenterFooter from "./Footer/Footer";
 
 // Component Mapping
 const componentMap: Record<string, React.ReactNode> = {
-  dashboard: (
-    console.log("Dashboard component rendered"),
-    <DashboardProvider>
-      <Dashboard />
-    </DashboardProvider>
-  ),
-  calendar: <CalendarTab />,
-  sale: <SalesTab />,
-  equipment: <EquipmentTab />,
-  search: <SearchTab />,
+	dashboard:
+		(console.log("Dashboard component rendered"),
+		(
+			<DashboardProvider>
+				<Dashboard />
+			</DashboardProvider>
+		)),
+	calendar: <CalendarTab />,
+	sale: <SalesTab />,
+	equipment: <EquipmentTab />,
+	search: <SearchTab />,
 };
 
 export default function MainWindow() {
-  const [activeTab, setActiveTab] = useState("dashboard");
+	const [searchParams, setSearchParams] = useSearchParams();
+	const activeTab = searchParams.get("tab") || "dashboard";
 
-  return (
-    <div className="flex flex-col bg-background overflow-hidden h-full">
-      {/* Navbar Component with Active Tab Management */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+	const setActiveTab = (tab: string) => {
+		setSearchParams({ tab });
+	};
 
-      {/* Main Content Area */}
-      <main className="flex-1 pt-0">
-        {componentMap[activeTab] || (
-          <p className="text-center text-muted-foreground">
-            No content available for this tab.
-          </p>
-        )}
-      </main>
+	return (
+		<div className="flex flex-col bg-background overflow-hidden h-full">
+			{/* Navbar Component with Active Tab Management */}
+			<Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Footer */}
-      <RecCenterFooter />
-    </div>
-  );
+			{/* Main Content Area */}
+			<main className="flex-1 pt-0">
+				{componentMap[activeTab] || (
+					<p className="text-center text-muted-foreground">
+						No content available for this tab.
+					</p>
+				)}
+			</main>
+
+			{/* Footer */}
+			<RecCenterFooter />
+		</div>
+	);
 }
