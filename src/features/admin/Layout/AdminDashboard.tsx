@@ -18,7 +18,7 @@ export default function AdminDashboard() {
 	return (
 		<div className="h-screen flex flex-col">
 			{/* Header Section */}
-			<div className="flex items-center px-4 h-[7vh] bg-white shadow-sm border-b">
+			<div className="flex items-center px-4 h-[7vh] bg-card shadow-sm border-b">
 				<div className="w-[15%] flex items-center gap-2">
 					<Button
 						variant="ghost"
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 			<main className="flex-1 flex overflow-hidden">
 				{/* Pass state if you want to collapse sidebar, currently just rendering it */}
 				<Sidebar onItemClick={() => {}} />
-				<div className="flex-1 bg-gray-50 overflow-auto">
+				<div className="flex-1 bg-background overflow-auto">
 					<Outlet />
 				</div>
 			</main>

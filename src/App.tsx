@@ -17,6 +17,7 @@ import SuspensionSettingTab from "@/features/admin/components/Access/SuspensionS
 import MembershipSettings from "@/features/admin/components/Membership/MembershipSettings";
 import MembershipAndPasses from "@/features/admin/components/Membership/MembershipAndPasses";
 import MemberTypes from "@/features/admin/components/Member Settings/MemberTypes";
+import GeneralSettings from "@/features/admin/components/GeneralSettings/GeneralSettings";
 
 function App() {
 	return (
@@ -74,6 +75,10 @@ function App() {
 							<Route
 								path="member-types"
 								element={<MemberTypes />}
+							/>
+							<Route
+								path="general-settings"
+								element={<GeneralSettings />}
 							/>
 						</Route>
 					</Routes>

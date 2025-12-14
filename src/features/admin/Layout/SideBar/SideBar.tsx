@@ -21,7 +21,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 
 	const menuItems = [
 		{
-			name: "General Settings",
+			name: "Dashboard",
 			// Pointing to root of admin dashboard which renders DefaultView
 			path: ".",
 			subItems: [],
@@ -63,10 +63,15 @@ const Sidebar: React.FC<SidebarProps> = () => {
 			name: "Member Settings",
 			subItems: [{ name: "Member Types", path: "member-types" }],
 		},
+		{
+			name: "General Settings",
+			path: "general-settings",
+			subItems: [],
+		},
 	];
 
 	return (
-		<div className="h-full bg-gray-800 text-white p-4 overflow-y-auto">
+		<div className="h-full bg-card text-card-foreground p-4 overflow-y-auto border-r">
 			<ul className="space-y-2">
 				{menuItems.map((item) => (
 					<li key={item.name}>
