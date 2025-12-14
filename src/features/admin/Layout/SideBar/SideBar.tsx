@@ -61,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 		},
 		{
 			name: "Member Settings",
-			subItems: [{ name: "Member Types", path: "member-types" }],
+			subItems: [{ name: "Configuration", path: "member-settings" }],
 		},
 		{
 			name: "General Settings",
