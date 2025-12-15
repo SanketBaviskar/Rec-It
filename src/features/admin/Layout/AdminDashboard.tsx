@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Logo from "./Header/Logo";
-import UniversalSearch from "./Header/UniversalSearch";
+import { CommandPalette } from "./Header/CommandPalette";
 import { Outlet } from "react-router-dom";
 import UserFeatures from "./Header/UserFeatures";
 import Sidebar from "./SideBar/SideBar";
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 					<Logo />
 				</div>
 				<div className="w-[70%] flex justify-center">
-					<UniversalSearch />
+					<CommandPalette />
 				</div>
 				<div className="w-[15%] flex justify-end">
 					<UserFeatures />

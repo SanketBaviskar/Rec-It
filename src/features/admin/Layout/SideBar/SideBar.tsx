@@ -1,16 +1,44 @@
 import React, { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import {
+	ChevronRight,
+	Home,
+	Zap,
+	Users,
+	Trophy,
+	Building2,
+	ShoppingBag,
+	Shield,
+	Megaphone,
+	Settings,
+} from "lucide-react";
 import { NavLink } from "react-router-dom";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 // Sidebar no longer needs external props for navigation
 interface SidebarProps {
-	onItemClick?: (componentName: string) => void; // Optional for backward compatibility if needed, but mostly unused now
+	onItemClick?: (componentName: string) => void;
+}
+
+type SubItem =
+	| { type: "header"; name: string }
+	| { type: "link"; name: string; path: string };
+
+interface MenuItem {
+	name: string;
+	icon: React.ElementType;
+	path?: string;
+	subItems: SubItem[];
 }
 
 const Sidebar: React.FC<SidebarProps> = () => {
-	const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-		{}
-	);
+	const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+		Dashboard: true,
+		Operations: true,
+	});
 
 	const toggleSection = (sectionName: string) => {
 		setOpenSections((prev) => ({
@@ -19,59 +47,194 @@ const Sidebar: React.FC<SidebarProps> = () => {
 		}));
 	};
 
-	const menuItems = [
+	const menuItems: MenuItem[] = [
 		{
 			name: "Dashboard",
-			// Pointing to root of admin dashboard which renders DefaultView
+			icon: Home,
 			path: ".",
 			subItems: [],
 		},
 		{
-			name: "Access",
+			name: "Operations",
+			icon: Zap,
 			subItems: [
-				{ name: "Access Settings", path: "access" },
-				{ name: "Suspension Settings", path: "suspension" },
-				// Placeholders for unimplemented features
-				{ name: "Access Profiles", path: "#" },
-				{ name: "Identification Types", path: "#" },
+				{ type: "header", name: "Access Control" },
+				{ type: "link", name: "Live Entry Feed", path: "#" },
+				{ type: "link", name: "Gate Status", path: "#" },
+				{ type: "link", name: "Banned User List", path: "suspension" },
+				{ type: "link", name: "Validation Rules", path: "access" },
+
+				{ type: "header", name: "Point of Sale (POS)" },
+				{ type: "link", name: "New Transaction", path: "#" },
+				{ type: "link", name: "Transaction History", path: "#" },
+				{ type: "link", name: "Daily Closeout", path: "#" },
+				{ type: "link", name: "Refund Manager", path: "#" },
+
+				{ type: "header", name: "Equipment Desk" },
+				{ type: "link", name: "Checkout/Return", path: "#" },
+				{ type: "link", name: "Overdue Items", path: "#" },
+				{ type: "link", name: "Inventory Audit", path: "inventory" },
+				{ type: "link", name: "Damage Log", path: "#" },
+
+				{ type: "header", name: "Guest Management" },
+				{ type: "link", name: "Sell Guest Pass", path: "#" },
+				{ type: "link", name: "Guest History", path: "#" },
+				{ type: "link", name: "Kiosk Config", path: "#" },
 			],
 		},
 		{
-			name: "Facility Management",
+			name: "Members & Users",
+			icon: Users,
 			subItems: [
-				{ name: "Facility Management", path: "facilities" },
-				{ name: "Facility Categories", path: "facility-categories" },
-				{ name: "Manage Inventory", path: "inventory" }, // Seems shared or miscategorized in original, keeping as is
-				{ name: "Reports", path: "#" },
+				{ type: "header", name: "Directory" },
+				{ type: "link", name: "All Users", path: "member-settings" },
+				{ type: "link", name: "Family Groups", path: "#" },
+				{ type: "link", name: "Staff Directory", path: "#" },
+
+				{ type: "header", name: "Memberships" },
+				{ type: "link", name: "Plans & Passes", path: "memberships" },
+				{ type: "link", name: "Sold Memberships", path: "passes" },
+				{ type: "link", name: "Renewal Automation", path: "#" },
+				{ type: "link", name: "Proration Rules", path: "#" },
+
+				{ type: "header", name: "Tags & Attributes" },
+				{ type: "link", name: "Tag Manager", path: "#" },
 			],
 		},
 		{
-			name: "Inventory Management",
+			name: "Programs & Activities",
+			icon: Trophy,
 			subItems: [
-				{ name: "Manage Inventory", path: "inventory" },
-				{ name: "Reports", path: "#" },
+				{ type: "header", name: "Intramural Sports" },
+				{ type: "link", name: "Leagues & Seasons", path: "#" },
+				{ type: "link", name: "Teams & Rosters", path: "#" },
+
+				{ type: "header", name: "Group Fitness" },
+				{ type: "link", name: "Class Schedule", path: "#" },
+				{ type: "link", name: "Instructor Mgmt", path: "#" },
+
+				{ type: "header", name: "Personal Training" },
+				{ type: "link", name: "Sessions", path: "#" },
+
+				{ type: "header", name: "Outdoor Adventures" },
+				{ type: "link", name: "Trips", path: "#" },
+
+				{ type: "header", name: "Aquatics" },
+				{ type: "link", name: "Swim Lessons", path: "#" },
+				{ type: "link", name: "Lane Reservations", path: "#" },
 			],
 		},
 		{
-			name: "Memberships and Passes",
+			name: "Facilities & Assets",
+			icon: Building2,
 			subItems: [
-				{ name: "Membership Settings", path: "memberships" },
-				{ name: "Passes Settings", path: "passes" },
+				{ type: "header", name: "Scheduling" },
+				{ type: "link", name: "Master Calendar", path: "#" },
+				{ type: "link", name: "Booking Requests", path: "#" },
+				{ type: "link", name: "Conflict Resolver", path: "#" },
+
+				{ type: "header", name: "Space Management" },
+				{ type: "link", name: "Spaces & Zones", path: "facilities" },
+				{
+					type: "link",
+					name: "Facility Categories",
+					path: "facility-categories",
+				},
+				{ type: "link", name: "Visual Map Builder", path: "#" },
+				{ type: "link", name: "Operating Hours", path: "#" },
+
+				{ type: "header", name: "Locker Services" },
+				{ type: "link", name: "Locker Banks", path: "#" },
+				{ type: "link", name: "Active Rentals", path: "#" },
+				{ type: "link", name: "Cleanout Queue", path: "#" },
+
+				{ type: "header", name: "Parking Management" },
+				{ type: "link", name: "Permits", path: "#" },
+				{ type: "link", name: "Enforcement", path: "#" },
+
+				{ type: "header", name: "Maintenance" },
+				{ type: "link", name: "Work Orders", path: "#" },
+				{ type: "link", name: "Vendor List", path: "#" },
 			],
 		},
 		{
-			name: "Member Settings",
-			subItems: [{ name: "Configuration", path: "member-settings" }],
+			name: "Commerce & Finance",
+			icon: ShoppingBag,
+			subItems: [
+				{ type: "header", name: "Inventory (Retail)" },
+				{ type: "link", name: "Product Catalog", path: "inventory" },
+				{ type: "link", name: "Stock Intake", path: "#" },
+				{ type: "link", name: "Vendor Orders", path: "#" },
+
+				{ type: "header", name: "Financials" },
+				{ type: "link", name: "GL Codes", path: "#" },
+				{ type: "link", name: "Revenue Reports", path: "#" },
+				{ type: "link", name: "Tax Settings", path: "#" },
+
+				{ type: "header", name: "Discounts" },
+				{ type: "link", name: "Promo Codes", path: "#" },
+				{ type: "link", name: "Automatic Rules", path: "#" },
+			],
 		},
 		{
-			name: "General Settings",
-			path: "general-settings",
-			subItems: [],
+			name: "Risk & Compliance",
+			icon: Shield,
+			subItems: [
+				{ type: "header", name: "Incidents" },
+				{ type: "link", name: "Incident Log", path: "#" },
+				{ type: "link", name: "Analytics", path: "#" },
+
+				{ type: "header", name: "Waivers" },
+				{ type: "link", name: "Waiver Templates", path: "#" },
+				{ type: "link", name: "Signed Archive", path: "#" },
+
+				{ type: "header", name: "Staff Certifications" },
+				{ type: "link", name: "Tracker", path: "#" },
+			],
+		},
+		{
+			name: "Engagement",
+			icon: Megaphone,
+			subItems: [
+				{ type: "header", name: "Marketing" },
+				{ type: "link", name: "Campaigns", path: "#" },
+				{ type: "link", name: "Automations", path: "#" },
+				{ type: "link", name: "Segments", path: "#" },
+
+				{ type: "header", name: "Content Management" },
+				{ type: "link", name: "Mobile App Banners", path: "#" },
+				{ type: "link", name: "Digital Signage", path: "#" },
+
+				{ type: "header", name: "Surveys" },
+				{ type: "link", name: "Feedback", path: "#" },
+			],
+		},
+		{
+			name: "System Settings",
+			icon: Settings,
+			subItems: [
+				{ type: "header", name: "General" },
+				{
+					type: "link",
+					name: "Organization Info",
+					path: "general-settings",
+				},
+				{ type: "link", name: "Staff Roles", path: "#" },
+
+				{ type: "header", name: "Hardware" },
+				{ type: "link", name: "Printers & Terminals", path: "#" },
+				{ type: "link", name: "Gate Hardware", path: "#" },
+
+				{ type: "header", name: "Integrations" },
+				{ type: "link", name: "SSO Config", path: "#" },
+				{ type: "link", name: "Payment Gateway", path: "#" },
+				{ type: "link", name: "Data Import", path: "#" },
+			],
 		},
 	];
 
 	return (
-		<div className="h-full bg-card text-card-foreground p-4 overflow-y-auto border-r">
+		<div className="h-[calc(100vh-64px)] scrollbar-none bg-card text-card-foreground p-4 overflow-y-auto border-r custom-scrollbar">
 			<ul className="space-y-2">
 				{menuItems.map((item) => (
 					<li key={item.name}>
@@ -80,58 +243,89 @@ const Sidebar: React.FC<SidebarProps> = () => {
 							<NavLink
 								to={item.path || "#"}
 								className={({ isActive }) =>
-									`flex items-center justify-between p-2 rounded-md cursor-pointer ${
+									`flex items-center justify-between p-2 rounded-md cursor-pointer group ${
 										isActive
-											? "bg-gray-700"
-											: "hover:bg-gray-700"
+											? "bg-primary/10 text-primary"
+											: "hover:bg-muted"
 									}`
 								}
 							>
-								<span className="text-sm font-medium">
-									{item.name}
-								</span>
+								<div className="flex items-center gap-3">
+									<item.icon className="w-5 h-5" />
+									<span className="text-sm font-semibold">
+										{item.name}
+									</span>
+								</div>
 							</NavLink>
 						) : (
-							<div
-								onClick={() => toggleSection(item.name)}
-								className={`flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-gray-700`}
+							<Collapsible
+								open={openSections[item.name]}
+								onOpenChange={() => toggleSection(item.name)}
+								className="w-full"
 							>
-								<span className="text-sm font-medium">
-									{item.name}
-								</span>
-								<ChevronRight
-									className={`w-4 h-4 transition-transform ${
-										openSections[item.name]
-											? "rotate-90"
-											: ""
-									}`}
-								/>
-							</div>
+								<CollapsibleTrigger asChild>
+									<div
+										className={`flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-muted ${
+											openSections[item.name]
+												? "text-primary"
+												: ""
+										}`}
+									>
+										<div className="flex items-center gap-3">
+											<item.icon className="w-5 h-5" />
+											<span className="text-sm font-semibold">
+												{item.name}
+											</span>
+										</div>
+										<ChevronRight
+											className={`w-4 h-4 transition-transform ${
+												openSections[item.name]
+													? "rotate-90"
+													: ""
+											}`}
+										/>
+									</div>
+								</CollapsibleTrigger>
+								<CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+									<ul className="ml-4 space-y-1 mt-1 border-l pl-2">
+										{item.subItems.map((subItem, idx) => {
+											if (subItem.type === "header") {
+												return (
+													<li
+														key={idx}
+														className="px-2 pt-3 pb-1"
+													>
+														<span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+															{subItem.name}
+														</span>
+													</li>
+												);
+											}
+											return (
+												<li key={subItem.name}>
+													<NavLink
+														to={subItem.path}
+														className={({
+															isActive,
+														}) =>
+															`block p-2 text-sm rounded-md cursor-pointer ${
+																isActive &&
+																subItem.path !==
+																	"#"
+																	? "bg-primary/10 text-primary font-medium"
+																	: "hover:bg-muted/80"
+															}`
+														}
+													>
+														{subItem.name}
+													</NavLink>
+												</li>
+											);
+										})}
+									</ul>
+								</CollapsibleContent>
+							</Collapsible>
 						)}
-
-						{/* Dropdown Items */}
-						{item.subItems.length > 0 &&
-							openSections[item.name] && (
-								<ul className="ml-4 space-y-1">
-									{item.subItems.map((subItem) => (
-										<li key={subItem.name}>
-											<NavLink
-												to={subItem.path}
-												className={({ isActive }) =>
-													`block p-2 text-sm rounded-md cursor-pointer ${
-														isActive &&
-														subItem.path !== "#"
-															? "bg-gray-600 font-medium"
-															: "hover:bg-gray-700"
-													}`
-												}
-											>
-												{subItem.name}
-											</NavLink>
-										</li>
-									))}
-								</ul>
-							)}
 					</li>
 				))}
 			</ul>

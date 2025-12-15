@@ -11,7 +11,7 @@ import AdminDashboard from "@/features/admin/Layout/AdminDashboard";
 import DefaultView from "@/features/admin/components/DefaultView";
 import FacilityManagementTab from "@/features/admin/components/FacilityManagement/FacilityManagementTab";
 import FacilityCategories from "@/features/admin/components/FacilityManagement/FacilityCategories";
-import InventoryManagementTab from "@/features/admin/components/InventoryManagement/InventoryManagementTab";
+import ProductCatalog from "@/features/admin/components/ProductCatalog/ProductCatalog";
 import AccessSettingTab from "@/features/admin/components/Access/AccessSettingTab";
 import SuspensionSettingTab from "@/features/admin/components/Access/SuspensionSettingTab";
 import MembershipSettings from "@/features/admin/components/Membership/MembershipSettings";
@@ -54,7 +54,7 @@ function App() {
 							/>
 							<Route
 								path="inventory"
-								element={<InventoryManagementTab />}
+								element={<ProductCatalog />}
 							/>
 							<Route
 								path="access"

@@ -13,19 +13,8 @@ import { Search, Package, Loader2, AlertCircle } from "lucide-react";
 import { EquipmentItem, IndividualEquipment } from "./types";
 import { EquipmentDetailDialog } from "./EquipmentDetailDialog";
 import React from "react";
-import {
-	fetchEquipments,
-	Equipment,
-} from "@/services/Api/Equipment/fetchEquipments";
+import { fetchEquipments } from "@/services/Api/Equipment/fetchEquipments";
 import { fetchEquipmentItems } from "@/services/Api/Equipment/checkoutApi";
-
-// Helper to map API equipment to UI type
-const mapEquipmentToUI = (eq: Equipment): EquipmentItem => ({
-	id: eq.id.toString(),
-	name: eq.name,
-	photoUrl: eq.image || "",
-	quantity: eq.quantity,
-});
 
 interface SelectedMember {
 	id: string;
@@ -66,9 +55,21 @@ export function EquipmentInventory({
 				setIsLoading(true);
 				setError(null);
 				const response = await fetchEquipments(categoryId);
-				if (response.status === "success" && response.data) {
-					setEquipments(response.data.map(mapEquipmentToUI));
-				}
+				console.log("Equipment response:", response);
+				// Handle { items: [...] } wrapper
+				const responseData = response.data as any;
+				const equipmentData = responseData?.items || responseData || [];
+
+				const mappedEquipment: EquipmentItem[] = equipmentData.map(
+					(item: any) => ({
+						id: item.id.toString(),
+						name: item.name,
+						// category: item.inventory?.name || 'General', // This field is not part of EquipmentItem
+						quantity: item.quantity, // Assuming quantity is available count
+						photoUrl: item.image || "",
+					})
+				);
+				setEquipments(mappedEquipment);
 			} catch (err) {
 				console.error("Failed to load equipments:", err);
 				setError("Failed to load equipment list. Please try again.");
