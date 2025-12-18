@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
-import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
-import { User } from "lucide-react";
+import { User, CheckCircle2, ArrowLeft } from "lucide-react";
 import EquipmentNavBar from "./EquipmentNavBar";
 import MemberDetails from "./MemberDetails";
 import { MemberEquipment, IndividualEquipment } from "./types";
@@ -35,6 +35,7 @@ export default function EquipmentTab() {
 		[]
 	);
 	const [isLoading, setIsLoading] = useState(false);
+	const [showDetails, setShowDetails] = useState(false); // Toggle between search and details
 	const { toast } = useToast();
 
 	// Fetch user's active checkouts when a customer is selected
@@ -73,6 +74,7 @@ export default function EquipmentTab() {
 
 	const handleUserSelect = (user: UserType) => {
 		setSelectedCustomer(user);
+		setShowDetails(true); // Switch to details view
 		loadUserCheckouts(user.id);
 		toast({
 			title: "Member Selected",
@@ -83,7 +85,12 @@ export default function EquipmentTab() {
 
 	const handleClearSelection = () => {
 		setSelectedCustomer(null);
+		setShowDetails(false); // Go back to search
 		setMemberEquipment([]);
+	};
+
+	const handleBackToSearch = () => {
+		setShowDetails(false); // Go back to search while keeping member selected
 	};
 
 	// Handle checkout from inventory - calls backend API
@@ -164,56 +171,101 @@ export default function EquipmentTab() {
 	};
 
 	return (
-		<div className="flex h-[90vh] gap-4">
-			{/* Left Side - Search Results */}
-			<div className="w-[25%] flex flex-col gap-4 py-4 pl-4">
-				<SearchBar
-					placeholder="Search members..."
-					onSelect={(user) => handleUserSelect(user as UserType)}
-					onClear={handleClearSelection}
-					onResults={(results: UserType[]) =>
-						setSearchResults(results)
-					}
-					triggerSearchOnClick={false}
-					variant="inline"
-				/>
-				<ScrollArea className="flex-1 rounded-lg border bg-card">
-					<div className="p-4 space-y-4">
-						{searchResults.length === 0 ? (
-							<div className="text-center text-muted-foreground py-4">
-								No search results
+		<div className="flex h-full gap-6 p-6 bg-gradient-to-br from-background via-background to-muted/20">
+			{/* Left Side - Member Search OR Member Details */}
+			<div className="w-[360px] flex flex-col gap-4">
+				{!showDetails ? (
+					<>
+						{/* Search Header */}
+						<div className="space-y-2">
+							<h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+								<User className="h-5 w-5 text-primary" />
+								Member Search
+							</h2>
+							<SearchBar
+								placeholder="Search members..."
+								onSelect={(user) =>
+									handleUserSelect(user as UserType)
+								}
+								onClear={handleClearSelection}
+								onResults={(results: UserType[]) =>
+									setSearchResults(results)
+								}
+								triggerSearchOnClick={false}
+								variant="inline"
+							/>
+						</div>
+
+						{/* Search Results */}
+						<div className="flex-1 rounded-xl border bg-card shadow-sm overflow-hidden">
+							<div className="border-b bg-muted/50 px-4 py-3">
+								<p className="text-sm font-medium text-muted-foreground">
+									{searchResults.length > 0
+										? `${searchResults.length} Members Found`
+										: "Search Results"}
+								</p>
 							</div>
-						) : (
-							searchResults.map((user) => (
-								<UserCard
-									key={user.id}
-									user={user}
-									onClick={handleUserSelect}
-									isSelected={
-										selectedCustomer?.id === user.id
-									}
-								/>
-							))
-						)}
+							<ScrollArea className="h-[calc(100%-52px)]">
+								<div className="p-3 space-y-2">
+									{searchResults.length === 0 ? (
+										<div className="text-center text-muted-foreground py-12">
+											<User className="h-12 w-12 mx-auto mb-3 opacity-30" />
+											<p className="text-sm">
+												No results yet
+											</p>
+											<p className="text-xs mt-1">
+												Search for members above
+											</p>
+										</div>
+									) : (
+										searchResults.map((user) => (
+											<UserCard
+												key={user.id}
+												user={user}
+												onClick={handleUserSelect}
+												isSelected={
+													selectedCustomer?.id ===
+													user.id
+												}
+											/>
+										))
+									)}
+								</div>
+							</ScrollArea>
+						</div>
+					</>
+				) : (
+					/* Member Details View */
+					<div className="h-full flex flex-col gap-3">
+						{/* Back Button */}
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleBackToSearch}
+							className="w-fit gap-2"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Back to Search
+						</Button>
+
+						{/* Details Card */}
+						<div className="flex-1 rounded-xl border bg-card shadow-sm overflow-hidden">
+							<MemberDetails
+								userDetails={selectedCustomer}
+								isLoading={isLoading}
+								checkedOutItems={memberEquipment}
+								onCheckIn={handleCheckIn}
+							/>
+						</div>
 					</div>
-				</ScrollArea>
+				)}
 			</div>
 
-			{/* Equipment Navbar */}
-			<div className="w-[50%] border-l border-r">
+			{/* Right - Equipment Navbar */}
+			<div className="flex-1 rounded-xl border bg-card shadow-sm overflow-hidden">
 				<EquipmentNavBar
 					selectedMember={selectedCustomer}
 					onCheckout={handleCheckout}
-				/>
-			</div>
-
-			{/* Member Details */}
-			<div className="w-[25%]">
-				<MemberDetails
-					userDetails={selectedCustomer}
-					isLoading={isLoading}
-					checkedOutItems={memberEquipment}
-					onCheckIn={handleCheckIn}
 				/>
 			</div>
 
@@ -223,7 +275,7 @@ export default function EquipmentTab() {
 	);
 }
 
-// Extracted UserCard Component
+// Enhanced UserCard Component
 interface UserCardProps {
 	user: UserType;
 	onClick: (user: UserType) => void;
@@ -232,35 +284,44 @@ interface UserCardProps {
 
 function UserCard({ user, onClick, isSelected }: UserCardProps) {
 	return (
-		<div
-			className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors ${
+		<button
+			className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
 				isSelected
-					? "bg-primary/10 border border-primary/30"
-					: "hover:bg-muted"
+					? "bg-primary/10 border-2 border-primary/50 shadow-sm"
+					: "bg-background hover:bg-muted border-2 border-transparent hover:border-muted-foreground/20"
 			}`}
 			onClick={() => onClick(user)}
 		>
-			<Avatar>
+			<div
+				className={`h-10 w-10 rounded-full ${
+					isSelected ? "ring-2 ring-primary ring-offset-2" : ""
+				} shrink-0 bg-muted flex items-center justify-center`}
+			>
 				{user.avatarUrl ? (
 					<img
 						src={user.avatarUrl}
 						alt={`${user.firstName} ${user.lastName}`}
+						className="h-full w-full rounded-full object-cover"
 					/>
 				) : (
-					<User className="h-5 w-5" />
+					<User className="h-5 w-5 text-muted-foreground" />
 				)}
-			</Avatar>
-			<div className="flex-1">
-				<div className="font-medium">
+			</div>
+			<div className="flex-1 text-left min-w-0">
+				<div className="font-medium truncate">
 					{user.firstName} {user.lastName}
 				</div>
-				<div className="text-sm text-muted-foreground">
+				<div className="text-xs text-muted-foreground truncate">
 					{user.membershipType}
+					{user.studentId && ` • ${user.studentId}`}
 				</div>
 			</div>
-			<Badge variant={isSelected ? "default" : "secondary"}>
-				{isSelected ? "Selected" : "Active"}
-			</Badge>
-		</div>
+			{isSelected && (
+				<Badge variant="default" className="shrink-0 gap-1">
+					<CheckCircle2 className="h-3 w-3" />
+					Selected
+				</Badge>
+			)}
+		</button>
 	);
 }

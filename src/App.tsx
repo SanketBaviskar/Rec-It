@@ -8,16 +8,33 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainWindow from "@/pages/MainWindow/MainWindow";
 import Login from "@/pages/Login/Login";
 import AdminDashboard from "@/features/admin/Layout/AdminDashboard";
-import DefaultView from "@/features/admin/components/DefaultView";
-import FacilityManagementTab from "@/features/admin/components/FacilityManagement/FacilityManagementTab";
-import FacilityCategories from "@/features/admin/components/FacilityManagement/FacilityCategories";
-import ProductCatalog from "@/features/admin/components/ProductCatalog/ProductCatalog";
-import AccessSettingTab from "@/features/admin/components/Access/AccessSettingTab";
-import SuspensionSettingTab from "@/features/admin/components/Access/SuspensionSettingTab";
-import MembershipSettings from "@/features/admin/components/Membership/MembershipSettings";
-import MembershipAndPasses from "@/features/admin/components/Membership/MembershipAndPasses";
-import MemberSettings from "@/features/admin/components/MemberSettings/MemberSettings";
-import GeneralSettings from "@/features/admin/components/GeneralSettings/GeneralSettings";
+import DefaultView from "@/features/admin/components/Dashboard/DefaultView";
+import FacilityManagementTab from "@/features/admin/components/FacilitiesAndAssets/FacilityManagement/FacilityManagementTab";
+import FacilityCategories from "@/features/admin/components/FacilitiesAndAssets/FacilityManagement/FacilityCategories";
+import ProductCatalog from "@/features/admin/components/CommerceAndFinance/ProductCatalog/ProductCatalog";
+import AccessSettingTab from "@/features/admin/components/Operations/Access/AccessSettingTab";
+import SuspensionSettingTab from "@/features/admin/components/Operations/Access/SuspensionSettingTab";
+import MembershipSettings from "@/features/admin/components/MembersAndUsers/Memberships/MembershipSettings";
+import MembershipAndPasses from "@/features/admin/components/MembersAndUsers/Memberships/MembershipAndPasses";
+import MemberSettings from "@/features/admin/components/MembersAndUsers/Directory/MemberSettings";
+import StaffList from "@/features/admin/components/MembersAndUsers/Staff/StaffList";
+import RoleManager from "@/features/admin/components/SystemSettings/StaffRoles/RoleManager";
+import GeneralSettings from "@/features/admin/components/SystemSettings/GeneralSettings/GeneralSettings";
+
+// New configuration components
+import POSConfig from "@/features/admin/components/Operations/POSConfig/POSConfig";
+import EquipmentPolicyConfig from "@/features/admin/components/Operations/EquipmentConfig/EquipmentPolicyConfig";
+import IntramuralsConfig from "@/features/admin/components/ProgramsAndActivities/Intramurals/IntramuralsConfig";
+import GroupFitnessConfig from "@/features/admin/components/ProgramsAndActivities/GroupFitness/GroupFitnessConfig";
+import AquaticsConfig from "@/features/admin/components/ProgramsAndActivities/Aquatics/AquaticsConfig";
+import IncidentConfig from "@/features/admin/components/RiskAndCompliance/Incidents/IncidentConfig";
+import WaiverConfig from "@/features/admin/components/RiskAndCompliance/Waivers/WaiverConfig";
+import LockerConfig from "@/features/admin/components/FacilitiesAndAssets/Lockers/LockerConfig";
+import CertificationConfig from "@/features/admin/components/RiskAndCompliance/Certifications/CertificationConfig";
+import MarketingConfig from "@/features/admin/components/Engagement/Marketing/MarketingConfig";
+import PersonalTrainingConfig from "@/features/admin/components/ProgramsAndActivities/PersonalTraining/PersonalTrainingConfig";
+import OutdoorAdventuresConfig from "@/features/admin/components/ProgramsAndActivities/OutdoorAdventures/OutdoorAdventuresConfig";
+import SchedulingConfig from "@/features/admin/components/FacilitiesAndAssets/Scheduling/SchedulingConfig";
 
 function App() {
 	return (
@@ -29,7 +46,12 @@ function App() {
 			<TooltipProvider>
 				<Toaster />
 				<Sonner />
-				<Router>
+				<Router
+					future={{
+						v7_startTransition: true,
+						v7_relativeSplatPath: true,
+					}}
+				>
 					<Routes>
 						{/* Root login page */}
 						<Route path="/" element={<Login />} />
@@ -79,6 +101,55 @@ function App() {
 							<Route
 								path="general-settings"
 								element={<GeneralSettings />}
+							/>
+							<Route path="staff" element={<StaffList />} />
+							<Route
+								path="staff-roles"
+								element={<RoleManager />}
+							/>
+							{/* New Configuration Routes */}
+							<Route path="pos-config" element={<POSConfig />} />
+							<Route
+								path="equipment-config"
+								element={<EquipmentPolicyConfig />}
+							/>
+							<Route
+								path="intramurals"
+								element={<IntramuralsConfig />}
+							/>
+							<Route
+								path="group-fitness"
+								element={<GroupFitnessConfig />}
+							/>
+							<Route
+								path="aquatics"
+								element={<AquaticsConfig />}
+							/>
+							<Route
+								path="incidents"
+								element={<IncidentConfig />}
+							/>
+							<Route path="waivers" element={<WaiverConfig />} />
+							<Route path="lockers" element={<LockerConfig />} />
+							<Route
+								path="certifications"
+								element={<CertificationConfig />}
+							/>
+							<Route
+								path="marketing"
+								element={<MarketingConfig />}
+							/>
+							<Route
+								path="personal-training"
+								element={<PersonalTrainingConfig />}
+							/>
+							<Route
+								path="outdoor-adventures"
+								element={<OutdoorAdventuresConfig />}
+							/>
+							<Route
+								path="scheduling"
+								element={<SchedulingConfig />}
 							/>
 						</Route>
 					</Routes>

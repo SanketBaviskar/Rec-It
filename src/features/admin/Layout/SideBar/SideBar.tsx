@@ -65,16 +65,15 @@ const Sidebar: React.FC<SidebarProps> = () => {
 				{ type: "link", name: "Validation Rules", path: "access" },
 
 				{ type: "header", name: "Point of Sale (POS)" },
-				{ type: "link", name: "New Transaction", path: "#" },
-				{ type: "link", name: "Transaction History", path: "#" },
-				{ type: "link", name: "Daily Closeout", path: "#" },
-				{ type: "link", name: "Refund Manager", path: "#" },
+				{ type: "link", name: "POS Settings", path: "pos-config" },
 
 				{ type: "header", name: "Equipment Desk" },
-				{ type: "link", name: "Checkout/Return", path: "#" },
-				{ type: "link", name: "Overdue Items", path: "#" },
+				{
+					type: "link",
+					name: "Equipment Policy",
+					path: "equipment-config",
+				},
 				{ type: "link", name: "Inventory Audit", path: "inventory" },
-				{ type: "link", name: "Damage Log", path: "#" },
 
 				{ type: "header", name: "Guest Management" },
 				{ type: "link", name: "Sell Guest Pass", path: "#" },
@@ -89,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 				{ type: "header", name: "Directory" },
 				{ type: "link", name: "All Users", path: "member-settings" },
 				{ type: "link", name: "Family Groups", path: "#" },
-				{ type: "link", name: "Staff Directory", path: "#" },
+				{ type: "link", name: "Staff Directory", path: "staff" },
 
 				{ type: "header", name: "Memberships" },
 				{ type: "link", name: "Plans & Passes", path: "memberships" },
@@ -106,22 +105,31 @@ const Sidebar: React.FC<SidebarProps> = () => {
 			icon: Trophy,
 			subItems: [
 				{ type: "header", name: "Intramural Sports" },
-				{ type: "link", name: "Leagues & Seasons", path: "#" },
-				{ type: "link", name: "Teams & Rosters", path: "#" },
+				{
+					type: "link",
+					name: "Intramurals Config",
+					path: "intramurals",
+				},
 
 				{ type: "header", name: "Group Fitness" },
-				{ type: "link", name: "Class Schedule", path: "#" },
-				{ type: "link", name: "Instructor Mgmt", path: "#" },
+				{ type: "link", name: "Fitness Config", path: "group-fitness" },
 
 				{ type: "header", name: "Personal Training" },
-				{ type: "link", name: "Sessions", path: "#" },
+				{
+					type: "link",
+					name: "Training Config",
+					path: "personal-training",
+				},
 
 				{ type: "header", name: "Outdoor Adventures" },
-				{ type: "link", name: "Trips", path: "#" },
+				{
+					type: "link",
+					name: "Adventures Config",
+					path: "outdoor-adventures",
+				},
 
 				{ type: "header", name: "Aquatics" },
-				{ type: "link", name: "Swim Lessons", path: "#" },
-				{ type: "link", name: "Lane Reservations", path: "#" },
+				{ type: "link", name: "Aquatics Config", path: "aquatics" },
 			],
 		},
 		{
@@ -129,9 +137,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 			icon: Building2,
 			subItems: [
 				{ type: "header", name: "Scheduling" },
-				{ type: "link", name: "Master Calendar", path: "#" },
-				{ type: "link", name: "Booking Requests", path: "#" },
-				{ type: "link", name: "Conflict Resolver", path: "#" },
+				{ type: "link", name: "Scheduling Config", path: "scheduling" },
 
 				{ type: "header", name: "Space Management" },
 				{ type: "link", name: "Spaces & Zones", path: "facilities" },
@@ -144,9 +150,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 				{ type: "link", name: "Operating Hours", path: "#" },
 
 				{ type: "header", name: "Locker Services" },
-				{ type: "link", name: "Locker Banks", path: "#" },
-				{ type: "link", name: "Active Rentals", path: "#" },
-				{ type: "link", name: "Cleanout Queue", path: "#" },
+				{ type: "link", name: "Locker Config", path: "lockers" },
 
 				{ type: "header", name: "Parking Management" },
 				{ type: "link", name: "Permits", path: "#" },
@@ -181,15 +185,17 @@ const Sidebar: React.FC<SidebarProps> = () => {
 			icon: Shield,
 			subItems: [
 				{ type: "header", name: "Incidents" },
-				{ type: "link", name: "Incident Log", path: "#" },
-				{ type: "link", name: "Analytics", path: "#" },
+				{ type: "link", name: "Incident Config", path: "incidents" },
 
 				{ type: "header", name: "Waivers" },
-				{ type: "link", name: "Waiver Templates", path: "#" },
-				{ type: "link", name: "Signed Archive", path: "#" },
+				{ type: "link", name: "Waiver Config", path: "waivers" },
 
 				{ type: "header", name: "Staff Certifications" },
-				{ type: "link", name: "Tracker", path: "#" },
+				{
+					type: "link",
+					name: "Certifications",
+					path: "certifications",
+				},
 			],
 		},
 		{
@@ -197,9 +203,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 			icon: Megaphone,
 			subItems: [
 				{ type: "header", name: "Marketing" },
-				{ type: "link", name: "Campaigns", path: "#" },
-				{ type: "link", name: "Automations", path: "#" },
-				{ type: "link", name: "Segments", path: "#" },
+				{ type: "link", name: "Marketing Config", path: "marketing" },
 
 				{ type: "header", name: "Content Management" },
 				{ type: "link", name: "Mobile App Banners", path: "#" },
@@ -219,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 					name: "Organization Info",
 					path: "general-settings",
 				},
-				{ type: "link", name: "Staff Roles", path: "#" },
+				{ type: "link", name: "Staff Roles", path: "staff-roles" },
 
 				{ type: "header", name: "Hardware" },
 				{ type: "link", name: "Printers & Terminals", path: "#" },
@@ -259,7 +263,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 							</NavLink>
 						) : (
 							<Collapsible
-								open={openSections[item.name]}
+								open={!!openSections[item.name]}
 								onOpenChange={() => toggleSection(item.name)}
 								className="w-full"
 							>
