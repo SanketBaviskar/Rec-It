@@ -27,7 +27,7 @@ export default function FacilityItems({ facility }: FacilityItemsProps) {
 			setIsLoading(true);
 			try {
 				const data = await getFacilityItems(facility.id);
-				setItems(data);
+				setItems(Array.isArray(data) ? data : []);
 			} catch {
 				console.error("Failed to load items");
 			} finally {
@@ -63,7 +63,11 @@ export default function FacilityItems({ facility }: FacilityItemsProps) {
 						Available
 					</div>
 					<div className="text-2xl font-bold text-green-600">
-						{items.filter((i) => i.status === "available").length}
+						{
+							(items || []).filter(
+								(i) => i.status === "available"
+							).length
+						}
 					</div>
 				</div>
 			</div>

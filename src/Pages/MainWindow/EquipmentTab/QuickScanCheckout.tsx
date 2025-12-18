@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
 	Dialog,
 	DialogContent,
@@ -27,15 +26,19 @@ import {
 	AlertTriangle,
 	CreditCard,
 	Key,
-	Clock,
 	Trash2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/hooks/use-toast";
+import {
+	checkoutEquipment,
+	fetchEquipmentItems,
+} from "@/services/Api/Equipment/checkoutApi";
 
 interface ScannedItem {
-	id: string;
+	id: number;
 	serialNumber: string;
 	name: string;
+	equipmentId: number;
 	requiresCollateral: boolean;
 	collateralType?: "id_card" | "keys" | "none";
 }
@@ -74,7 +77,7 @@ export function QuickScanCheckout({
 		}
 	}, [selectedMember]);
 
-	// Simulate scanning an item
+	// Scan an item by serial number - lookup from API
 	const handleScan = async (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" && scanInput.trim()) {
 			const serialNumber = scanInput.trim().toUpperCase();
@@ -92,51 +95,67 @@ export function QuickScanCheckout({
 				return;
 			}
 
-			// Simulate API lookup
 			setIsProcessing(true);
-			await new Promise((resolve) => setTimeout(resolve, 300));
+			try {
+				// Look up item by serial number via API
+				const response = await fetchEquipmentItems();
+				if (response.status === "success" && response.data) {
+					const foundItem = response.data.find(
+						(item) =>
+							item.serialNumber?.toUpperCase() === serialNumber ||
+							item.barcode?.toUpperCase() === serialNumber
+					);
 
-			// Mock equipment lookup - in production, this would call the API
-			const mockItem: ScannedItem = {
-				id: Math.random().toString(36).substring(7),
-				serialNumber,
-				name: getEquipmentNameFromSerial(serialNumber),
-				requiresCollateral:
-					serialNumber.startsWith("RW") ||
-					serialNumber.startsWith("KEY"),
-				collateralType: serialNumber.startsWith("RW")
-					? "id_card"
-					: serialNumber.startsWith("KEY")
-					? "keys"
-					: "none",
-			};
+					if (foundItem && foundItem.status === "available") {
+						const scannedItem: ScannedItem = {
+							id: foundItem.id,
+							serialNumber:
+								foundItem.serialNumber ||
+								foundItem.barcode ||
+								serialNumber,
+							name: foundItem.equipment?.name || "Equipment Item",
+							equipmentId: foundItem.equipmentId,
+							requiresCollateral:
+								serialNumber.startsWith("RW") ||
+								serialNumber.startsWith("KEY"),
+							collateralType: serialNumber.startsWith("RW")
+								? "id_card"
+								: serialNumber.startsWith("KEY")
+								? "keys"
+								: "none",
+						};
 
-			setScannedItems((prev) => [...prev, mockItem]);
-			setScanInput("");
-			setIsProcessing(false);
-
-			// Play success sound (simulated)
-			toast({
-				title: "Item Scanned",
-				description: `${mockItem.name} (${mockItem.serialNumber}) added.`,
-			});
+						setScannedItems((prev) => [...prev, scannedItem]);
+						toast({
+							title: "Item Scanned",
+							description: `${scannedItem.name} (${scannedItem.serialNumber}) added.`,
+						});
+					} else if (foundItem && foundItem.status !== "available") {
+						toast({
+							title: "Item Not Available",
+							description: `${serialNumber} is currently ${foundItem.status}.`,
+							variant: "destructive",
+						});
+					} else {
+						toast({
+							title: "Item Not Found",
+							description: `No equipment found with serial number ${serialNumber}.`,
+							variant: "destructive",
+						});
+					}
+				}
+			} catch (error) {
+				console.error("Failed to lookup item:", error);
+				toast({
+					title: "Lookup Failed",
+					description: "Unable to find equipment. Please try again.",
+					variant: "destructive",
+				});
+			} finally {
+				setScanInput("");
+				setIsProcessing(false);
+			}
 		}
-	};
-
-	// Mock function to get equipment name from serial
-	const getEquipmentNameFromSerial = (serial: string): string => {
-		const prefixes: Record<string, string> = {
-			BB: "Basketball",
-			VB: "Volleyball",
-			FB: "Football",
-			TB: "Tennis Ball",
-			RW: "Climbing Harness",
-			YM: "Yoga Mat",
-			KEY: "Locker Key",
-			BAD: "Badminton Racket",
-		};
-		const prefix = Object.keys(prefixes).find((p) => serial.startsWith(p));
-		return prefix ? prefixes[prefix] : "Equipment Item";
 	};
 
 	const removeItem = (serialNumber: string) => {
@@ -159,8 +178,33 @@ export function QuickScanCheckout({
 	};
 
 	const processCheckout = async (collateral: string) => {
+		if (!selectedMember) return;
+
 		setIsProcessing(true);
-		await new Promise((resolve) => setTimeout(resolve, 500));
+		let successCount = 0;
+
+		// Process each item checkout via API
+		for (const item of scannedItems) {
+			try {
+				const response = await checkoutEquipment({
+					equipmentItemId: item.id,
+					userId: parseInt(selectedMember.id),
+					notes:
+						collateral !== "none"
+							? `Collateral: ${collateral}`
+							: undefined,
+				});
+
+				if (response.status === "success") {
+					successCount++;
+				}
+			} catch (error) {
+				console.error(
+					`Failed to checkout item ${item.serialNumber}:`,
+					error
+				);
+			}
+		}
 
 		onCheckoutComplete(scannedItems, collateral);
 		setScannedItems([]);
@@ -169,8 +213,8 @@ export function QuickScanCheckout({
 
 		toast({
 			title: "Checkout Complete",
-			description: `${scannedItems.length} item(s) checked out successfully.`,
-			variant: "default",
+			description: `${successCount}/${scannedItems.length} item(s) checked out successfully.`,
+			variant: successCount > 0 ? "default" : "destructive",
 		});
 	};
 

@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { User, CheckCircle2, ArrowLeft } from "lucide-react";
-import EquipmentNavBar from "./EquipmentNavBar";
+import { EquipmentNavBar } from "./EquipmentNavBar";
 import MemberDetails from "./MemberDetails";
 import { MemberEquipment, IndividualEquipment } from "./types";
 import {

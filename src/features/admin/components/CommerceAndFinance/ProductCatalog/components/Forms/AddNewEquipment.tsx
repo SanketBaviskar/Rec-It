@@ -22,6 +22,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogDescription,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -421,10 +422,10 @@ export default function AddNewEquipmentForm({
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Confirm Cancellation</DialogTitle>
-						<p>
+						<DialogDescription>
 							Are you sure you want to cancel this form? Unsaved
 							changes will be lost.
-						</p>
+						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
 						<Button

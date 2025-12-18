@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
 	Table,
 	TableBody,
@@ -21,57 +21,119 @@ import {
 	Loader2,
 	AlertTriangle,
 	Clock,
+	RefreshCw,
+	User,
 } from "lucide-react";
-
-interface EquipmentItem {
-	id: number;
-	name: string;
-	itemNumber: string;
-	checkedOutBy: string;
-	checkedOutDate: string;
-	dueDate: string;
-}
+import {
+	fetchCheckouts,
+	checkinEquipment,
+	CheckoutRecord,
+} from "@/services/Api/Equipment/checkoutApi";
 
 interface EquipmentManagementProps {
-	initialItems: EquipmentItem[];
+	initialItems?: CheckoutRecord[];
 }
 
 export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
-	const [checkedOutItems, setCheckedOutItems] =
-		useState<EquipmentItem[]>(initialItems);
+	const [checkouts, setCheckouts] = useState<CheckoutRecord[]>(
+		initialItems || []
+	);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [filteredItems, setFilteredItems] =
-		useState<EquipmentItem[]>(initialItems);
+	const [isLoading, setIsLoading] = useState(!initialItems);
 	const [checkingInId, setCheckingInId] = useState<number | null>(null);
+	const [refreshing, setRefreshing] = useState(false);
 
 	const { toast } = useToast();
 
+	// Fetch active checkouts from API
+	const loadCheckouts = async () => {
+		try {
+			setIsLoading(true);
+			const response = await fetchCheckouts(undefined, true); // active only
+			if (response.status === "success" && response.data) {
+				// Ensure data is an array
+				const data = Array.isArray(response.data) ? response.data : [];
+				setCheckouts(data);
+			} else {
+				setCheckouts([]);
+			}
+		} catch (error) {
+			console.error("Failed to load checkouts:", error);
+			setCheckouts([]); // Ensure checkouts is always an array
+			toast({
+				title: "Error",
+				description: "Failed to load active checkouts",
+				variant: "destructive",
+			});
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	// Load on mount
+	useEffect(() => {
+		if (!initialItems) {
+			loadCheckouts();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	// Handle refresh
+	const handleRefresh = async () => {
+		setRefreshing(true);
+		await loadCheckouts();
+		setRefreshing(false);
+		toast({
+			title: "Refreshed",
+			description: "Active loans list updated",
+		});
+	};
+
 	// Check if item is overdue
-	const isOverdue = (dueDate: string) => {
-		return new Date(dueDate) < new Date();
+	const isOverdue = (dueAt: string | null) => {
+		if (!dueAt) return false;
+		return new Date(dueAt) < new Date();
 	};
 
 	// Check if due today
-	const isDueToday = (dueDate: string) => {
+	const isDueToday = (dueAt: string | null) => {
+		if (!dueAt) return false;
 		const today = new Date();
-		const due = new Date(dueDate);
+		const due = new Date(dueAt);
 		return today.toDateString() === due.toDateString();
 	};
 
-	// Handle item check-in
-	const handleCheckIn = async (id: number) => {
-		setCheckingInId(id);
+	// Format date for display
+	const formatDate = (dateStr: string | null) => {
+		if (!dateStr) return "N/A";
+		return new Date(dateStr).toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		});
+	};
+
+	// Handle item check-in with real API
+	const handleCheckIn = async (checkoutId: number) => {
+		setCheckingInId(checkoutId);
 		try {
-			// Simulate API call
-			await new Promise((resolve) => setTimeout(resolve, 500));
-			setCheckedOutItems((prevItems) =>
-				prevItems.filter((item) => item.id !== id)
-			);
-			toast({
-				title: "Item Checked In",
-				description: "The item has been successfully checked in.",
+			const response = await checkinEquipment(checkoutId, {
+				conditionIn: "good",
 			});
+			if (response.status === "success") {
+				setCheckouts((prev) =>
+					prev.filter((checkout) => checkout.id !== checkoutId)
+				);
+				toast({
+					title: "Item Checked In",
+					description: "The item has been successfully checked in.",
+					variant: "success",
+				});
+			} else {
+				throw new Error(response.message);
+			}
 		} catch (error) {
+			console.error("Check-in failed:", error);
 			toast({
 				title: "Check-in Failed",
 				description: "Please try again.",
@@ -82,30 +144,39 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 		}
 	};
 
-	// Filter items based on the search query
-	useEffect(() => {
-		const lowercasedQuery = searchQuery.toLowerCase();
-		const filtered = checkedOutItems.filter(
-			(item) =>
-				item.name.toLowerCase().includes(lowercasedQuery) ||
-				item.itemNumber.toLowerCase().includes(lowercasedQuery) ||
-				item.checkedOutBy.toLowerCase().includes(lowercasedQuery)
+	// Filter checkouts based on search query
+	const filteredCheckouts = checkouts.filter((checkout) => {
+		const query = searchQuery.toLowerCase();
+		const equipmentName =
+			checkout.equipmentItem?.equipment?.name?.toLowerCase() || "";
+		const serialNumber =
+			checkout.equipmentItem?.serialNumber?.toLowerCase() || "";
+		const memberName = `${checkout.user?.firstName || ""} ${
+			checkout.user?.lastName || ""
+		}`.toLowerCase();
+		return (
+			equipmentName.includes(query) ||
+			serialNumber.includes(query) ||
+			memberName.includes(query)
 		);
-		setFilteredItems(filtered);
-	}, [searchQuery, checkedOutItems]);
+	});
 
 	// Get counts
-	const overdueCount = checkedOutItems.filter((item) =>
-		isOverdue(item.dueDate)
-	).length;
-	const dueTodayCount = checkedOutItems.filter((item) =>
-		isDueToday(item.dueDate)
-	).length;
+	const overdueCount = checkouts.filter((c) => isOverdue(c.dueAt)).length;
+	const dueTodayCount = checkouts.filter((c) => isDueToday(c.dueAt)).length;
+
+	if (isLoading) {
+		return (
+			<div className="h-full flex items-center justify-center">
+				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="h-full flex flex-col p-4 gap-4">
 			{/* Stats Cards */}
-			<div className="grid grid-cols-3 gap-4">
+			<div className="grid grid-cols-4 gap-4">
 				<Card>
 					<CardContent className="p-4 flex items-center gap-4">
 						<div className="p-3 rounded-full bg-primary/10">
@@ -113,10 +184,10 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 						</div>
 						<div>
 							<p className="text-sm text-muted-foreground">
-								Total Checked Out
+								Total Active
 							</p>
 							<p className="text-2xl font-bold">
-								{checkedOutItems.length}
+								{checkouts.length}
 							</p>
 						</div>
 					</CardContent>
@@ -151,6 +222,23 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 						</div>
 					</CardContent>
 				</Card>
+				<Card>
+					<CardContent className="p-4 flex items-center gap-4">
+						<Button
+							variant="outline"
+							onClick={handleRefresh}
+							disabled={refreshing}
+							className="w-full h-full"
+						>
+							<RefreshCw
+								className={`h-5 w-5 mr-2 ${
+									refreshing ? "animate-spin" : ""
+								}`}
+							/>
+							Refresh
+						</Button>
+					</CardContent>
+				</Card>
 			</div>
 
 			{/* Search */}
@@ -160,7 +248,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 						<Input
 							type="text"
-							placeholder="Search by item name, number, or member..."
+							placeholder="Search by item name, serial number, or member..."
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							className="pl-10"
@@ -175,10 +263,10 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 					<Table>
 						<TableHeader className="sticky top-0 bg-card z-10">
 							<TableRow>
-								<TableHead>Item Name</TableHead>
-								<TableHead>Item Number</TableHead>
-								<TableHead>Checked Out By</TableHead>
-								<TableHead>Checked Out Date</TableHead>
+								<TableHead>Equipment</TableHead>
+								<TableHead>Serial/Barcode</TableHead>
+								<TableHead>Member</TableHead>
+								<TableHead>Checked Out</TableHead>
 								<TableHead>Due Date</TableHead>
 								<TableHead>Status</TableHead>
 								<TableHead className="text-right">
@@ -187,41 +275,57 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{filteredItems.length === 0 ? (
+							{filteredCheckouts.length === 0 ? (
 								<TableRow>
 									<TableCell
 										colSpan={7}
 										className="text-center py-12 text-muted-foreground"
 									>
 										<Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
-										<p>No checked out items found</p>
+										<p>No active checkouts found</p>
 									</TableCell>
 								</TableRow>
 							) : (
-								filteredItems.map((item) => (
+								filteredCheckouts.map((checkout) => (
 									<TableRow
-										key={item.id}
+										key={checkout.id}
 										className={
-											isOverdue(item.dueDate)
+											isOverdue(checkout.dueAt)
 												? "bg-destructive/5"
 												: ""
 										}
 									>
 										<TableCell className="font-medium">
-											{item.name}
+											<div className="flex items-center gap-2">
+												<Package className="h-4 w-4 text-muted-foreground" />
+												{checkout.equipmentItem
+													?.equipment?.name ||
+													"Unknown"}
+											</div>
 										</TableCell>
-										<TableCell className="text-muted-foreground">
-											{item.itemNumber}
+										<TableCell className="text-muted-foreground font-mono text-sm">
+											{checkout.equipmentItem
+												?.serialNumber ||
+												checkout.equipmentItem
+													?.barcode ||
+												"N/A"}
 										</TableCell>
 										<TableCell>
-											{item.checkedOutBy}
+											<div className="flex items-center gap-2">
+												<User className="h-4 w-4 text-muted-foreground" />
+												{checkout.user
+													? `${checkout.user.firstName} ${checkout.user.lastName}`
+													: "Unknown"}
+											</div>
 										</TableCell>
 										<TableCell className="text-muted-foreground">
-											{item.checkedOutDate}
+											{formatDate(checkout.checkedOutAt)}
 										</TableCell>
-										<TableCell>{item.dueDate}</TableCell>
 										<TableCell>
-											{isOverdue(item.dueDate) ? (
+											{formatDate(checkout.dueAt)}
+										</TableCell>
+										<TableCell>
+											{isOverdue(checkout.dueAt) ? (
 												<Badge
 													variant="destructive"
 													className="gap-1"
@@ -229,7 +333,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 													<AlertTriangle className="h-3 w-3" />
 													Overdue
 												</Badge>
-											) : isDueToday(item.dueDate) ? (
+											) : isDueToday(checkout.dueAt) ? (
 												<Badge
 													variant="secondary"
 													className="gap-1 bg-yellow-500/10 text-yellow-600 border-yellow-500/30"
@@ -252,13 +356,14 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 												variant="outline"
 												size="sm"
 												onClick={() =>
-													handleCheckIn(item.id)
+													handleCheckIn(checkout.id)
 												}
 												disabled={
-													checkingInId === item.id
+													checkingInId === checkout.id
 												}
 											>
-												{checkingInId === item.id ? (
+												{checkingInId ===
+												checkout.id ? (
 													<Loader2 className="h-4 w-4 animate-spin" />
 												) : (
 													<>

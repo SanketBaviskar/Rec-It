@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,130 +30,121 @@ import {
 	Clock,
 	DollarSign,
 	Mail,
-	Phone,
 	Ban,
 	MoreHorizontal,
 	User,
 	Package,
 	Filter,
+	RefreshCw,
+	Loader2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/hooks/use-toast";
+import {
+	fetchOverdueCheckouts,
+	CheckoutRecord,
+} from "@/services/Api/Equipment/checkoutApi";
 
-interface OverdueItem {
-	id: string;
-	serialNumber: string;
-	equipmentName: string;
-	memberId: string;
-	memberName: string;
-	memberEmail: string;
-	memberPhone?: string;
-	checkedOutAt: string;
-	dueAt: string;
-	daysOverdue: number;
-	lateFee: number;
-	notificationsSent: number;
-	lastNotified?: string;
-}
+// Helper to calculate days overdue
+const calculateDaysOverdue = (dueAt: string | null): number => {
+	if (!dueAt) return 0;
+	const due = new Date(dueAt);
+	const now = new Date();
+	const diffTime = now.getTime() - due.getTime();
+	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	return Math.max(0, diffDays);
+};
 
-// Mock overdue data
-const MOCK_OVERDUE_ITEMS: OverdueItem[] = [
-	{
-		id: "1",
-		serialNumber: "BB001",
-		equipmentName: "Basketball",
-		memberId: "12345",
-		memberName: "John Smith",
-		memberEmail: "john.smith@university.edu",
-		memberPhone: "555-0101",
-		checkedOutAt: "2024-01-15",
-		dueAt: "2024-01-22",
-		daysOverdue: 5,
-		lateFee: 25.0,
-		notificationsSent: 2,
-		lastNotified: "2024-01-25",
-	},
-	{
-		id: "2",
-		serialNumber: "RW003",
-		equipmentName: "Climbing Harness",
-		memberId: "23456",
-		memberName: "Jane Doe",
-		memberEmail: "jane.doe@university.edu",
-		checkedOutAt: "2024-01-18",
-		dueAt: "2024-01-25",
-		daysOverdue: 2,
-		lateFee: 10.0,
-		notificationsSent: 1,
-		lastNotified: "2024-01-26",
-	},
-	{
-		id: "3",
-		serialNumber: "VB005",
-		equipmentName: "Volleyball",
-		memberId: "34567",
-		memberName: "Mike Johnson",
-		memberEmail: "mike.j@university.edu",
-		memberPhone: "555-0303",
-		checkedOutAt: "2024-01-10",
-		dueAt: "2024-01-17",
-		daysOverdue: 10,
-		lateFee: 50.0,
-		notificationsSent: 3,
-		lastNotified: "2024-01-24",
-	},
-	{
-		id: "4",
-		serialNumber: "KEY012",
-		equipmentName: "Locker Key #12",
-		memberId: "45678",
-		memberName: "Sarah Williams",
-		memberEmail: "sarah.w@university.edu",
-		checkedOutAt: "2024-01-20",
-		dueAt: "2024-01-27",
-		daysOverdue: 1,
-		lateFee: 5.0,
-		notificationsSent: 0,
-	},
-];
+// Helper to calculate late fee ($2.50/hour, capped at $50)
+const calculateLateFee = (dueAt: string | null): number => {
+	if (!dueAt) return 0;
+	const due = new Date(dueAt);
+	const now = new Date();
+	const diffHours = Math.max(
+		0,
+		(now.getTime() - due.getTime()) / (1000 * 60 * 60)
+	);
+	return Math.min(50, diffHours * 2.5);
+};
 
 export function OverdueDashboard() {
-	const [overdueItems, setOverdueItems] =
-		useState<OverdueItem[]>(MOCK_OVERDUE_ITEMS);
+	const [checkouts, setCheckouts] = useState<CheckoutRecord[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [severityFilter, setSeverityFilter] = useState<string>("all");
+	const [isLoading, setIsLoading] = useState(true);
+	const [refreshing, setRefreshing] = useState(false);
 	const { toast } = useToast();
 
+	// Fetch overdue items from API
+	const loadOverdueItems = async () => {
+		try {
+			const response = await fetchOverdueCheckouts();
+			if (response.status === "success" && response.data) {
+				const data = Array.isArray(response.data) ? response.data : [];
+				setCheckouts(data);
+			} else {
+				setCheckouts([]);
+			}
+		} catch (error) {
+			console.error("Failed to load overdue items:", error);
+			toast({
+				title: "Error",
+				description: "Failed to load overdue items",
+				variant: "destructive",
+			});
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	// Load on mount
+	useEffect(() => {
+		loadOverdueItems();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	// Handle refresh
+	const handleRefresh = async () => {
+		setRefreshing(true);
+		await loadOverdueItems();
+		setRefreshing(false);
+		toast({
+			title: "Refreshed",
+			description: "Overdue items list updated",
+		});
+	};
+
 	// Calculate stats
-	const totalItems = overdueItems.length;
-	const totalLateFees = overdueItems.reduce(
-		(sum, item) => sum + item.lateFee,
+	const totalItems = checkouts.length;
+	const totalLateFees = checkouts.reduce(
+		(sum, item) => sum + calculateLateFee(item.dueAt),
 		0
 	);
-	const severeCount = overdueItems.filter(
-		(item) => item.daysOverdue >= 7
-	).length;
-	const needsNotification = overdueItems.filter(
-		(item) => item.notificationsSent === 0
+	const severeCount = checkouts.filter(
+		(item) => calculateDaysOverdue(item.dueAt) >= 7
 	).length;
 
 	// Filter items
-	const filteredItems = overdueItems.filter((item) => {
+	const filteredItems = checkouts.filter((checkout) => {
+		const equipmentName =
+			checkout.equipmentItem?.equipment?.name?.toLowerCase() || "";
+		const serialNumber =
+			checkout.equipmentItem?.serialNumber?.toLowerCase() || "";
+		const memberName = `${checkout.user?.firstName || ""} ${
+			checkout.user?.lastName || ""
+		}`.toLowerCase();
 		const matchesSearch =
-			item.memberName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			item.serialNumber
-				.toLowerCase()
-				.includes(searchQuery.toLowerCase()) ||
-			item.equipmentName
-				.toLowerCase()
-				.includes(searchQuery.toLowerCase());
+			memberName.includes(searchQuery.toLowerCase()) ||
+			serialNumber.includes(searchQuery.toLowerCase()) ||
+			equipmentName.includes(searchQuery.toLowerCase());
 
+		const daysOverdue = calculateDaysOverdue(checkout.dueAt);
 		const matchesSeverity =
 			severityFilter === "all" ||
-			(severityFilter === "severe" && item.daysOverdue >= 7) ||
+			(severityFilter === "severe" && daysOverdue >= 7) ||
 			(severityFilter === "moderate" &&
-				item.daysOverdue >= 3 &&
-				item.daysOverdue < 7) ||
-			(severityFilter === "mild" && item.daysOverdue < 3);
+				daysOverdue >= 3 &&
+				daysOverdue < 7) ||
+			(severityFilter === "mild" && daysOverdue < 3);
 
 		return matchesSearch && matchesSeverity;
 	});
@@ -185,42 +176,41 @@ export function OverdueDashboard() {
 	};
 
 	// Handle actions
-	const handleSendReminder = async (item: OverdueItem) => {
+	const handleSendReminder = async (checkout: CheckoutRecord) => {
+		const email = checkout.user?.email || "unknown";
 		toast({
 			title: "Reminder Sent",
-			description: `Email reminder sent to ${item.memberEmail}`,
+			description: `Email reminder sent to ${email}`,
 		});
-		// Update notification count
-		setOverdueItems((prev) =>
-			prev.map((i) =>
-				i.id === item.id
-					? {
-							...i,
-							notificationsSent: i.notificationsSent + 1,
-							lastNotified: new Date().toISOString(),
-					  }
-					: i
-			)
-		);
 	};
 
-	const handleSuspendMember = (item: OverdueItem) => {
+	const handleSuspendMember = (checkout: CheckoutRecord) => {
+		const memberName = checkout.user
+			? `${checkout.user.firstName} ${checkout.user.lastName}`
+			: "Unknown";
 		toast({
 			title: "Member Suspended",
-			description: `${item.memberName}'s equipment privileges have been suspended.`,
+			description: `${memberName}'s equipment privileges have been suspended.`,
 			variant: "destructive",
 		});
 	};
 
-	const handleWaiveFee = (item: OverdueItem) => {
-		setOverdueItems((prev) =>
-			prev.map((i) => (i.id === item.id ? { ...i, lateFee: 0 } : i))
-		);
+	const handleWaiveFee = (checkout: CheckoutRecord) => {
+		const equipmentName =
+			checkout.equipmentItem?.equipment?.name || "Unknown";
 		toast({
 			title: "Fee Waived",
-			description: `Late fee for ${item.equipmentName} has been waived.`,
+			description: `Late fee for ${equipmentName} has been waived.`,
 		});
 	};
+
+	if (isLoading) {
+		return (
+			<div className="h-full flex items-center justify-center">
+				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="h-full flex flex-col p-4 gap-4 overflow-hidden">
@@ -274,17 +264,19 @@ export function OverdueDashboard() {
 
 				<Card>
 					<CardContent className="p-4 flex items-center gap-4">
-						<div className="p-3 rounded-full bg-blue-500/10">
-							<Mail className="h-5 w-5 text-blue-600" />
-						</div>
-						<div>
-							<p className="text-sm text-muted-foreground">
-								Needs Reminder
-							</p>
-							<p className="text-2xl font-bold text-blue-600">
-								{needsNotification}
-							</p>
-						</div>
+						<Button
+							variant="outline"
+							onClick={handleRefresh}
+							disabled={refreshing}
+							className="w-full h-full"
+						>
+							<RefreshCw
+								className={`h-5 w-5 mr-2 ${
+									refreshing ? "animate-spin" : ""
+								}`}
+							/>
+							Refresh
+						</Button>
 					</CardContent>
 				</Card>
 			</div>
@@ -365,120 +357,134 @@ export function OverdueDashboard() {
 									</TableCell>
 								</TableRow>
 							) : (
-								filteredItems.map((item) => (
-									<TableRow
-										key={item.id}
-										className={
-											item.daysOverdue >= 7
-												? "bg-destructive/5"
-												: ""
-										}
-									>
-										<TableCell>
-											<div>
-												<p className="font-medium">
-													{item.equipmentName}
-												</p>
-												<p className="text-xs text-muted-foreground font-mono">
-													{item.serialNumber}
-												</p>
-											</div>
-										</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-2">
-												<div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-													<User className="h-4 w-4 text-muted-foreground" />
-												</div>
+								filteredItems.map((item) => {
+									const daysOverdue = calculateDaysOverdue(
+										item.dueAt
+									);
+									const lateFee = calculateLateFee(
+										item.dueAt
+									);
+									const equipmentName =
+										item.equipmentItem?.equipment?.name ||
+										"Unknown";
+									const serialNumber =
+										item.equipmentItem?.serialNumber ||
+										item.equipmentItem?.barcode ||
+										"N/A";
+									const memberName = item.user
+										? `${item.user.firstName} ${item.user.lastName}`
+										: "Unknown";
+									const memberEmail =
+										item.user?.email || "N/A";
+
+									return (
+										<TableRow
+											key={item.id}
+											className={
+												daysOverdue >= 7
+													? "bg-destructive/5"
+													: ""
+											}
+										>
+											<TableCell>
 												<div>
 													<p className="font-medium">
-														{item.memberName}
+														{equipmentName}
 													</p>
-													<p className="text-xs text-muted-foreground">
-														{item.memberEmail}
+													<p className="text-xs text-muted-foreground font-mono">
+														{serialNumber}
 													</p>
 												</div>
-											</div>
-										</TableCell>
-										<TableCell className="text-muted-foreground">
-											{item.dueAt}
-										</TableCell>
-										<TableCell>
-											{getSeverityBadge(item.daysOverdue)}
-										</TableCell>
-										<TableCell>
-											<span className="font-semibold text-green-600">
-												${item.lateFee.toFixed(2)}
-											</span>
-										</TableCell>
-										<TableCell>
-											{item.notificationsSent > 0 ? (
-												<Badge
-													variant="outline"
-													className="gap-1"
-												>
-													<Mail className="h-3 w-3" />
-													×{item.notificationsSent}
-												</Badge>
-											) : (
+											</TableCell>
+											<TableCell>
+												<div className="flex items-center gap-2">
+													<div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+														<User className="h-4 w-4 text-muted-foreground" />
+													</div>
+													<div>
+														<p className="font-medium">
+															{memberName}
+														</p>
+														<p className="text-xs text-muted-foreground">
+															{memberEmail}
+														</p>
+													</div>
+												</div>
+											</TableCell>
+											<TableCell className="text-muted-foreground">
+												{item.dueAt
+													? new Date(
+															item.dueAt
+													  ).toLocaleDateString()
+													: "N/A"}
+											</TableCell>
+											<TableCell>
+												{getSeverityBadge(daysOverdue)}
+											</TableCell>
+											<TableCell>
+												<span className="font-semibold text-green-600">
+													${lateFee.toFixed(2)}
+												</span>
+											</TableCell>
+											<TableCell>
 												<Badge
 													variant="secondary"
-													className="text-amber-600 bg-amber-500/10"
+													className="gap-1"
 												>
-													Not Sent
+													<Clock className="h-3 w-3" />
+													Pending
 												</Badge>
-											)}
-										</TableCell>
-										<TableCell className="text-right">
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button
-														variant="ghost"
-														size="icon"
+											</TableCell>
+											<TableCell className="text-right">
+												<DropdownMenu>
+													<DropdownMenuTrigger
+														asChild
 													>
-														<MoreHorizontal className="h-4 w-4" />
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent align="end">
-													<DropdownMenuItem
-														onClick={() =>
-															handleSendReminder(
-																item
-															)
-														}
-													>
-														<Mail className="h-4 w-4 mr-2" />
-														Send Reminder
-													</DropdownMenuItem>
-													{item.memberPhone && (
-														<DropdownMenuItem>
-															<Phone className="h-4 w-4 mr-2" />
-															Call Member
+														<Button
+															variant="ghost"
+															size="icon"
+														>
+															<MoreHorizontal className="h-4 w-4" />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="end">
+														<DropdownMenuItem
+															onClick={() =>
+																handleSendReminder(
+																	item
+																)
+															}
+														>
+															<Mail className="h-4 w-4 mr-2" />
+															Send Reminder
 														</DropdownMenuItem>
-													)}
-													<DropdownMenuItem
-														onClick={() =>
-															handleWaiveFee(item)
-														}
-													>
-														<DollarSign className="h-4 w-4 mr-2" />
-														Waive Fee
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														className="text-destructive"
-														onClick={() =>
-															handleSuspendMember(
-																item
-															)
-														}
-													>
-														<Ban className="h-4 w-4 mr-2" />
-														Suspend Privileges
-													</DropdownMenuItem>
-												</DropdownMenuContent>
-											</DropdownMenu>
-										</TableCell>
-									</TableRow>
-								))
+														<DropdownMenuItem
+															onClick={() =>
+																handleWaiveFee(
+																	item
+																)
+															}
+														>
+															<DollarSign className="h-4 w-4 mr-2" />
+															Waive Fee
+														</DropdownMenuItem>
+														<DropdownMenuItem
+															className="text-destructive"
+															onClick={() =>
+																handleSuspendMember(
+																	item
+																)
+															}
+														>
+															<Ban className="h-4 w-4 mr-2" />
+															Suspend Privileges
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</TableCell>
+										</TableRow>
+									);
+								})
 							)}
 						</TableBody>
 					</Table>

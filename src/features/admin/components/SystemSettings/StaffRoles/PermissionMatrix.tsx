@@ -1,16 +1,13 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const PERMISSION_AREAS = [
 	{
 		area: "Members",
+		description: "Manage member profiles and data",
 		permissions: [
 			"View Directory",
 			"Add Member",
@@ -21,6 +18,7 @@ const PERMISSION_AREAS = [
 	},
 	{
 		area: "Access Control",
+		description: "Gate and security monitoring",
 		permissions: [
 			"Monitor Feed",
 			"Override Blocks",
@@ -30,6 +28,7 @@ const PERMISSION_AREAS = [
 	},
 	{
 		area: "Financials",
+		description: "Billing and revenue management",
 		permissions: [
 			"View Reports",
 			"Process Refunds",
@@ -39,6 +38,7 @@ const PERMISSION_AREAS = [
 	},
 	{
 		area: "Inventory",
+		description: "Equipment and stock control",
 		permissions: [
 			"View Items",
 			"Checkout/Return",
@@ -48,6 +48,7 @@ const PERMISSION_AREAS = [
 	},
 	{
 		area: "Facilities",
+		description: "Scheduling and maintenance",
 		permissions: [
 			"View Schedule",
 			"Oversee Bookings",
@@ -57,52 +58,66 @@ const PERMISSION_AREAS = [
 	},
 	{
 		area: "System",
+		description: "Global settings and logs",
 		permissions: ["Manage Staff", "Configure Settings", "View Audit Logs"],
 	},
 ];
 
 export default function PermissionMatrix() {
 	return (
-		<div className="rounded-md border bg-card">
-			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead className="w-[200px]">
-							Feature Area
-						</TableHead>
-						<TableHead>Permissions</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{PERMISSION_AREAS.map((group) => (
-						<TableRow key={group.area}>
-							<TableCell className="font-semibold align-top pt-4">
-								{group.area}
-							</TableCell>
-							<TableCell>
-								<div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-2">
-									{group.permissions.map((perm) => (
-										<div
-											key={perm}
-											className="flex items-center space-x-2"
-										>
-											<Checkbox
-												id={`${group.area}-${perm}`}
-											/>
-											<label
-												htmlFor={`${group.area}-${perm}`}
-												className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-											>
-												{perm}
-											</label>
-										</div>
-									))}
+		<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+			{PERMISSION_AREAS.map((group) => (
+				<Card
+					key={group.area}
+					className="h-full flex flex-col overflow-hidden border-2 hover:border-primary/20 transition-all"
+				>
+					<CardHeader className="bg-muted/30 pb-4">
+						<div className="flex items-start justify-between">
+							<div className="space-y-1">
+								<CardTitle className="text-base font-semibold">
+									{group.area}
+								</CardTitle>
+								<p className="text-xs text-muted-foreground">
+									{group.description}
+								</p>
+							</div>
+							<div className="flex items-center space-x-2">
+								<Label
+									htmlFor={`select-all-${group.area}`}
+									className="text-xs text-muted-foreground"
+								>
+									All
+								</Label>
+								<Switch
+									id={`select-all-${group.area}`}
+									size="sm"
+								/>
+							</div>
+						</div>
+					</CardHeader>
+					<CardContent className="pt-6 flex-1">
+						<div className="grid grid-cols-1 gap-3">
+							{group.permissions.map((perm) => (
+								<div
+									key={perm}
+									className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
+								>
+									<Checkbox
+										id={`${group.area}-${perm}`}
+										className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+									/>
+									<label
+										htmlFor={`${group.area}-${perm}`}
+										className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+									>
+										{perm}
+									</label>
 								</div>
-							</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+							))}
+						</div>
+					</CardContent>
+				</Card>
+			))}
 		</div>
 	);
 }

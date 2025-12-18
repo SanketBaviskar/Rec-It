@@ -1,9 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { EquipmentInventory } from "./EquipmentInventory";
 import { EquipmentManage } from "./EquipmentManage";
+import { QuickScanCheckout } from "./QuickScanCheckout";
+import { QuickReturn } from "./QuickReturn";
+import { OverdueDashboard } from "./OverdueDashboard";
 import {
 	Volleyball,
 	Mountain,
@@ -12,8 +14,10 @@ import {
 	User,
 	Loader2,
 	Package,
+	LogIn,
+	LogOut,
 	ClipboardList,
-	Settings,
+	AlertTriangle,
 } from "lucide-react";
 import { fetchInventoryCategories } from "@/services/Api/Equipment/inventorySidebar";
 import { IndividualEquipment } from "./types";
@@ -41,11 +45,11 @@ interface EquipmentNavBarProps {
 	onCheckout: (items: IndividualEquipment[]) => void;
 }
 
-export default function EquipmentNavBar({
+export function EquipmentNavBar({
 	selectedMember,
 	onCheckout,
 }: EquipmentNavBarProps) {
-	const [activeSection, setActiveSection] = useState("inventory");
+	const [activeSection, setActiveSection] = useState("checkout");
 	const [activeCategory, setActiveCategory] = useState<Department | null>(
 		null
 	);
@@ -54,7 +58,10 @@ export default function EquipmentNavBar({
 	const [error, setError] = useState<string | null>(null);
 
 	// Map of department names to Lucide icon components
-	const iconMap: Record<string, any> = {
+	const iconMap: Record<
+		string,
+		React.ComponentType<{ className?: string }>
+	> = {
 		Sports: Volleyball,
 		Rockwalls: Mountain,
 		Keys: Key,
@@ -89,6 +96,7 @@ export default function EquipmentNavBar({
 		}
 	};
 
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	useEffect(() => {
 		loadCategories();
 	}, []);
@@ -98,49 +106,6 @@ export default function EquipmentNavBar({
 		setError(null);
 		loadCategories();
 	};
-
-	const initialCheckedOutItems = [
-		{
-			id: 1,
-			name: "Basketball",
-			itemNumber: "BB001",
-			checkedOutBy: "John Doe",
-			checkedOutDate: "2024-01-20",
-			dueDate: "2024-01-27",
-		},
-		{
-			id: 2,
-			name: "Tennis Racket",
-			itemNumber: "TR002",
-			checkedOutBy: "Jane Smith",
-			checkedOutDate: "2024-01-19",
-			dueDate: "2024-01-26",
-		},
-		{
-			id: 3,
-			name: "Climbing Harness",
-			itemNumber: "CH003",
-			checkedOutBy: "Mike Johnson",
-			checkedOutDate: "2024-01-18",
-			dueDate: "2024-01-25",
-		},
-		{
-			id: 4,
-			name: "Volleyball",
-			itemNumber: "VB004",
-			checkedOutBy: "Sarah Brown",
-			checkedOutDate: "2024-01-21",
-			dueDate: "2024-01-28",
-		},
-		{
-			id: 5,
-			name: "Yoga Mat",
-			itemNumber: "YM005",
-			checkedOutBy: "Emily Davis",
-			checkedOutDate: "2024-01-22",
-			dueDate: "2024-01-29",
-		},
-	];
 
 	const handleSectionChange = (section: string) => {
 		setActiveSection(section);
@@ -152,9 +117,10 @@ export default function EquipmentNavBar({
 	};
 
 	const navItems = [
-		{ id: "inventory", label: "Inventory", icon: Package },
-		{ id: "reserve", label: "Reserve", icon: ClipboardList },
-		{ id: "manage", label: "Manage", icon: Settings },
+		{ id: "checkout", label: "Checkout", icon: LogIn },
+		{ id: "return", label: "Return", icon: LogOut },
+		{ id: "active", label: "Active Loans", icon: ClipboardList },
+		{ id: "overdue", label: "Overdue", icon: AlertTriangle },
 	];
 
 	return (
@@ -191,8 +157,8 @@ export default function EquipmentNavBar({
 
 			{/* Main Content */}
 			<div className="flex flex-1 overflow-hidden">
-				{/* Left Vertical Navbar (Inventory Categories) */}
-				{activeSection === "inventory" && (
+				{/* Left Vertical Navbar (Only for checkout) */}
+				{activeSection === "checkout" && (
 					<nav className="w-52 bg-card border-r flex-shrink-0">
 						{isLoading ? (
 							<div className="flex justify-center items-center h-32">
@@ -252,38 +218,61 @@ export default function EquipmentNavBar({
 
 				{/* Right Content Area */}
 				<main className="flex-1 overflow-hidden bg-background">
-					{activeSection === "inventory" && (
+					{activeSection === "checkout" && (
+						<div className="h-full flex">
+							{/* Equipment Inventory for selection */}
+							<div className="flex-1 h-full">
+								<EquipmentInventory
+									categoryId={activeCategory?.id}
+									selectedMember={selectedMember}
+									onCheckout={onCheckout}
+								/>
+							</div>
+							{/* Quick Scan Panel */}
+							{selectedMember && (
+								<div className="w-96 border-l bg-card">
+									<QuickScanCheckout
+										selectedMember={selectedMember}
+										onCheckoutComplete={(
+											items,
+											collateral
+										) => {
+											console.log(
+												"Checkout complete:",
+												items,
+												collateral
+											);
+										}}
+									/>
+								</div>
+							)}
+						</div>
+					)}
+
+					{activeSection === "return" && (
 						<div className="h-full">
-							<EquipmentInventory
-								categoryId={activeCategory?.id}
-								selectedMember={selectedMember}
-								onCheckout={onCheckout}
+							<QuickReturn
+								onReturnComplete={(item, condition, notes) => {
+									console.log(
+										"Return complete:",
+										item,
+										condition,
+										notes
+									);
+								}}
 							/>
 						</div>
 					)}
 
-					{activeSection === "reserve" && (
-						<div className="h-full p-6">
-							<Card>
-								<CardContent className="p-8 text-center">
-									<ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-									<h2 className="text-xl font-semibold mb-2">
-										Reserve Equipment
-									</h2>
-									<p className="text-muted-foreground">
-										Select a member from the left panel to
-										reserve equipment for them.
-									</p>
-								</CardContent>
-							</Card>
-						</div>
-					)}
-
-					{activeSection === "manage" && (
+					{activeSection === "active" && (
 						<div className="h-full overflow-auto">
-							<EquipmentManage
-								initialItems={initialCheckedOutItems}
-							/>
+							<EquipmentManage />
+						</div>
+					)}
+
+					{activeSection === "overdue" && (
+						<div className="h-full overflow-auto">
+							<OverdueDashboard />
 						</div>
 					)}
 				</main>
