@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { EquipmentInventory } from "./EquipmentInventory";
 import { EquipmentManage } from "./EquipmentManage";
-import { QuickScanCheckout } from "./QuickScanCheckout";
+
 import { QuickReturn } from "./QuickReturn";
 import { OverdueDashboard } from "./OverdueDashboard";
 import {
@@ -43,11 +43,13 @@ interface SelectedMember {
 interface EquipmentNavBarProps {
 	selectedMember: SelectedMember | null;
 	onCheckout: (items: IndividualEquipment[]) => void;
+	refreshTrigger?: number;
 }
 
 export function EquipmentNavBar({
 	selectedMember,
 	onCheckout,
+	refreshTrigger,
 }: EquipmentNavBarProps) {
 	const [activeSection, setActiveSection] = useState("checkout");
 	const [activeCategory, setActiveCategory] = useState<Department | null>(
@@ -226,26 +228,10 @@ export function EquipmentNavBar({
 									categoryId={activeCategory?.id}
 									selectedMember={selectedMember}
 									onCheckout={onCheckout}
+									refreshTrigger={refreshTrigger}
 								/>
 							</div>
 							{/* Quick Scan Panel */}
-							{selectedMember && (
-								<div className="w-96 border-l bg-card">
-									<QuickScanCheckout
-										selectedMember={selectedMember}
-										onCheckoutComplete={(
-											items,
-											collateral
-										) => {
-											console.log(
-												"Checkout complete:",
-												items,
-												collateral
-											);
-										}}
-									/>
-								</div>
-							)}
 						</div>
 					)}
 

@@ -23,12 +23,22 @@ export const useFacilities = () => {
 			const data = await fetchFacilities(
 				type === "all" ? undefined : type
 			);
-			const mapped = data.map((f, index) => ({
-				...f,
-				id: f.id.toString(),
-				type: f.type || "Facility",
-				color: FACILITY_COLORS[index % FACILITY_COLORS.length],
-			}));
+			const mapped = data.map((f, index) => {
+				const color = FACILITY_COLORS[index % FACILITY_COLORS.length];
+				return {
+					...f,
+					id: f.id.toString(),
+					type: f.type || "Facility",
+					color: color,
+					items:
+						f.items?.map((item) => ({
+							...item,
+							id: item.id.toString(),
+							facilityId: f.id.toString(),
+							color: color, // Inherit color from parent
+						})) || [],
+				};
+			});
 			setFacilities(mapped);
 		} catch (error) {
 			console.error("Failed to load facilities:", error);

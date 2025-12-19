@@ -34,6 +34,7 @@ export default function EquipmentTab() {
 	const [memberEquipment, setMemberEquipment] = useState<MemberEquipment[]>(
 		[]
 	);
+	const [refreshTrigger, setRefreshTrigger] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
 	const [showDetails, setShowDetails] = useState(false); // Toggle between search and details
 	const { toast } = useToast();
@@ -44,7 +45,10 @@ export default function EquipmentTab() {
 			setIsLoading(true);
 			const response = await fetchUserActiveCheckouts(parseInt(userId));
 			if (response.status === "success" && response.data) {
-				const checkouts: MemberEquipment[] = response.data.map(
+				const responseData = response.data as any;
+				const checkoutsData = responseData.items || responseData || [];
+
+				const checkouts: MemberEquipment[] = checkoutsData.map(
 					(checkout: CheckoutRecord) => ({
 						id: checkout.id.toString(),
 						itemId:
@@ -113,6 +117,9 @@ export default function EquipmentTab() {
 
 			await Promise.all(checkoutPromises);
 
+			// Trigger inventory refresh
+			setRefreshTrigger((prev) => prev + 1);
+
 			// Reload user's checkouts to get fresh data
 			await loadUserCheckouts(selectedCustomer.id);
 
@@ -173,7 +180,7 @@ export default function EquipmentTab() {
 	return (
 		<div className="flex h-full gap-6 p-6 bg-gradient-to-br from-background via-background to-muted/20">
 			{/* Left Side - Member Search OR Member Details */}
-			<div className="w-[360px] flex flex-col gap-4">
+			<div className="w-[30%] flex flex-col gap-4">
 				{!showDetails ? (
 					<>
 						{/* Search Header */}
@@ -266,6 +273,7 @@ export default function EquipmentTab() {
 				<EquipmentNavBar
 					selectedMember={selectedCustomer}
 					onCheckout={handleCheckout}
+					refreshTrigger={refreshTrigger}
 				/>
 			</div>
 

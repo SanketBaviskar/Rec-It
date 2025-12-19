@@ -112,8 +112,9 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 		try {
 			const response = await fetchCheckouts(undefined, true);
 			if (response.status === "success" && response.data) {
-				const data = Array.isArray(response.data) ? response.data : [];
-				setActiveCheckouts(data);
+				const responseData = response.data as any;
+				const data = responseData.items || responseData || [];
+				setActiveCheckouts(Array.isArray(data) ? data : []);
 			} else {
 				setActiveCheckouts([]);
 			}
@@ -252,7 +253,7 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 			setCondition("good");
 			setDamageNotes("");
 			setIsProcessing(false);
-			inputRef.current?.focus();
+			setIsProcessing(false);
 		}
 	};
 

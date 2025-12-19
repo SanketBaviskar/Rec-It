@@ -11,6 +11,12 @@ export interface Facility {
 	categoryId: number | null;
 	createdAt: string;
 	updatedAt: string;
+	items?: {
+		id: number;
+		facilityId: number;
+		name: string;
+		status: "available" | "maintenance" | "closed";
+	}[];
 }
 
 export const fetchFacilities = async (type?: string): Promise<Facility[]> => {

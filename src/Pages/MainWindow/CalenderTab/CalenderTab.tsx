@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { useState } from "react";
 import {
 	Dialog,
@@ -14,9 +13,12 @@ import { Booking } from "./types";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { DayView } from "./components/DayView";
+import { WeekView } from "./components/WeekView";
+import { MonthView } from "./components/MonthView";
 import { useFacilities } from "./hooks/useFacilities";
 import { useCalendarNavigation } from "./hooks/useCalendarNavigation";
 import { useReservations } from "./hooks/useReservations";
+import { useConflictDetection } from "./hooks/useConflictDetection";
 
 export default function CalendarTab() {
 	// Custom Hooks
@@ -31,10 +33,10 @@ export default function CalendarTab() {
 		currentDate,
 		view,
 		setView,
-		handlePreviousDay,
-		handleNextDay,
+		handlePrevious,
+		handleNext,
 		handleToday,
-		setDate, // Add this
+		setDate,
 	} = useCalendarNavigation();
 
 	const {
@@ -43,6 +45,10 @@ export default function CalendarTab() {
 		handleUpdateBooking,
 		handleDeleteBooking,
 	} = useReservations(currentDate, selectedFacility);
+
+	// Conflict Detection
+	const { isBookingConflicting, checkNewBookingConflict } =
+		useConflictDetection(filteredBookings);
 
 	// Local UI State
 	const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -55,6 +61,30 @@ export default function CalendarTab() {
 
 	const onFilterChange = (type: string) => {
 		loadFacilities(type);
+	};
+
+	// Handlers for slot/event interactions
+	const handleSlotClick = (date: Date) => {
+		setSelectedBookingDate(date);
+		setEditingBooking(null);
+		setIsBookingModalOpen(true);
+	};
+
+	const handleSlotRangeSelect = (start: Date, end: Date) => {
+		setSelectedBookingDate(start);
+		setNewBookingRange({ start, end });
+		setEditingBooking(null);
+		setIsBookingModalOpen(true);
+	};
+
+	const handleEventClick = (booking: Booking) => {
+		setEditingBooking(booking);
+		setIsBookingModalOpen(true);
+	};
+
+	const handleDayClick = (date: Date) => {
+		setDate(date);
+		setView("day");
 	};
 
 	return (
@@ -72,8 +102,8 @@ export default function CalendarTab() {
 				<Header
 					currentDate={currentDate}
 					bookings={filteredBookings}
-					onPreviousDay={handlePreviousDay}
-					onNextDay={handleNextDay}
+					onPreviousDay={handlePrevious}
+					onNextDay={handleNext}
 					onToday={handleToday}
 					onNewBooking={() => {
 						setEditingBooking(null);
@@ -81,18 +111,18 @@ export default function CalendarTab() {
 					}}
 				/>
 
-				{/* Stats removed (merged into Header) */}
-
+				{/* View Tabs */}
 				<div className="px-4 py-2 border-b">
-					<Tabs value={view} onValueChange={(v) => setView(v as any)}>
+					<Tabs
+						value={view}
+						onValueChange={(v) =>
+							setView(v as "day" | "week" | "month")
+						}
+					>
 						<TabsList>
 							<TabsTrigger value="day">Day</TabsTrigger>
-							<TabsTrigger value="week" disabled>
-								Week (Coming Soon)
-							</TabsTrigger>
-							<TabsTrigger value="month" disabled>
-								Month (Coming Soon)
-							</TabsTrigger>
+							<TabsTrigger value="week">Week</TabsTrigger>
+							<TabsTrigger value="month">Month</TabsTrigger>
 						</TabsList>
 					</Tabs>
 				</div>
@@ -106,22 +136,32 @@ export default function CalendarTab() {
 							onMoveBooking={handleUpdateBooking}
 							onResizeBooking={handleUpdateBooking}
 							onDeleteBooking={handleDeleteBooking}
-							onSlotClick={(date) => {
-								// Fallback for click without drag
-								setSelectedBookingDate(date);
-								setEditingBooking(null);
-								setIsBookingModalOpen(true);
-							}}
-							onSlotRangeSelect={(start, end) => {
-								setSelectedBookingDate(start);
-								setNewBookingRange({ start, end });
-								setEditingBooking(null);
-								setIsBookingModalOpen(true);
-							}}
-							onEventClick={(booking) => {
-								setEditingBooking(booking);
-								setIsBookingModalOpen(true);
-							}}
+							onSlotClick={handleSlotClick}
+							onSlotRangeSelect={handleSlotRangeSelect}
+							onEventClick={handleEventClick}
+							isBookingConflicting={isBookingConflicting}
+						/>
+					)}
+
+					{view === "week" && (
+						<WeekView
+							currentDate={currentDate}
+							bookings={filteredBookings}
+							facilities={facilities}
+							onSlotRangeSelect={handleSlotRangeSelect}
+							onEventClick={handleEventClick}
+							onDeleteBooking={handleDeleteBooking}
+							isBookingConflicting={isBookingConflicting}
+						/>
+					)}
+
+					{view === "month" && (
+						<MonthView
+							currentDate={currentDate}
+							bookings={filteredBookings}
+							facilities={facilities}
+							onDayClick={handleDayClick}
+							onEventClick={handleEventClick}
 						/>
 					)}
 				</div>
@@ -149,6 +189,7 @@ export default function CalendarTab() {
 							setNewBookingRange(null);
 						}}
 						editingBooking={editingBooking}
+						checkNewBookingConflict={checkNewBookingConflict}
 					/>
 				</DialogContent>
 			</Dialog>

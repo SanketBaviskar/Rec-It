@@ -79,8 +79,9 @@ export function OverdueDashboard() {
 		try {
 			const response = await fetchOverdueCheckouts();
 			if (response.status === "success" && response.data) {
-				const data = Array.isArray(response.data) ? response.data : [];
-				setCheckouts(data);
+				const responseData = response.data as any;
+				const data = responseData.items || responseData || [];
+				setCheckouts(Array.isArray(data) ? data : []);
 			} else {
 				setCheckouts([]);
 			}

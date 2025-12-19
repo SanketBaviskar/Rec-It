@@ -2,7 +2,7 @@ import apiClient from "@/Services/Utils/apiClient";
 
 export interface Reservation {
 	id: number;
-	facilityId: number;
+	facilityItemId: number;
 	userId: number | null;
 	title: string;
 	startTime: string; // ISO string
@@ -16,12 +16,23 @@ export interface Reservation {
 		lastName: string;
 		email: string;
 	};
+	facilityItem?: {
+		id: number;
+		name: string;
+		status: string;
+		facility: {
+			id: number;
+			name: string;
+			type: string;
+			location: string;
+		};
+	};
 	createdAt: string;
 	updatedAt: string;
 }
 
 export interface CreateReservationDto {
-	facilityId: number;
+	facilityItemId: number;
 	title: string;
 	startTime: string; // ISO string
 	endTime: string; // ISO string
@@ -32,18 +43,27 @@ export interface CreateReservationDto {
 }
 
 export const fetchReservations = async (
-	facilityId?: number,
+	facilityItemId?: number,
 	start?: Date,
 	end?: Date
 ): Promise<Reservation[]> => {
 	try {
 		const params: any = {};
-		if (facilityId) params.facilityId = facilityId;
+		if (facilityItemId) params.facilityItemId = facilityItemId;
 		if (start) params.start = start.toISOString();
 		if (end) params.end = end.toISOString();
 
 		const response = await apiClient.get("/reservations", { params });
-		return response.data.data.items;
+
+		// Handle various API response structures
+		const data = response.data?.data;
+		if (!data) return [];
+
+		// Could be { items: [...] } or just an array
+		if (Array.isArray(data)) return data;
+		if (data.items && Array.isArray(data.items)) return data.items;
+
+		return [];
 	} catch (error) {
 		console.error("Error fetching reservations:", error);
 		throw error;

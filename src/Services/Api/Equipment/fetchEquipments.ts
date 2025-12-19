@@ -6,6 +6,7 @@ export interface Equipment {
 	code: string;
 	image: string | null;
 	quantity: number;
+	price: number;
 	replacementFees: number;
 	description: string | null;
 	location: string;

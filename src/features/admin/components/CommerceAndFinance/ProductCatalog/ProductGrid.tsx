@@ -3,12 +3,13 @@ import { Plus, Search, MoreHorizontal, PackageOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
 	DropdownMenu,
@@ -16,22 +17,18 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { fetchEquipments } from "@/services/Api/Equipment/fetchEquipments";
+import {
+	fetchEquipments,
+	Equipment,
+} from "@/services/Api/Equipment/fetchEquipments";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface Product {
-	id: number;
-	name: string;
-	code: string;
-	quantity: number;
-	location: string;
-	image: string | null;
-}
 
 interface ProductGridProps {
 	selectedCategoryId: number | null;
 	onAddProduct: () => void;
-	onEditProduct: (product: Product) => void;
+	onEditProduct: (product: Equipment) => void;
+	onReportDamage: (product: Equipment) => void;
+	onViewItems: (product: Equipment) => void;
 	refreshTrigger?: number; // Prop to trigger refetch
 }
 
@@ -39,34 +36,38 @@ export function ProductGrid({
 	selectedCategoryId,
 	onAddProduct,
 	onEditProduct,
+	onReportDamage,
+	onViewItems,
 	refreshTrigger = 0,
 }: ProductGridProps) {
-	const [products, setProducts] = useState<Product[]>([]);
+	const [products, setProducts] = useState<Equipment[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 
-	const loadProducts = async () => {
-		try {
-			// Only show loading skeleton if we have no products (initial load or empty)
-			if (products.length === 0) {
-				setLoading(true);
-			}
-			// Pass selectedCategoryId (InventoryId) to fetcher. If null, it likely fetches all.
-			const response = await fetchEquipments(
-				selectedCategoryId || undefined
-			);
-			// Backend format maps 'data' to { items: [...] } for arrays
-			setProducts(response.data?.items || response.data || []);
-		} catch (error) {
-			console.error("Failed to load products", error);
-			setProducts([]);
-		} finally {
-			setLoading(false);
-		}
-	};
-
 	useEffect(() => {
+		const loadProducts = async () => {
+			try {
+				// Only show loading skeleton if we have no products (initial load or empty)
+				if (products.length === 0) {
+					setLoading(true);
+				}
+				// Pass selectedCategoryId (InventoryId) to fetcher. If null, it likely fetches all.
+				const response = await fetchEquipments(
+					selectedCategoryId || undefined
+				);
+				// Backend format maps 'data' to { items: [...] } for arrays
+				const responseData = response.data as any;
+				const items = responseData?.items || responseData || [];
+				setProducts(Array.isArray(items) ? items : []);
+			} catch (error) {
+				console.error("Failed to load products", error);
+				setProducts([]);
+			} finally {
+				setLoading(false);
+			}
+		};
 		loadProducts();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedCategoryId, refreshTrigger]);
 
 	const filteredProducts = products.filter(
@@ -106,15 +107,9 @@ export function ProductGrid({
 			{/* Grid Content */}
 			<div className="flex-1 overflow-y-auto p-6">
 				{loading ? (
-					<div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-						{[1, 2, 3, 4, 5, 6].map((i) => (
-							<div key={i} className="flex flex-col space-y-3">
-								<Skeleton className="h-[125px] w-full rounded-xl" />
-								<div className="space-y-2">
-									<Skeleton className="h-4 w-[250px]" />
-									<Skeleton className="h-4 w-[200px]" />
-								</div>
-							</div>
+					<div className="space-y-3">
+						{[1, 2, 3, 4, 5].map((i) => (
+							<Skeleton key={i} className="h-12 w-full" />
 						))}
 					</div>
 				) : filteredProducts.length === 0 ? (
@@ -141,78 +136,115 @@ export function ProductGrid({
 						)}
 					</div>
 				) : (
-					<div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-						{filteredProducts.map((product) => (
-							<Card
-								key={product.id}
-								className="overflow-hidden group hover:shadow-md transition-all duration-200"
-							>
-								<div className="aspect-video bg-slate-100 relative flex items-center justify-center">
-									{product.image ? (
-										<img
-											src={product.image}
-											alt={product.name}
-											className="w-full h-full object-cover"
-										/>
-									) : (
-										<PackageOpen className="w-10 h-10 text-slate-300" />
-									)}
-									<div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-										<DropdownMenu>
-											<DropdownMenuTrigger asChild>
-												<Button
-													variant="secondary"
-													size="icon"
-													className="h-8 w-8"
-												>
-													<MoreHorizontal className="w-4 h-4" />
-												</Button>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent align="end">
-												<DropdownMenuItem
-													onClick={() =>
-														onEditProduct(product)
-													}
-												>
-													Edit Details
-												</DropdownMenuItem>
-												<DropdownMenuItem className="text-red-600">
-													Delete Product
-												</DropdownMenuItem>
-											</DropdownMenuContent>
-										</DropdownMenu>
-									</div>
-								</div>
-								<CardHeader className="p-4 pb-2">
-									<div className="flex justify-between items-start">
-										<div>
-											<CardTitle className="text-base font-semibold leading-tight">
-												{product.name}
-											</CardTitle>
-											<p className="text-xs text-muted-foreground mt-1 font-mono">
-												{product.code}
-											</p>
-										</div>
-									</div>
-								</CardHeader>
-								<CardFooter className="p-4 pt-0 flex justify-between items-center">
-									<Badge
-										variant={
-											product.quantity > 0
-												? "secondary"
-												: "destructive"
-										}
-									>
-										{product.quantity > 0
-											? `${product.quantity} in stock`
-											: "Out of Stock"}
-									</Badge>
-									<span className="text-xs text-muted-foreground">
-										{product.location}
-									</span>
-								</CardFooter>
-							</Card>
-						))}
+					<div className="rounded-md border bg-card">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead className="w-[80px]">
+										Image
+									</TableHead>
+									<TableHead>Name</TableHead>
+									<TableHead>Code</TableHead>
+									<TableHead>Location</TableHead>
+									<TableHead className="text-right">
+										Quantity
+									</TableHead>
+									<TableHead className="text-right">
+										Price
+									</TableHead>
+									<TableHead className="w-[50px]"></TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{filteredProducts.map((product) => (
+									<TableRow key={product.id}>
+										<TableCell>
+											<div className="h-10 w-10 rounded-md bg-slate-100 flex items-center justify-center overflow-hidden">
+												{product.image ? (
+													<img
+														src={product.image}
+														alt={product.name}
+														className="h-full w-full object-cover"
+													/>
+												) : (
+													<PackageOpen className="h-5 w-5 text-slate-300" />
+												)}
+											</div>
+										</TableCell>
+										<TableCell className="font-medium">
+											{product.name}
+										</TableCell>
+										<TableCell className="font-mono text-xs text-muted-foreground">
+											{product.code}
+										</TableCell>
+										<TableCell>
+											{product.location}
+										</TableCell>
+										<TableCell className="text-right">
+											<Badge
+												variant={
+													product.quantity > 0
+														? "secondary"
+														: "destructive"
+												}
+											>
+												{product.quantity > 0
+													? `${product.quantity} in stock`
+													: "Out of Stock"}
+											</Badge>
+										</TableCell>
+										<TableCell className="text-right">
+											{product.price
+												? `$${product.price.toFixed(2)}`
+												: "-"}
+										</TableCell>
+										<TableCell>
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button
+														variant="ghost"
+														size="icon"
+														className="h-8 w-8"
+													>
+														<MoreHorizontal className="w-4 h-4" />
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent align="end">
+													<DropdownMenuItem
+														onClick={() =>
+															onEditProduct(
+																product
+															)
+														}
+													>
+														Edit Details
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														onClick={() =>
+															onViewItems(product)
+														}
+													>
+														View Items
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														onClick={() =>
+															onReportDamage(
+																product
+															)
+														}
+													>
+														Report Damage
+													</DropdownMenuItem>
+													<DropdownMenuItem className="text-red-600">
+														Delete Product
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
 					</div>
 				)}
 			</div>

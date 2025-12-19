@@ -29,6 +29,7 @@ interface DayViewProps {
 	onSlotClick: (date: Date) => void;
 	onSlotRangeSelect?: (start: Date, end: Date) => void;
 	onEventClick: (booking: Booking) => void;
+	isBookingConflicting?: (bookingId: string) => boolean;
 }
 
 export const DayView: React.FC<DayViewProps> = ({
@@ -40,6 +41,7 @@ export const DayView: React.FC<DayViewProps> = ({
 	onDeleteBooking,
 	onSlotRangeSelect,
 	onEventClick,
+	isBookingConflicting,
 }) => {
 	const calendarRef = useRef<HTMLDivElement>(null);
 	const [mouseTime, setMouseTime] = useState<Date | null>(null);
@@ -122,6 +124,7 @@ export const DayView: React.FC<DayViewProps> = ({
 		const facility = facilities.find(
 			(f) => f.id.toString() === booking.facility
 		);
+		const hasConflict = isBookingConflicting?.(booking.id) ?? false;
 
 		const startMinutes = differenceInMinutes(booking.start, dayStart) * 2;
 		const duration = differenceInMinutes(booking.end, booking.start) * 2;
@@ -135,19 +138,23 @@ export const DayView: React.FC<DayViewProps> = ({
 					isDragging && draggedBooking?.id === booking.id
 						? "opacity-50"
 						: ""
-				}`}
+				} ${hasConflict ? "ring-2 ring-red-500 ring-offset-1" : ""}`}
 				style={{
 					top: `${startMinutes}px`,
 					height: `${duration}px`,
 					left: `${left}px`,
 					width: `${width}px`,
-					backgroundColor: facility?.color || "#3b82f6",
+					backgroundColor: hasConflict
+						? "#ef4444"
+						: facility?.color || "#3b82f6",
 					cursor: isDragging ? "grabbing" : "grab",
 					zIndex:
 						isDragging && draggedBooking?.id === booking.id
 							? 1000
 							: 1,
-					border: "1px solid rgba(255,255,255,0.2)",
+					border: hasConflict
+						? "2px solid #dc2626"
+						: "1px solid rgba(255,255,255,0.2)",
 				}}
 				onMouseDown={(e) => handleDragStart(e, booking)}
 				onClick={(e) => {

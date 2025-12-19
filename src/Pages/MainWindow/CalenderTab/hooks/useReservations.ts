@@ -25,10 +25,39 @@ export const useReservations = (
 			end
 		)
 			.then((data) => {
+				// Add null safety - if data is undefined or not an array, use empty array
+				if (!data || !Array.isArray(data)) {
+					console.warn(
+						"Reservations API returned invalid data:",
+						data
+					);
+					setBookings([]);
+					return;
+				}
 				const mapped: Booking[] = data.map((r) => ({
 					id: r.id.toString(),
 					title: r.title,
-					facility: r.facilityId.toString(),
+					facilityItemId: r.facilityItemId.toString(),
+					// Support for backward compatibility processing if needed, but primary is now item
+					facilityItem: r.facilityItem
+						? {
+								id: r.facilityItem.id.toString(),
+								facilityId:
+									r.facilityItem.facility.id.toString(), // Map nested facility ID
+								name: r.facilityItem.name,
+								status: r.facilityItem.status as
+									| "available"
+									| "maintenance"
+									| "closed",
+								facility: {
+									id: r.facilityItem.facility.id.toString(),
+									name: r.facilityItem.facility.name,
+									type: r.facilityItem.facility.type,
+									capacity: 0, // Not always returned here, simple mapping
+									location: r.facilityItem.facility.location,
+								},
+						  }
+						: undefined,
 					start: parseISO(r.startTime),
 					end: parseISO(r.endTime),
 					type: r.type,
@@ -41,7 +70,10 @@ export const useReservations = (
 				}));
 				setBookings(mapped);
 			})
-			.catch(console.error);
+			.catch((err) => {
+				console.error("Error loading reservations:", err);
+				setBookings([]);
+			});
 	}, [currentDate, selectedFacility]);
 
 	useEffect(() => {
@@ -57,7 +89,7 @@ export const useReservations = (
 			await updateReservation(parseInt(booking.id), {
 				startTime: newStart.toISOString(),
 				endTime: newEnd.toISOString(),
-				facilityId: parseInt(booking.facility),
+				facilityItemId: parseInt(booking.facilityItemId),
 			});
 			toast({
 				title: "Updated",
@@ -94,7 +126,8 @@ export const useReservations = (
 
 	const filteredBookings = selectedFacility
 		? bookings.filter(
-				(booking) => booking.facility === selectedFacility.toString()
+				(booking) =>
+					booking.facilityItemId === selectedFacility.toString()
 		  )
 		: bookings;
 

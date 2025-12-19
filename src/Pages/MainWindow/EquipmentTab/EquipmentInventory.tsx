@@ -26,12 +26,14 @@ interface EquipmentInventoryProps {
 	categoryId?: number;
 	selectedMember: SelectedMember | null;
 	onCheckout: (items: IndividualEquipment[]) => void;
+	refreshTrigger?: number;
 }
 
 export function EquipmentInventory({
 	categoryId,
 	selectedMember,
 	onCheckout,
+	refreshTrigger = 0,
 }: EquipmentInventoryProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [equipments, setEquipments] = useState<EquipmentItem[]>([]);
@@ -46,7 +48,7 @@ export function EquipmentInventory({
 	const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 	const [dialogOpen, setDialogOpen] = useState(false);
 
-	// Fetch equipments when category changes
+	// Fetch equipments when category changes or refresh triggered
 	useEffect(() => {
 		const loadEquipments = async () => {
 			if (!categoryId) return;
@@ -79,7 +81,7 @@ export function EquipmentInventory({
 		};
 
 		loadEquipments();
-	}, [categoryId]);
+	}, [categoryId, refreshTrigger]);
 
 	const filteredItems = useMemo(
 		() =>
@@ -96,8 +98,11 @@ export function EquipmentInventory({
 			// Fetch individual items for this equipment type
 			const response = await fetchEquipmentItems(parseInt(item.id));
 			if (response.status === "success" && response.data) {
-				const items: IndividualEquipment[] = response.data.map(
-					(eqItem) => ({
+				const responseData = response.data as any;
+				const itemsData = responseData.items || responseData || [];
+
+				const items: IndividualEquipment[] = itemsData.map(
+					(eqItem: any) => ({
 						id: eqItem.id.toString(), // Use the EquipmentItem ID
 						equipmentTypeId: item.id,
 						equipmentName: item.name,

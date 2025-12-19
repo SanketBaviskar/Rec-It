@@ -1,8 +1,18 @@
 import apiClient from "@/Services/Utils/apiClient";
 
+export interface EquipmentItem {
+	id: number;
+	equipmentId: number;
+	serialNumber: string;
+	barcode: string | null;
+	status: string;
+	condition: string;
+	notes: string | null;
+}
+
 export const getEquipmentItems = async (id: string, params = {}) => {
 	try {
-		const response = await apiClient.get(`/equipment/${id}/items`, {
+		const response = await apiClient.get(`/equipments/${id}/items`, {
 			params,
 		});
 		return response.data;

@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format, addDays, addMinutes } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	SelectGroup,
+	SelectLabel,
 } from "@/components/ui/select";
 import { Facility, Booking } from "./types";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
@@ -18,6 +21,7 @@ import {
 	CreateReservationDto,
 } from "@/services/Api/Reservation/reservationApi";
 import { useToast } from "@/components/ui/hooks/use-toast";
+import { Conflict } from "./hooks/useConflictDetection";
 
 interface BookingFormProps {
 	selectedDate: Date;
@@ -27,6 +31,12 @@ interface BookingFormProps {
 	onBook: () => void;
 	onClose: () => void;
 	editingBooking: Booking | null;
+	checkNewBookingConflict?: (
+		facilityId: string,
+		start: Date,
+		end: Date,
+		excludeBookingId?: string
+	) => Conflict[];
 }
 
 export function BookingForm({
@@ -37,6 +47,7 @@ export function BookingForm({
 	onBook,
 	onClose,
 	editingBooking,
+	checkNewBookingConflict,
 }: BookingFormProps) {
 	const { toast } = useToast();
 	const [selectedUser, setSelectedUser] = useState<any | null>(null);
@@ -58,11 +69,43 @@ export function BookingForm({
 		recurringEndDate: format(addDays(selectedDate, 90), "yyyy-MM-dd"),
 	});
 
+	// Real-time conflict detection
+	const conflicts = useMemo(() => {
+		if (!checkNewBookingConflict || !formData.facility) return [];
+
+		const [startHours, startMinutes] = formData.startTime
+			.split(":")
+			.map(Number);
+		const [endHours, endMinutes] = formData.endTime.split(":").map(Number);
+
+		const start = new Date(selectedDate);
+		start.setHours(startHours, startMinutes, 0, 0);
+
+		const end = new Date(selectedDate);
+		end.setHours(endHours, endMinutes, 0, 0);
+
+		return checkNewBookingConflict(
+			formData.facility.toString(),
+			start,
+			end,
+			editingBooking?.id
+		);
+	}, [
+		formData.facility,
+		formData.startTime,
+		formData.endTime,
+		selectedDate,
+		checkNewBookingConflict,
+		editingBooking,
+	]);
+
+	const hasConflicts = conflicts.length > 0;
+
 	useEffect(() => {
 		if (editingBooking) {
 			setFormData({
 				title: editingBooking.title,
-				facility: editingBooking.facility,
+				facility: editingBooking.facilityItemId,
 				startTime: format(editingBooking.start, "HH:mm"),
 				endTime: format(editingBooking.end, "HH:mm"),
 				type: editingBooking.type,
@@ -138,7 +181,7 @@ export function BookingForm({
 
 			// Construct DTO
 			const dto: CreateReservationDto = {
-				facilityId: parseInt(formData.facility),
+				facilityItemId: parseInt(formData.facility),
 				title: formData.title,
 				startTime: start.toISOString(),
 				endTime: end.toISOString(),
@@ -159,7 +202,7 @@ export function BookingForm({
 				return;
 			}
 
-			if (!dto.facilityId) {
+			if (!dto.facilityItemId) {
 				toast({
 					title: "Error",
 					description: "Please select a facility",
@@ -200,6 +243,26 @@ export function BookingForm({
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-4">
+			{/* Conflict Warning */}
+			{hasConflicts && (
+				<div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg">
+					<AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+					<div className="text-sm">
+						<p className="font-medium text-red-800 dark:text-red-200">
+							Scheduling Conflict Detected
+						</p>
+						{conflicts.map((conflict, i) => (
+							<p
+								key={i}
+								className="text-red-600 dark:text-red-400 mt-1"
+							>
+								{conflict.message}
+							</p>
+						))}
+					</div>
+				</div>
+			)}
+
 			{/* User Selection */}
 			<div className="space-y-2">
 				<Label>
@@ -252,12 +315,19 @@ export function BookingForm({
 					</SelectTrigger>
 					<SelectContent>
 						{facilities.map((facility) => (
-							<SelectItem
-								key={facility.id}
-								value={facility.id.toString()}
-							>
-								{facility.name}
-							</SelectItem>
+							<SelectGroup key={facility.id}>
+								<SelectLabel className="pl-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+									{facility.name}
+								</SelectLabel>
+								{facility.items?.map((item) => (
+									<SelectItem
+										key={item.id}
+										value={item.id.toString()}
+									>
+										{item.name}
+									</SelectItem>
+								))}
+							</SelectGroup>
 						))}
 					</SelectContent>
 				</Select>
