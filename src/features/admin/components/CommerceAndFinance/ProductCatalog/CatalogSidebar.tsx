@@ -83,7 +83,6 @@ export function CatalogSidebar({
 			});
 		}
 	};
-	upd;
 	useEffect(() => {
 		loadCategories();
 	}, [refreshTrigger, loadCategories]);
