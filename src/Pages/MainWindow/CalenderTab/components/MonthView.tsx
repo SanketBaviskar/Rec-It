@@ -120,7 +120,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
 											style={{
 												backgroundColor:
 													getFacilityColor(
-														booking.facility
+														booking.facilityId
 													),
 											}}
 											onClick={(e) => {

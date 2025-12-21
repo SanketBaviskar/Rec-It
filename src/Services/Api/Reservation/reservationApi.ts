@@ -2,7 +2,7 @@ import apiClient from "@/Services/Utils/apiClient";
 
 export interface Reservation {
 	id: number;
-	facilityItemId: number;
+	facilityId: number;
 	userId: number | null;
 	title: string;
 	startTime: string; // ISO string
@@ -16,15 +16,15 @@ export interface Reservation {
 		lastName: string;
 		email: string;
 	};
-	facilityItem?: {
+	facility?: {
 		id: number;
 		name: string;
 		status: string;
-		facility: {
+		location?: string;
+		capacity?: number;
+		category?: {
 			id: number;
 			name: string;
-			type: string;
-			location: string;
 		};
 	};
 	createdAt: string;
@@ -32,7 +32,7 @@ export interface Reservation {
 }
 
 export interface CreateReservationDto {
-	facilityItemId: number;
+	facilityId: number;
 	title: string;
 	startTime: string; // ISO string
 	endTime: string; // ISO string
@@ -43,13 +43,13 @@ export interface CreateReservationDto {
 }
 
 export const fetchReservations = async (
-	facilityItemId?: number,
+	facilityId?: number,
 	start?: Date,
 	end?: Date
 ): Promise<Reservation[]> => {
 	try {
 		const params: any = {};
-		if (facilityItemId) params.facilityItemId = facilityItemId;
+		if (facilityId) params.facilityId = facilityId;
 		if (start) params.start = start.toISOString();
 		if (end) params.end = end.toISOString();
 

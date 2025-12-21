@@ -13,7 +13,7 @@ import {
 	SelectGroup,
 	SelectLabel,
 } from "@/components/ui/select";
-import { Facility, Booking } from "./types";
+import { Facility, Booking, FacilityCategory } from "./types";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import {
 	createReservation,
@@ -27,6 +27,7 @@ interface BookingFormProps {
 	selectedDate: Date;
 	initialRange?: { start: Date; end: Date } | null;
 	facilities: Facility[];
+	categories?: FacilityCategory[];
 	selectedFacility?: string;
 	onBook: () => void;
 	onClose: () => void;
@@ -43,6 +44,7 @@ export function BookingForm({
 	selectedDate,
 	initialRange,
 	facilities,
+	categories = [],
 	selectedFacility,
 	onBook,
 	onClose,
@@ -68,6 +70,17 @@ export function BookingForm({
 		recurringFrequency: "weekly" as "daily" | "weekly" | "monthly",
 		recurringEndDate: format(addDays(selectedDate, 90), "yyyy-MM-dd"),
 	});
+
+	// Group facilities by category for display
+	const facilitiesByCategory = useMemo(() => {
+		const grouped: Record<string, Facility[]> = {};
+		facilities.forEach((facility) => {
+			const catId = facility.categoryId || "uncategorized";
+			if (!grouped[catId]) grouped[catId] = [];
+			grouped[catId].push(facility);
+		});
+		return grouped;
+	}, [facilities]);
 
 	// Real-time conflict detection
 	const conflicts = useMemo(() => {
@@ -105,7 +118,7 @@ export function BookingForm({
 		if (editingBooking) {
 			setFormData({
 				title: editingBooking.title,
-				facility: editingBooking.facilityItemId,
+				facility: editingBooking.facilityId,
 				startTime: format(editingBooking.start, "HH:mm"),
 				endTime: format(editingBooking.end, "HH:mm"),
 				type: editingBooking.type,
@@ -135,8 +148,6 @@ export function BookingForm({
 				baseState.startTime = format(initialRange.start, "HH:mm");
 				baseState.endTime = format(initialRange.end, "HH:mm");
 			} else if (selectedDate) {
-				// Fallback to selectedDate (usually just clicked slot start)
-				// If selectedDate changed, update times if not from simple toggle
 				baseState.startTime = format(selectedDate, "HH:mm");
 				baseState.endTime = format(
 					addMinutes(selectedDate, 60),
@@ -181,7 +192,7 @@ export function BookingForm({
 
 			// Construct DTO
 			const dto: CreateReservationDto = {
-				facilityItemId: parseInt(formData.facility),
+				facilityId: parseInt(formData.facility),
 				title: formData.title,
 				startTime: start.toISOString(),
 				endTime: end.toISOString(),
@@ -199,15 +210,17 @@ export function BookingForm({
 					description: "Please select an assigned member",
 					variant: "destructive",
 				});
+				setIsLoading(false);
 				return;
 			}
 
-			if (!dto.facilityItemId) {
+			if (!dto.facilityId) {
 				toast({
 					title: "Error",
 					description: "Please select a facility",
 					variant: "destructive",
 				});
+				setIsLoading(false);
 				return;
 			}
 
@@ -239,6 +252,12 @@ export function BookingForm({
 		} finally {
 			setIsLoading(false);
 		}
+	};
+
+	// Get category name helper
+	const getCategoryName = (catId: string) => {
+		const cat = categories.find((c) => c.id === catId);
+		return cat?.name || "Other";
 	};
 
 	return (
@@ -314,21 +333,23 @@ export function BookingForm({
 						<SelectValue placeholder="Select a facility" />
 					</SelectTrigger>
 					<SelectContent>
-						{facilities.map((facility) => (
-							<SelectGroup key={facility.id}>
-								<SelectLabel className="pl-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-									{facility.name}
-								</SelectLabel>
-								{facility.items?.map((item) => (
-									<SelectItem
-										key={item.id}
-										value={item.id.toString()}
-									>
-										{item.name}
-									</SelectItem>
-								))}
-							</SelectGroup>
-						))}
+						{Object.entries(facilitiesByCategory).map(
+							([catId, catFacilities]) => (
+								<SelectGroup key={catId}>
+									<SelectLabel className="pl-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+										{getCategoryName(catId)}
+									</SelectLabel>
+									{catFacilities.map((facility) => (
+										<SelectItem
+											key={facility.id}
+											value={facility.id.toString()}
+										>
+											{facility.name}
+										</SelectItem>
+									))}
+								</SelectGroup>
+							)
+						)}
 					</SelectContent>
 				</Select>
 			</div>

@@ -24,6 +24,7 @@ export default function CalendarTab() {
 	// Custom Hooks
 	const {
 		facilities,
+		categories,
 		selectedFacility,
 		toggleFacilitySelection,
 		loadFacilities,
@@ -91,6 +92,7 @@ export default function CalendarTab() {
 		<div className="flex h-[90vh] bg-background">
 			<Sidebar
 				facilities={facilities}
+				categories={categories}
 				selectedFacility={selectedFacility}
 				onSelectFacility={toggleFacilitySelection}
 				onFilterChange={onFilterChange}
@@ -181,6 +183,7 @@ export default function CalendarTab() {
 						selectedDate={selectedBookingDate}
 						initialRange={newBookingRange}
 						facilities={facilities}
+						categories={categories}
 						selectedFacility={selectedFacility}
 						onBook={loadReservations}
 						onClose={() => {

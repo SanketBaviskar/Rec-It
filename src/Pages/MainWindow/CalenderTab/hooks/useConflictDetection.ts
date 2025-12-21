@@ -43,7 +43,7 @@ export const useConflictDetection = (
 				if (!timesOverlap) continue;
 
 				// Hard conflict: same facility, overlapping times
-				if (booking1.facility === booking2.facility) {
+				if (booking1.facilityId === booking2.facilityId) {
 					detectedConflicts.push({
 						booking1,
 						booking2,
@@ -83,7 +83,7 @@ export const useConflictDetection = (
 		const potentialConflicts: Conflict[] = [];
 
 		const relevantBookings = bookings.filter(
-			(b) => b.facility === facilityId && b.id !== excludeBookingId
+			(b) => b.facilityId === facilityId && b.id !== excludeBookingId
 		);
 
 		for (const existing of relevantBookings) {
@@ -97,10 +97,10 @@ export const useConflictDetection = (
 					booking1: {
 						id: "new",
 						title: "New Booking",
-						facility: facilityId,
+						facilityId: facilityId,
 						start,
 						end,
-						type: "reservation",
+						type: "booking",
 						status: "pending",
 					} as Booking,
 					booking2: existing,

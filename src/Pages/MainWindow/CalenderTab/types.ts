@@ -1,28 +1,28 @@
-export interface Facility {
+// Calendar types - Updated to use Facility directly (no more FacilityItem)
+
+export interface FacilityCategory {
 	id: string;
 	name: string;
-	type: string;
-	capacity: number;
-	location: string;
-	available?: boolean;
-	color?: string; // Additional UI prop
-	items?: FacilityItem[];
+	description?: string;
 }
 
-export interface FacilityItem {
+export interface Facility {
 	id: string;
-	facilityId: string;
+	categoryId: string;
 	name: string;
-	status: "available" | "maintenance" | "closed";
-	facility?: Facility;
-	color?: string; // Inherited from parent facility for display
+	description?: string;
+	capacity?: number;
+	location?: string;
+	status: "available" | "maintenance" | "closed" | "occupied";
+	category?: FacilityCategory;
+	color?: string; // UI prop for calendar display
 }
 
 export interface Booking {
 	id: string;
 	title: string;
-	facilityItemId: string; // FacilityItem ID
-	facilityItem?: FacilityItem;
+	facilityId: string; // Facility ID (was facilityItemId)
+	facility?: Facility;
 	start: Date;
 	end: Date;
 	type: "booking" | "maintenance" | "event";

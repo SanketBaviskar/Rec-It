@@ -37,25 +37,26 @@ export const useReservations = (
 				const mapped: Booking[] = data.map((r) => ({
 					id: r.id.toString(),
 					title: r.title,
-					facilityItemId: r.facilityItemId.toString(),
-					// Support for backward compatibility processing if needed, but primary is now item
-					facilityItem: r.facilityItem
+					facilityId: r.facilityId.toString(),
+					facility: r.facility
 						? {
-								id: r.facilityItem.id.toString(),
-								facilityId:
-									r.facilityItem.facility.id.toString(), // Map nested facility ID
-								name: r.facilityItem.name,
-								status: r.facilityItem.status as
+								id: r.facility.id.toString(),
+								categoryId:
+									r.facility.category?.id?.toString() || "",
+								name: r.facility.name,
+								status: r.facility.status as
 									| "available"
 									| "maintenance"
-									| "closed",
-								facility: {
-									id: r.facilityItem.facility.id.toString(),
-									name: r.facilityItem.facility.name,
-									type: r.facilityItem.facility.type,
-									capacity: 0, // Not always returned here, simple mapping
-									location: r.facilityItem.facility.location,
-								},
+									| "closed"
+									| "occupied",
+								location: r.facility.location,
+								capacity: r.facility.capacity,
+								category: r.facility.category
+									? {
+											id: r.facility.category.id.toString(),
+											name: r.facility.category.name,
+									  }
+									: undefined,
 						  }
 						: undefined,
 					start: parseISO(r.startTime),
@@ -89,7 +90,7 @@ export const useReservations = (
 			await updateReservation(parseInt(booking.id), {
 				startTime: newStart.toISOString(),
 				endTime: newEnd.toISOString(),
-				facilityItemId: parseInt(booking.facilityItemId),
+				facilityId: parseInt(booking.facilityId),
 			});
 			toast({
 				title: "Updated",
@@ -126,8 +127,7 @@ export const useReservations = (
 
 	const filteredBookings = selectedFacility
 		? bookings.filter(
-				(booking) =>
-					booking.facilityItemId === selectedFacility.toString()
+				(booking) => booking.facilityId === selectedFacility.toString()
 		  )
 		: bookings;
 

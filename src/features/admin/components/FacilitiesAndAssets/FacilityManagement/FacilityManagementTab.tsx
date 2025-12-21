@@ -3,31 +3,25 @@ import { Plus, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/components/ui/hooks/use-toast";
-import { fetchFacilities, Facility } from "@/services/Api/Facility/facilityApi";
 import {
-	addFacility,
-	CreateFacilityDto,
-} from "@/services/Api/Admin/Facility/addFacility";
+	fetchFacilities,
+	createFacility,
+	deleteFacility,
+	Facility,
+} from "@/services/Api/Facility/facilityApi";
 import {
 	getFacilityCategories,
+	createFacilityCategory,
 	FacilityCategory,
 } from "@/services/Api/FacilityCategory/facilityCategoryApi";
-import { updateFacility } from "@/services/Api/Admin/Facility/updateFacility";
-import { deleteFacility } from "@/services/Api/Admin/Facility/deleteFacility";
 import FacilitySidebar from "./FacilitySidebar";
 import FacilityItems from "./FacilityItems";
 
@@ -35,28 +29,24 @@ export default function FacilityManagementTab() {
 	const { toast } = useToast();
 	const [facilities, setFacilities] = useState<Facility[]>([]);
 	const [categories, setCategories] = useState<FacilityCategory[]>([]);
-	const [activeComponent, setActiveComponent] = useState<
-		"Items" | "Form" | null
-	>(null);
 	const [selectedFacility, setSelectedFacility] = useState<Facility | null>(
 		null
 	);
 
-	const [isAddingCategory, setIsAddingCategory] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [editingFacility, setEditingFacility] = useState<Facility | null>(
+	const [isAddingCategory, setIsAddingCategory] = useState(false);
+	const [activeCategoryId, setActiveCategoryId] = useState<number | null>(
 		null
 	);
+	const [activeCategoryName, setActiveCategoryName] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
-	const [formData, setFormData] = useState<CreateFacilityDto>({
+
+	// Form data for adding category or facility
+	const [formData, setFormData] = useState({
 		name: "",
 		description: "",
-		capacity: 0,
 		location: "",
-		manager: "",
-		type: "",
-		categoryId: undefined,
-		quantity: 0,
+		capacity: 0,
 	});
 
 	const loadFacilities = async () => {
@@ -82,36 +72,19 @@ export default function FacilityManagementTab() {
 	}, []);
 
 	const handleOpenModal = (
-		facility?: Facility,
 		categoryId?: number,
 		categoryName?: string,
 		isCategory: boolean = false
 	) => {
 		setIsAddingCategory(isCategory);
-		if (facility) {
-			setEditingFacility(facility);
-			setFormData({
-				name: facility.name,
-				description: facility.description || "",
-				capacity: facility.capacity,
-				location: facility.location,
-				manager: facility.manager,
-				type: facility.type || "Court",
-				quantity: 0, // Quantity is typically read-only or 0 on edit
-			});
-		} else {
-			setEditingFacility(null);
-			setFormData({
-				name: "",
-				description: "",
-				capacity: 0,
-				location: "",
-				manager: "",
-				type: categoryName || "Court", // Default to categoryName if provided
-				categoryId: categoryId,
-				quantity: 1,
-			});
-		}
+		setActiveCategoryId(categoryId || null);
+		setActiveCategoryName(categoryName || "");
+		setFormData({
+			name: "",
+			description: "",
+			location: "",
+			capacity: 0,
+		});
 		setIsModalOpen(true);
 	};
 
@@ -120,28 +93,22 @@ export default function FacilityManagementTab() {
 		setIsLoading(true);
 		try {
 			if (isAddingCategory) {
-				await import(
-					"@/services/Api/FacilityCategory/facilityCategoryApi"
-				).then((mod) =>
-					mod.createFacilityCategory({
-						name: formData.name,
-						description: formData.description,
-						manager: formData.manager,
-						location: formData.location,
-					})
-				);
+				await createFacilityCategory({
+					name: formData.name,
+					description: formData.description || undefined,
+				});
 				toast({
 					title: "Created",
 					description: "Category created successfully",
 				});
-			} else if (editingFacility) {
-				await updateFacility(editingFacility.id, formData);
-				toast({
-					title: "Updated",
-					description: "Facility updated successfully",
+			} else if (activeCategoryId) {
+				await createFacility({
+					categoryId: activeCategoryId,
+					name: formData.name,
+					description: formData.description || undefined,
+					location: formData.location || undefined,
+					capacity: formData.capacity || undefined,
 				});
-			} else {
-				await addFacility(formData);
 				toast({
 					title: "Created",
 					description: "Facility created successfully",
@@ -170,7 +137,6 @@ export default function FacilityManagementTab() {
 			loadFacilities();
 			if (selectedFacility?.id === id) {
 				setSelectedFacility(null);
-				setActiveComponent(null);
 			}
 		} catch {
 			toast({
@@ -180,6 +146,11 @@ export default function FacilityManagementTab() {
 			});
 		}
 	};
+
+	// Get the selected category for displaying facilities
+	const selectedCategory = selectedFacility
+		? categories.find((c) => c.id === selectedFacility.categoryId)
+		: null;
 
 	return (
 		<div className="flex h-full">
@@ -191,12 +162,7 @@ export default function FacilityManagementTab() {
 						variant="outline"
 						size="icon"
 						onClick={() =>
-							handleOpenModal(
-								undefined,
-								undefined,
-								undefined,
-								true
-							)
+							handleOpenModal(undefined, undefined, true)
 						}
 						aria-label="Add New Facility Category"
 					>
@@ -213,10 +179,9 @@ export default function FacilityManagementTab() {
 								(f) => f.id === id
 							);
 							setSelectedFacility(facility || null);
-							setActiveComponent("Items");
 						}}
 						onAddFacility={(catId, catName) =>
-							handleOpenModal(undefined, catId, catName, false)
+							handleOpenModal(catId, catName, false)
 						}
 						onDeleteFacility={handleDelete}
 					/>
@@ -226,36 +191,38 @@ export default function FacilityManagementTab() {
 			{/* Main content */}
 			<div className="flex-1 p-6 h-full overflow-hidden flex flex-col">
 				<div className="flex-1 overflow-y-auto">
-					{activeComponent === "Items" && selectedFacility ? (
-						<FacilityItems facility={selectedFacility} />
+					{selectedFacility && selectedCategory ? (
+						<FacilityItems
+							category={selectedCategory}
+							onBack={() => setSelectedFacility(null)}
+						/>
 					) : (
 						<div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center">
 							<Building className="h-12 w-12 mb-4 opacity-20" />
 							<p className="text-lg font-medium">
-								Select a facility to view content
+								Select a facility to view details
 							</p>
 							<p className="text-sm">
-								Or add a new facility to get started
+								Or add a new category using the + button
 							</p>
 						</div>
 					)}
 				</div>
 			</div>
 
+			{/* Modal for adding category or facility */}
 			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle>
 							{isAddingCategory
-								? "Add New Facility Category"
-								: editingFacility
-								? "Edit Facility"
-								: "Add New Facility"}
+								? "Add New Category"
+								: `Add Facility to ${activeCategoryName}`}
 						</DialogTitle>
 					</DialogHeader>
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="grid gap-2">
-							<Label htmlFor="name">Name</Label>
+							<Label htmlFor="name">Name *</Label>
 							<Input
 								id="name"
 								value={formData.name}
@@ -268,31 +235,31 @@ export default function FacilityManagementTab() {
 								required
 								placeholder={
 									isAddingCategory
-										? "Category Name"
-										: "e.g. Tennis Court"
+										? 'e.g., "Study Rooms", "Courts"'
+										: 'e.g., "Study Room A", "Court 1"'
 								}
 							/>
 						</div>
 
-						{/* Only show manager and description for Categories */}
-						{isAddingCategory && (
+						<div className="grid gap-2">
+							<Label htmlFor="description">Description</Label>
+							<Textarea
+								id="description"
+								value={formData.description}
+								onChange={(e) =>
+									setFormData((prev) => ({
+										...prev,
+										description: e.target.value,
+									}))
+								}
+								placeholder="Brief description"
+								rows={2}
+							/>
+						</div>
+
+						{/* Only show location and capacity for facilities, not categories */}
+						{!isAddingCategory && (
 							<>
-								<div className="grid gap-2">
-									<Label htmlFor="manager">
-										Manager Name
-									</Label>
-									<Input
-										id="manager"
-										value={formData.manager}
-										onChange={(e) =>
-											setFormData((prev) => ({
-												...prev,
-												manager: e.target.value,
-											}))
-										}
-										required
-									/>
-								</div>
 								<div className="grid gap-2">
 									<Label htmlFor="location">Location</Label>
 									<Input
@@ -304,149 +271,26 @@ export default function FacilityManagementTab() {
 												location: e.target.value,
 											}))
 										}
-										required
+										placeholder="e.g., Building A, Floor 2"
 									/>
 								</div>
+
 								<div className="grid gap-2">
-									<Label htmlFor="description">
-										Description (Optional)
-									</Label>
+									<Label htmlFor="capacity">Capacity</Label>
 									<Input
-										id="description"
-										value={formData.description}
+										id="capacity"
+										type="number"
+										value={formData.capacity || ""}
 										onChange={(e) =>
-											setFormData((prev) => ({
-												...prev,
-												description: e.target.value,
-											}))
+											setFormData({
+												...formData,
+												capacity:
+													parseInt(e.target.value) ||
+													0,
+											})
 										}
+										placeholder="Maximum occupancy"
 									/>
-								</div>
-							</>
-						)}
-
-						{/* Show full form for Facilities (not categories) */}
-						{!isAddingCategory && (
-							<>
-								{/* Only show category/type selection if creating new AND NOT adding category */}
-								{!editingFacility && (
-									<div className="grid gap-2">
-										<Label htmlFor="type">
-											Facility Type (Category)
-										</Label>
-										<Select
-											disabled={true} // Locked to the category passed in
-											value={formData.type}
-										>
-											<SelectTrigger id="type">
-												<SelectValue placeholder="Select facility type" />
-											</SelectTrigger>
-											<SelectContent>
-												{categories.map((category) => (
-													<SelectItem
-														key={category.id}
-														value={category.name}
-													>
-														{category.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</div>
-								)}
-
-								{!editingFacility && (
-									<div className="grid gap-2">
-										<Label htmlFor="quantity">
-											Quantity
-										</Label>
-										<Input
-											id="quantity"
-											type="number"
-											min="1"
-											value={formData.quantity}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													quantity:
-														parseInt(
-															e.target.value
-														) || 0,
-												})
-											}
-											required
-											placeholder="How many units?"
-										/>
-									</div>
-								)}
-
-								<div className="grid grid-cols-2 gap-4">
-									<div className="grid gap-2">
-										<Label htmlFor="capacity">
-											Capacity (Per Unit)
-										</Label>
-										<Input
-											id="capacity"
-											type="number"
-											value={formData.capacity}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													capacity: parseInt(
-														e.target.value
-													),
-												})
-											}
-											required
-										/>
-									</div>
-									<div className="grid gap-2">
-										<Label htmlFor="location">
-											Location
-										</Label>
-										<Input
-											id="location"
-											value={formData.location}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													location: e.target.value,
-												})
-											}
-											required
-										/>
-									</div>
-									<div className="grid gap-2">
-										<Label htmlFor="manager">
-											Manager Name
-										</Label>
-										<Input
-											id="manager"
-											value={formData.manager}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													manager: e.target.value,
-												})
-											}
-											required
-										/>
-									</div>
-									<div className="grid gap-2">
-										<Label htmlFor="description">
-											Description (Optional)
-										</Label>
-										<Input
-											id="description"
-											value={formData.description}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													description: e.target.value,
-												})
-											}
-										/>
-									</div>
 								</div>
 							</>
 						)}
@@ -462,8 +306,6 @@ export default function FacilityManagementTab() {
 							<Button type="submit" disabled={isLoading}>
 								{isLoading
 									? "Saving..."
-									: editingFacility
-									? "Update"
 									: isAddingCategory
 									? "Add Category"
 									: "Add Facility"}

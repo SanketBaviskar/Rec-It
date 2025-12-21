@@ -4,10 +4,27 @@ export interface FacilityCategory {
 	id: number;
 	name: string;
 	description?: string;
-	location: string;
-	manager?: string;
+	facilities?: Facility[];
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface Facility {
+	id: number;
+	categoryId: number;
+	name: string;
+	description?: string;
 	capacity?: number;
-	facilities?: any[]; // Keep flexible or use Facility interface
+	location?: string;
+	managerId?: number;
+	status: "available" | "maintenance" | "closed" | "occupied";
+	category?: FacilityCategory;
+	manager?: {
+		id: number;
+		firstName: string;
+		lastName: string;
+		email: string;
+	};
 	createdAt: string;
 	updatedAt: string;
 }
@@ -15,10 +32,11 @@ export interface FacilityCategory {
 export const getFacilityCategories = async (): Promise<FacilityCategory[]> => {
 	try {
 		const response = await apiClient.get<{
-			data: { items: FacilityCategory[] };
+			data: FacilityCategory[] | { items: FacilityCategory[] };
 		}>("/facility-categories");
-		// Accessing data inside the wrapper as standard in this project
-		return response.data.data.items;
+		// Handle both array and items wrapper
+		const result = response.data.data;
+		return Array.isArray(result) ? result : result.items || [];
 	} catch (error) {
 		console.error("Error fetching facility categories:", error);
 		throw error;
@@ -28,9 +46,6 @@ export const getFacilityCategories = async (): Promise<FacilityCategory[]> => {
 export const createFacilityCategory = async (data: {
 	name: string;
 	description?: string;
-	location: string;
-	manager?: string;
-	capacity?: number;
 }): Promise<FacilityCategory> => {
 	try {
 		const response = await apiClient.post<{ data: FacilityCategory }>(
@@ -40,6 +55,25 @@ export const createFacilityCategory = async (data: {
 		return response.data.data;
 	} catch (error) {
 		console.error("Error creating facility category:", error);
+		throw error;
+	}
+};
+
+export const updateFacilityCategory = async (
+	id: number,
+	data: {
+		name?: string;
+		description?: string;
+	}
+): Promise<FacilityCategory> => {
+	try {
+		const response = await apiClient.put<{ data: FacilityCategory }>(
+			`/facility-categories/${id}`,
+			data
+		);
+		return response.data.data;
+	} catch (error) {
+		console.error("Error updating facility category:", error);
 		throw error;
 	}
 };

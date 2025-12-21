@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { Facility } from "../types";
+import { Facility, FacilityCategory } from "../types";
 import { fetchFacilities } from "@/services/Api/Facility/facilityApi";
+import { getFacilityCategories } from "@/services/Api/FacilityCategory/facilityCategoryApi";
 
 export const useFacilities = () => {
 	const [facilities, setFacilities] = useState<Facility[]>([]);
+	const [categories, setCategories] = useState<FacilityCategory[]>([]);
 	const [selectedFacility, setSelectedFacility] = useState<
 		string | undefined
 	>(undefined);
@@ -20,23 +22,41 @@ export const useFacilities = () => {
 				"#06b6d4",
 				"#84cc16",
 			];
-			const data = await fetchFacilities(
-				type === "all" ? undefined : type
+
+			const [facilitiesData, categoriesData] = await Promise.all([
+				fetchFacilities(type === "all" ? undefined : type),
+				getFacilityCategories(),
+			]);
+
+			// Map categories
+			const mappedCategories: FacilityCategory[] = categoriesData.map(
+				(c) => ({
+					id: c.id.toString(),
+					name: c.name,
+					description: c.description,
+				})
 			);
-			const mapped = data.map((f, index) => {
+			setCategories(mappedCategories);
+
+			// Map facilities with colors
+			const mapped: Facility[] = facilitiesData.map((f, index) => {
 				const color = FACILITY_COLORS[index % FACILITY_COLORS.length];
 				return {
-					...f,
 					id: f.id.toString(),
-					type: f.type || "Facility",
+					categoryId: f.categoryId?.toString() || "",
+					name: f.name,
+					description: f.description,
+					capacity: f.capacity,
+					location: f.location,
+					status: (f.status as Facility["status"]) || "available",
 					color: color,
-					items:
-						f.items?.map((item) => ({
-							...item,
-							id: item.id.toString(),
-							facilityId: f.id.toString(),
-							color: color, // Inherit color from parent
-						})) || [],
+					category: f.category
+						? {
+								id: f.category.id.toString(),
+								name: f.category.name,
+								description: f.category.description,
+						  }
+						: undefined,
 				};
 			});
 			setFacilities(mapped);
@@ -57,6 +77,7 @@ export const useFacilities = () => {
 
 	return {
 		facilities,
+		categories,
 		selectedFacility,
 		loadFacilities,
 		toggleFacilitySelection,

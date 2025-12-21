@@ -177,7 +177,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
 		columnWidth: number
 	) => {
 		const facility = facilities.find(
-			(f) => f.id.toString() === booking.facility
+			(f) => f.id.toString() === booking.facilityId
 		);
 		const hasConflict = isBookingConflicting?.(booking.id) ?? false;
 
