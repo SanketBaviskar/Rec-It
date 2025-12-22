@@ -1,14 +1,9 @@
 import React, { useState, useMemo } from "react";
-import { Search, Filter, CalendarDays, MapPin, Users } from "lucide-react";
+import { Search, Filter, MapPin, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -17,10 +12,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Facility, FacilityCategory } from "../types";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css"; // Default styles
-import "./SidebarCalendar.css"; // Custom overrides
-import { format } from "date-fns";
 
 interface SidebarProps {
 	facilities: Facility[];
@@ -28,8 +19,6 @@ interface SidebarProps {
 	selectedFacility: string | undefined;
 	onSelectFacility: (id: string) => void;
 	onFilterChange: (type: string) => void;
-	currentDate: Date;
-	onDateSelect: (date: Date | undefined) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -38,16 +27,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 	selectedFacility,
 	onSelectFacility,
 	onFilterChange,
-	currentDate,
-	onDateSelect,
 }) => {
-	const [calendarOpen, setCalendarOpen] = useState(false);
 	const [searchTerm, setSearchTerm] = useState("");
-
-	const handleDateSelect = (date: Date) => {
-		onDateSelect(date);
-		setCalendarOpen(false);
-	};
 
 	// Find selected facility object
 	const selectedItem = facilities.find((f) => f.id === selectedFacility);
@@ -83,39 +64,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 	};
 
 	return (
-		<div className="w-64 border-r p-4 hidden md:block bg-slate-50/50 dark:bg-slate-900/50 flex flex-col h-full">
-			<div className="flex-1 flex flex-col overflow-hidden gap-4">
-				{/* Dropdown Calendar */}
-				<Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-					<PopoverTrigger asChild>
-						<Button
-							variant="outline"
-							className="w-full justify-start text-left font-normal"
-						>
-							<CalendarDays className="mr-2 h-4 w-4" />
-							{format(currentDate, "MMMM d, yyyy")}
-						</Button>
-					</PopoverTrigger>
-					<PopoverContent className="w-auto p-0" align="start">
-						<Calendar
-							onChange={(value) =>
-								handleDateSelect(value as Date)
-							}
-							value={currentDate}
-							locale="en-US"
-							prev2Label={null}
-							next2Label={null}
-							formatShortWeekday={(_locale, date) =>
-								["S", "M", "T", "W", "T", "F", "S"][
-									date.getDay()
-								]
-							}
-							calendarType="gregory"
-							view="month"
-						/>
-					</PopoverContent>
-				</Popover>
-
+		<div className="w-64 border-r p-4 hidden md:block bg-slate-50/50 dark:bg-slate-900/50 flex flex-col h-full min-h-0">
+			<div className="flex-1 flex flex-col overflow-hidden gap-4 min-h-0">
 				<div className="relative shrink-0">
 					<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 					<Input
@@ -141,7 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="flex-1 min-h-0 overflow-y-auto">
+				<ScrollArea className="flex-1 min-h-0">
 					<div className="space-y-4 pr-2">
 						{Object.entries(groupedFacilities).map(
 							([catId, items]) => {
@@ -194,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 							</div>
 						)}
 					</div>
-				</div>
+				</ScrollArea>
 
 				{/* Selected Facility Detail Panel */}
 				{selectedItem && (

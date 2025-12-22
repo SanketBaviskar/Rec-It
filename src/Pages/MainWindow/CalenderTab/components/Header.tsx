@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { format, differenceInMinutes } from "date-fns";
 import {
 	ChevronLeft,
@@ -8,10 +8,19 @@ import {
 	BookOpen,
 	Clock,
 	PenToolIcon as Tool,
+	CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Booking } from "../types";
 import { Separator } from "@/components/ui/separator";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import "./SidebarCalendar.css";
 
 interface HeaderProps {
 	currentDate: Date;
@@ -20,6 +29,7 @@ interface HeaderProps {
 	onNextDay: () => void;
 	onToday: () => void;
 	onNewBooking: () => void;
+	onDateSelect?: (date: Date) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -29,11 +39,16 @@ export const Header: React.FC<HeaderProps> = ({
 	onNextDay,
 	onToday,
 	onNewBooking,
+	onDateSelect,
 }) => {
+	const [calendarOpen, setCalendarOpen] = useState(false);
+
+	const handleDateSelect = (date: Date) => {
+		onDateSelect?.(date);
+		setCalendarOpen(false);
+	};
+
 	// Calculate Stats
-	const confirmedCount = bookings.filter(
-		(b) => b.status === "confirmed"
-	).length;
 	const maintenanceCount = bookings.filter(
 		(b) => b.type === "maintenance"
 	).length;
@@ -42,9 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
 		0
 	);
 
-	// Utilization approximation (of 12h day for all relevant facilities?)
-	// This is tricky without knowing total facilities capacity, but we'll use the same logic as Stats.tsx
-	// Stats.tsx logic: sum(duration) / (12*60) * 100. This is simplistic but we'll keep it.
+	// Utilization approximation
 	const totalMinutes = bookings.reduce(
 		(acc, curr) => acc + differenceInMinutes(curr.end, curr.start),
 		0
@@ -63,9 +76,38 @@ export const Header: React.FC<HeaderProps> = ({
 					>
 						<ChevronLeft className="h-4 w-4" />
 					</Button>
-					<div className="text-xl font-bold w-48 text-center text-foreground">
-						{format(currentDate, "MMMM d, yyyy")}
-					</div>
+
+					{/* Date with Calendar Dropdown */}
+					<Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+						<PopoverTrigger asChild>
+							<Button
+								variant="ghost"
+								className="text-xl font-bold w-auto px-3 text-foreground hover:bg-muted/50"
+							>
+								<CalendarDays className="mr-2 h-5 w-5 text-primary" />
+								{format(currentDate, "MMMM d, yyyy")}
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent className="w-auto p-0" align="start">
+							<Calendar
+								onChange={(value) =>
+									handleDateSelect(value as Date)
+								}
+								value={currentDate}
+								locale="en-US"
+								prev2Label={null}
+								next2Label={null}
+								formatShortWeekday={(_locale, date) =>
+									["S", "M", "T", "W", "T", "F", "S"][
+										date.getDay()
+									]
+								}
+								calendarType="gregory"
+								view="month"
+							/>
+						</PopoverContent>
+					</Popover>
+
 					<Button variant="outline" size="icon" onClick={onNextDay}>
 						<ChevronRight className="h-4 w-4" />
 					</Button>

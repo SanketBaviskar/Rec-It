@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
 	Table,
 	TableBody,
@@ -55,84 +55,62 @@ import {
 	Download,
 	Ban,
 	CheckCircle,
+	ChevronLeft,
+	ChevronRight,
+	Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import EditMemberDialog from "./EditMemberDialog";
+import apiClient from "@/services/Utils/apiClient";
 
 // Member Type Definition
+interface UserMembership {
+	id: number;
+	membership: {
+		id: number;
+		name: string;
+		price: number | null;
+	};
+	startDate: string;
+	endDate: string | null;
+}
+
 interface Member {
 	id: number;
 	firstName: string;
 	lastName: string;
 	email: string;
-	phoneNumber: string;
-	membershipType: string;
-	status: "Active" | "Inactive" | "Suspended" | "Expired";
-	joinDate: string;
+	phone: string;
+	status: string;
+	createdAt: string;
+	role: string;
+	memberships?: UserMembership[];
 }
 
-// Mock Data
-const INITIAL_MEMBERS: Member[] = [
-	{
-		id: 1001,
-		firstName: "John",
-		lastName: "Doe",
-		email: "john@example.com",
-		phoneNumber: "555-0101",
-		membershipType: "Gold Membership",
-		status: "Active",
-		joinDate: "2023-01-15",
-	},
-	{
-		id: 1002,
-		firstName: "Jane",
-		lastName: "Smith",
-		email: "jane@example.com",
-		phoneNumber: "555-0102",
-		membershipType: "Student Monthly",
-		status: "Active",
-		joinDate: "2023-02-20",
-	},
-	{
-		id: 1003,
-		firstName: "Bob",
-		lastName: "Johnson",
-		email: "bob@example.com",
-		phoneNumber: "555-0103",
-		membershipType: "Gold Membership",
-		status: "Suspended",
-		joinDate: "2022-11-05",
-	},
-	{
-		id: 1004,
-		firstName: "Alice",
-		lastName: "Brown",
-		email: "alice@example.com",
-		phoneNumber: "555-0104",
-		membershipType: "Day Pass",
-		status: "Expired",
-		joinDate: "2023-10-10",
-	},
-	{
-		id: 1005,
-		firstName: "Charlie",
-		lastName: "Davis",
-		email: "charlie@example.com",
-		phoneNumber: "555-0105",
-		membershipType: "Student Monthly",
-		status: "Active",
-		joinDate: "2023-05-12",
-	},
-];
+interface PaginationState {
+	cursors: (number | null)[]; // Stack of cursors for each page
+	currentPage: number;
+}
+
+const ITEMS_PER_PAGE = 100;
 
 export default function MemberList() {
-	const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
+	const [members, setMembers] = useState<Member[]>([]);
+	const [loading, setLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [editingMember, setEditingMember] = useState<Member | null>(null);
 	const [isEditOpen, setIsEditOpen] = useState(false);
 	const [isAddOpen, setIsAddOpen] = useState(false);
+	const [totalCount, setTotalCount] = useState(0);
+	const [hasMore, setHasMore] = useState(false);
+	const [nextCursor, setNextCursor] = useState<number | null>(null);
+	const [pagination, setPagination] = useState<PaginationState>({
+		cursors: [null], // First page has no cursor
+		currentPage: 1,
+	});
+
 	const [newMember, setNewMember] = useState({
 		firstName: "",
 		lastName: "",
@@ -141,35 +119,92 @@ export default function MemberList() {
 		membershipType: "Gold Membership",
 	});
 
-	// Statistics
+	// Fetch members from API
+	const fetchMembers = useCallback(
+		async (cursor: number | null = null, search: string = "") => {
+			setLoading(true);
+			try {
+				const params = new URLSearchParams();
+				params.append("limit", String(ITEMS_PER_PAGE));
+				if (cursor) params.append("cursor", String(cursor));
+				if (search) params.append("search", search);
+
+				const response = await apiClient.get(
+					`/users?${params.toString()}`
+				);
+
+				const data = response.data?.data || response.data;
+
+				// Handle both old format {items: [...]} and new format {users: [...], nextCursor, hasMore, totalCount}
+				const users = data?.users || data?.items || [];
+				const total = data?.totalCount || users.length;
+				const more = data?.hasMore || false;
+				const nextCur = data?.nextCursor || null;
+
+				setMembers(users);
+				setTotalCount(total);
+				setHasMore(more);
+				setNextCursor(nextCur);
+			} catch (error) {
+				console.error("Failed to fetch members:", error);
+				setMembers([]);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[]
+	);
+
+	// Initial fetch and when search changes
+	useEffect(() => {
+		const debounceTimer = setTimeout(() => {
+			setPagination({ cursors: [null], currentPage: 1 });
+			fetchMembers(null, searchTerm);
+		}, 300);
+
+		return () => clearTimeout(debounceTimer);
+	}, [searchTerm, fetchMembers]);
+
+	// Handle page navigation
+	const goToNextPage = () => {
+		if (hasMore && nextCursor) {
+			const newCursors = [...pagination.cursors, nextCursor];
+			setPagination({
+				cursors: newCursors,
+				currentPage: pagination.currentPage + 1,
+			});
+			fetchMembers(nextCursor, searchTerm);
+		}
+	};
+
+	const goToPreviousPage = () => {
+		if (pagination.currentPage > 1) {
+			const newCursors = pagination.cursors.slice(0, -1);
+			const previousCursor = newCursors[newCursors.length - 1];
+			setPagination({
+				cursors: newCursors,
+				currentPage: pagination.currentPage - 1,
+			});
+			fetchMembers(previousCursor, searchTerm);
+		}
+	};
+
+	// Statistics based on current page
 	const stats = useMemo(() => {
-		const total = members.length;
-		const active = members.filter((m) => m.status === "Active").length;
+		const total = totalCount;
+		const active = members.filter((m) => m.status === "active").length;
 		const suspended = members.filter(
-			(m) => m.status === "Suspended"
+			(m) => m.status === "suspended"
 		).length;
-		const expired = members.filter((m) => m.status === "Expired").length;
+		const expired = members.filter((m) => m.status === "expired").length;
 		return { total, active, suspended, expired };
-	}, [members]);
+	}, [members, totalCount]);
 
-	// Filtered members
+	// Filter by status (client-side for current page)
 	const filteredMembers = useMemo(() => {
-		return members.filter((member) => {
-			const matchesSearch =
-				member.firstName
-					.toLowerCase()
-					.includes(searchTerm.toLowerCase()) ||
-				member.lastName
-					.toLowerCase()
-					.includes(searchTerm.toLowerCase()) ||
-				member.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-			const matchesStatus =
-				statusFilter === "all" || member.status === statusFilter;
-
-			return matchesSearch && matchesStatus;
-		});
-	}, [members, searchTerm, statusFilter]);
+		if (statusFilter === "all") return members;
+		return members.filter((member) => member.status === statusFilter);
+	}, [members, statusFilter]);
 
 	const handleDelete = (id: number) => {
 		setMembers(members.filter((m) => m.id !== id));
@@ -189,18 +224,7 @@ export default function MemberList() {
 	const handleAddMember = () => {
 		if (!newMember.firstName || !newMember.email) return;
 
-		const member: Member = {
-			id: Date.now(),
-			firstName: newMember.firstName,
-			lastName: newMember.lastName,
-			email: newMember.email,
-			phoneNumber: newMember.phoneNumber,
-			membershipType: newMember.membershipType,
-			status: "Active",
-			joinDate: new Date().toISOString().split("T")[0],
-		};
-
-		setMembers([...members, member]);
+		// TODO: Call API to add member
 		setIsAddOpen(false);
 		setNewMember({
 			firstName: "",
@@ -209,9 +233,11 @@ export default function MemberList() {
 			phoneNumber: "",
 			membershipType: "Gold Membership",
 		});
+		// Refresh the list
+		fetchMembers(null, searchTerm);
 	};
 
-	const handleStatusChange = (id: number, newStatus: Member["status"]) => {
+	const handleStatusChange = (id: number, newStatus: string) => {
 		setMembers(
 			members.map((m) => (m.id === id ? { ...m, status: newStatus } : m))
 		);
@@ -224,7 +250,6 @@ export default function MemberList() {
 			"Last Name",
 			"Email",
 			"Phone",
-			"Membership",
 			"Status",
 			"Join Date",
 		];
@@ -233,10 +258,9 @@ export default function MemberList() {
 			m.firstName,
 			m.lastName,
 			m.email,
-			m.phoneNumber,
-			m.membershipType,
+			m.phone || "",
 			m.status,
-			m.joinDate,
+			m.createdAt,
 		]);
 		const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
 		const blob = new Blob([csv], { type: "text/csv" });
@@ -248,19 +272,24 @@ export default function MemberList() {
 	};
 
 	const getStatusVariant = (status: string) => {
-		switch (status) {
-			case "Active":
+		switch (status?.toLowerCase()) {
+			case "active":
 				return "default";
-			case "Inactive":
+			case "inactive":
 				return "secondary";
-			case "Suspended":
+			case "suspended":
 				return "destructive";
-			case "Expired":
+			case "expired":
 				return "outline";
 			default:
 				return "secondary";
 		}
 	};
+
+	// Calculate page info
+	const startIndex = (pagination.currentPage - 1) * ITEMS_PER_PAGE + 1;
+	const endIndex = Math.min(startIndex + members.length - 1, totalCount);
+	const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
 	return (
 		<div className="space-y-6">
@@ -286,7 +315,7 @@ export default function MemberList() {
 						</div>
 						<div>
 							<p className="text-sm text-muted-foreground">
-								Active
+								Active (this page)
 							</p>
 							<p className="text-2xl font-bold">{stats.active}</p>
 						</div>
@@ -299,7 +328,7 @@ export default function MemberList() {
 						</div>
 						<div>
 							<p className="text-sm text-muted-foreground">
-								Suspended
+								Suspended (this page)
 							</p>
 							<p className="text-2xl font-bold">
 								{stats.suspended}
@@ -314,7 +343,7 @@ export default function MemberList() {
 						</div>
 						<div>
 							<p className="text-sm text-muted-foreground">
-								Expired
+								Expired (this page)
 							</p>
 							<p className="text-2xl font-bold">
 								{stats.expired}
@@ -345,10 +374,10 @@ export default function MemberList() {
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="all">All Status</SelectItem>
-							<SelectItem value="Active">Active</SelectItem>
-							<SelectItem value="Suspended">Suspended</SelectItem>
-							<SelectItem value="Expired">Expired</SelectItem>
-							<SelectItem value="Inactive">Inactive</SelectItem>
+							<SelectItem value="active">Active</SelectItem>
+							<SelectItem value="suspended">Suspended</SelectItem>
+							<SelectItem value="expired">Expired</SelectItem>
+							<SelectItem value="inactive">Inactive</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -373,16 +402,29 @@ export default function MemberList() {
 							<TableHead>Member</TableHead>
 							<TableHead>Email</TableHead>
 							<TableHead>Membership</TableHead>
+							<TableHead>Role</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead>Join Date</TableHead>
 							<TableHead className="w-[80px]">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{filteredMembers.length === 0 ? (
+						{loading ? (
 							<TableRow>
 								<TableCell
-									colSpan={7}
+									colSpan={8}
+									className="h-32 text-center"
+								>
+									<div className="flex items-center justify-center gap-2">
+										<Loader2 className="h-5 w-5 animate-spin" />
+										<span>Loading members...</span>
+									</div>
+								</TableCell>
+							</TableRow>
+						) : filteredMembers.length === 0 ? (
+							<TableRow>
+								<TableCell
+									colSpan={8}
 									className="h-32 text-center"
 								>
 									<div className="text-muted-foreground">
@@ -407,8 +449,9 @@ export default function MemberList() {
 										<div className="flex items-center gap-3">
 											<Avatar className="h-8 w-8">
 												<AvatarFallback>
-													{member.firstName[0]}
-													{member.lastName[0]}
+													{member.firstName?.[0] ||
+														"?"}
+													{member.lastName?.[0] || ""}
 												</AvatarFallback>
 											</Avatar>
 											<div className="flex flex-col">
@@ -417,7 +460,7 @@ export default function MemberList() {
 													{member.lastName}
 												</span>
 												<span className="text-xs text-muted-foreground">
-													{member.phoneNumber}
+													{member.phone || "No phone"}
 												</span>
 											</div>
 										</div>
@@ -426,8 +469,28 @@ export default function MemberList() {
 										{member.email}
 									</TableCell>
 									<TableCell>
+										{member.memberships &&
+										member.memberships.length > 0 ? (
+											<Badge
+												variant="secondary"
+												className="bg-primary/10 text-primary"
+											>
+												{
+													member.memberships[0]
+														.membership.name
+												}
+											</Badge>
+										) : (
+											<span className="text-muted-foreground text-sm">
+												No membership
+											</span>
+										)}
+									</TableCell>
+									<TableCell>
 										<Badge variant="outline">
-											{member.membershipType}
+											{member.role === "0"
+												? "Member"
+												: `Staff L${member.role}`}
 										</Badge>
 									</TableCell>
 									<TableCell>
@@ -442,11 +505,13 @@ export default function MemberList() {
 													| "outline"
 											}
 										>
-											{member.status}
+											{member.status || "Unknown"}
 										</Badge>
 									</TableCell>
 									<TableCell className="text-muted-foreground">
-										{member.joinDate}
+										{new Date(
+											member.createdAt
+										).toLocaleDateString()}
 									</TableCell>
 									<TableCell>
 										<DropdownMenu>
@@ -474,12 +539,12 @@ export default function MemberList() {
 													Edit Details
 												</DropdownMenuItem>
 												<DropdownMenuSeparator />
-												{member.status !== "Active" && (
+												{member.status !== "active" && (
 													<DropdownMenuItem
 														onClick={() =>
 															handleStatusChange(
 																member.id,
-																"Active"
+																"active"
 															)
 														}
 													>
@@ -488,12 +553,12 @@ export default function MemberList() {
 													</DropdownMenuItem>
 												)}
 												{member.status !==
-													"Suspended" && (
+													"suspended" && (
 													<DropdownMenuItem
 														onClick={() =>
 															handleStatusChange(
 																member.id,
-																"Suspended"
+																"suspended"
 															)
 														}
 													>
@@ -561,10 +626,36 @@ export default function MemberList() {
 				</Table>
 			</div>
 
-			{/* Showing count */}
-			<p className="text-sm text-muted-foreground">
-				Showing {filteredMembers.length} of {members.length} members
-			</p>
+			{/* Pagination Controls */}
+			<div className="flex items-center justify-between">
+				<p className="text-sm text-muted-foreground">
+					Showing {members.length > 0 ? startIndex : 0} - {endIndex}{" "}
+					of {totalCount} members
+				</p>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={goToPreviousPage}
+						disabled={pagination.currentPage === 1 || loading}
+					>
+						<ChevronLeft className="h-4 w-4 mr-1" />
+						Previous
+					</Button>
+					<span className="text-sm text-muted-foreground px-2">
+						Page {pagination.currentPage} of {totalPages || 1}
+					</span>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={goToNextPage}
+						disabled={!hasMore || loading}
+					>
+						Next
+						<ChevronRight className="h-4 w-4 ml-1" />
+					</Button>
+				</div>
+			</div>
 
 			{/* Edit Member Dialog */}
 			<EditMemberDialog

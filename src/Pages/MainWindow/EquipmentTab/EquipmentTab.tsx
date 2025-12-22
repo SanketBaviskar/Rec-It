@@ -178,9 +178,9 @@ export default function EquipmentTab() {
 	};
 
 	return (
-		<div className="flex h-full gap-6 p-6 bg-gradient-to-br from-background via-background to-muted/20">
+		<div className="flex h-[calc(100vh-4rem)] gap-6 p-6 bg-gradient-to-br from-background via-background to-muted/20">
 			{/* Left Side - Member Search OR Member Details */}
-			<div className="w-[30%] flex flex-col gap-4">
+			<div className="w-[30%] flex flex-col gap-4 min-h-0">
 				{!showDetails ? (
 					<>
 						{/* Search Header */}
@@ -204,15 +204,15 @@ export default function EquipmentTab() {
 						</div>
 
 						{/* Search Results */}
-						<div className="flex-1 rounded-xl border bg-card shadow-sm overflow-hidden">
-							<div className="border-b bg-muted/50 px-4 py-3">
+						<div className="flex-1 min-h-0 rounded-xl border bg-card shadow-sm overflow-hidden flex flex-col">
+							<div className="border-b bg-muted/50 px-4 py-3 shrink-0">
 								<p className="text-sm font-medium text-muted-foreground">
 									{searchResults.length > 0
 										? `${searchResults.length} Members Found`
 										: "Search Results"}
 								</p>
 							</div>
-							<ScrollArea className="h-[calc(100%-52px)]">
+							<ScrollArea className="flex-1 min-h-0">
 								<div className="p-3 space-y-2">
 									{searchResults.length === 0 ? (
 										<div className="text-center text-muted-foreground py-12">
@@ -243,7 +243,7 @@ export default function EquipmentTab() {
 					</>
 				) : (
 					/* Member Details View */
-					<div className="h-full flex flex-col gap-3">
+					<div className="h-full flex flex-col gap-3 min-h-0">
 						{/* Back Button */}
 						<Button
 							variant="outline"
@@ -256,7 +256,7 @@ export default function EquipmentTab() {
 						</Button>
 
 						{/* Details Card */}
-						<div className="flex-1 rounded-xl border bg-card shadow-sm overflow-hidden">
+						<div className="flex-1 min-h-0 rounded-xl border bg-card shadow-sm overflow-hidden">
 							<MemberDetails
 								userDetails={selectedCustomer}
 								isLoading={isLoading}
@@ -269,7 +269,7 @@ export default function EquipmentTab() {
 			</div>
 
 			{/* Right - Equipment Navbar */}
-			<div className="flex-1 rounded-xl border bg-card shadow-sm overflow-hidden">
+			<div className="flex-1 min-h-0 rounded-xl border bg-card shadow-sm overflow-hidden">
 				<EquipmentNavBar
 					selectedMember={selectedCustomer}
 					onCheckout={handleCheckout}

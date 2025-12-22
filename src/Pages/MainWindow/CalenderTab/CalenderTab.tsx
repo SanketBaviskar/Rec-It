@@ -89,24 +89,23 @@ export default function CalendarTab() {
 	};
 
 	return (
-		<div className="flex h-[90vh] bg-background">
+		<div className="flex h-[calc(100vh-4rem)] bg-background">
 			<Sidebar
 				facilities={facilities}
 				categories={categories}
 				selectedFacility={selectedFacility}
 				onSelectFacility={toggleFacilitySelection}
 				onFilterChange={onFilterChange}
-				currentDate={currentDate}
-				onDateSelect={(d) => d && setDate(d)}
 			/>
 
-			<div className="flex-1 flex flex-col overflow-hidden">
+			<div className="flex-1 flex flex-col overflow-hidden min-h-0">
 				<Header
 					currentDate={currentDate}
 					bookings={filteredBookings}
 					onPreviousDay={handlePrevious}
 					onNextDay={handleNext}
 					onToday={handleToday}
+					onDateSelect={(d) => d && setDate(d)}
 					onNewBooking={() => {
 						setEditingBooking(null);
 						setIsBookingModalOpen(true);
@@ -129,7 +128,7 @@ export default function CalendarTab() {
 					</Tabs>
 				</div>
 
-				<div className="flex-1 overflow-auto bg-background relative">
+				<div className="flex-1 min-h-0 overflow-auto bg-background relative">
 					{view === "day" && (
 						<DayView
 							currentDate={currentDate}
