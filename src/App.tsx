@@ -9,8 +9,8 @@ import MainWindow from "@/pages/MainWindow/MainWindow";
 import Login from "@/pages/Login/Login";
 import AdminDashboard from "@/features/admin/Layout/AdminDashboard";
 import DefaultView from "@/features/admin/components/Dashboard/DefaultView";
-import FacilityManagementTab from "@/features/admin/components/FacilitiesAndAssets/FacilityManagement/FacilityManagementTab";
-import FacilityCategories from "@/features/admin/components/FacilitiesAndAssets/FacilityManagement/FacilityCategories";
+import SpaceManagementTab from "@/features/admin/components/FacilitiesAndAssets/FacilityManagement/SpaceManagementTab";
+
 import ProductCatalog from "@/features/admin/components/CommerceAndFinance/ProductCatalog/ProductCatalog";
 import AccessSettingTab from "@/features/admin/components/Operations/Access/AccessSettingTab";
 import SuspensionSettingTab from "@/features/admin/components/Operations/Access/SuspensionSettingTab";
@@ -68,12 +68,9 @@ function App() {
 							<Route index element={<DefaultView />} />
 							<Route
 								path="facilities"
-								element={<FacilityManagementTab />}
+								element={<SpaceManagementTab />}
 							/>
-							<Route
-								path="facility-categories"
-								element={<FacilityCategories />}
-							/>
+
 							<Route
 								path="inventory"
 								element={<ProductCatalog />}

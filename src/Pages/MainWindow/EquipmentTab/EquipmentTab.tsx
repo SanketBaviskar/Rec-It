@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
-import { User, CheckCircle2, ArrowLeft } from "lucide-react";
+import { User, CheckCircle2 } from "lucide-react";
 import { EquipmentNavBar } from "./EquipmentNavBar";
 import MemberDetails from "./MemberDetails";
 import { MemberEquipment, IndividualEquipment } from "./types";
@@ -36,7 +36,7 @@ export default function EquipmentTab() {
 	);
 	const [refreshTrigger, setRefreshTrigger] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
-	const [showDetails, setShowDetails] = useState(false); // Toggle between search and details
+
 	const { toast } = useToast();
 
 	// Fetch user's active checkouts when a customer is selected
@@ -78,7 +78,7 @@ export default function EquipmentTab() {
 
 	const handleUserSelect = (user: UserType) => {
 		setSelectedCustomer(user);
-		setShowDetails(true); // Switch to details view
+		setSearchResults([]); // Clear results on selection
 		loadUserCheckouts(user.id);
 		toast({
 			title: "Member Selected",
@@ -89,12 +89,7 @@ export default function EquipmentTab() {
 
 	const handleClearSelection = () => {
 		setSelectedCustomer(null);
-		setShowDetails(false); // Go back to search
 		setMemberEquipment([]);
-	};
-
-	const handleBackToSearch = () => {
-		setShowDetails(false); // Go back to search while keeping member selected
 	};
 
 	// Handle checkout from inventory - calls backend API
@@ -181,89 +176,82 @@ export default function EquipmentTab() {
 		<div className="flex h-[calc(100vh-4rem)] gap-6 p-6 bg-gradient-to-br from-background via-background to-muted/20">
 			{/* Left Side - Member Search OR Member Details */}
 			<div className="w-[30%] flex flex-col gap-4 min-h-0">
-				{!showDetails ? (
-					<>
-						{/* Search Header */}
-						<div className="space-y-2">
-							<h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
-								<User className="h-5 w-5 text-primary" />
-								Member Search
-							</h2>
-							<SearchBar
-								placeholder="Search members..."
-								onSelect={(user) =>
-									handleUserSelect(user as UserType)
-								}
-								onClear={handleClearSelection}
-								onResults={(results: UserType[]) =>
-									setSearchResults(results)
-								}
-								triggerSearchOnClick={false}
-								variant="inline"
-							/>
-						</div>
+				{/* Search Header - Always Visible */}
+				<div className="space-y-2">
+					<h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+						<User className="h-5 w-5 text-primary" />
+						Member Search
+					</h2>
+					<SearchBar
+						placeholder="Search members..."
+						onSelect={(user) => handleUserSelect(user as UserType)}
+						onClear={handleClearSelection}
+						onResults={(results: any[]) =>
+							setSearchResults(
+								results.map((user) => ({
+									id: user.id.toString(),
+									firstName: user.firstName,
+									lastName: user.lastName,
+									membershipType:
+										user.memberships?.[0]?.membership
+											?.name || "No Membership",
+									studentId: user.studentId?.toString(),
+									avatarUrl: user.avatarUrl,
+								}))
+							)
+						}
+						triggerSearchOnClick={false}
+						variant="inline"
+					/>
+				</div>
 
-						{/* Search Results */}
-						<div className="flex-1 min-h-0 rounded-xl border bg-card shadow-sm overflow-hidden flex flex-col">
-							<div className="border-b bg-muted/50 px-4 py-3 shrink-0">
-								<p className="text-sm font-medium text-muted-foreground">
-									{searchResults.length > 0
-										? `${searchResults.length} Members Found`
-										: "Search Results"}
-								</p>
-							</div>
-							<ScrollArea className="flex-1 min-h-0">
-								<div className="p-3 space-y-2">
-									{searchResults.length === 0 ? (
-										<div className="text-center text-muted-foreground py-12">
-											<User className="h-12 w-12 mx-auto mb-3 opacity-30" />
-											<p className="text-sm">
-												No results yet
-											</p>
-											<p className="text-xs mt-1">
-												Search for members above
-											</p>
-										</div>
-									) : (
-										searchResults.map((user) => (
-											<UserCard
-												key={user.id}
-												user={user}
-												onClick={handleUserSelect}
-												isSelected={
-													selectedCustomer?.id ===
-													user.id
-												}
-											/>
-										))
-									)}
-								</div>
-							</ScrollArea>
-						</div>
-					</>
-				) : (
+				{/* Content Area */}
+				{selectedCustomer ? (
 					/* Member Details View */
-					<div className="h-full flex flex-col gap-3 min-h-0">
-						{/* Back Button */}
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleBackToSearch}
-							className="w-fit gap-2"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							Back to Search
-						</Button>
-
-						{/* Details Card */}
-						<div className="flex-1 min-h-0 rounded-xl border bg-card shadow-sm overflow-hidden">
-							<MemberDetails
-								userDetails={selectedCustomer}
-								isLoading={isLoading}
-								checkedOutItems={memberEquipment}
-								onCheckIn={handleCheckIn}
-							/>
+					<div className="flex-1 min-h-0 rounded-xl border bg-card shadow-sm overflow-hidden">
+						<MemberDetails
+							userDetails={selectedCustomer}
+							isLoading={isLoading}
+							checkedOutItems={memberEquipment}
+							onCheckIn={handleCheckIn}
+						/>
+					</div>
+				) : (
+					/* Search Results / Empty State */
+					<div className="flex-1 min-h-0 rounded-xl border bg-card shadow-sm overflow-hidden flex flex-col">
+						<div className="border-b bg-muted/50 px-4 py-3 shrink-0">
+							<p className="text-sm font-medium text-muted-foreground">
+								{searchResults.length > 0
+									? `${searchResults.length} Members Found`
+									: "Search Results"}
+							</p>
 						</div>
+						<ScrollArea className="flex-1 min-h-0">
+							<div className="p-3 space-y-2">
+								{searchResults.length === 0 ? (
+									<div className="text-center text-muted-foreground py-12">
+										<User className="h-12 w-12 mx-auto mb-3 opacity-30" />
+										<p className="text-sm">
+											No results yet
+										</p>
+										<p className="text-xs mt-1">
+											Search for members above
+										</p>
+									</div>
+								) : (
+									searchResults.map((user: UserType) => (
+										<UserCard
+											key={user.id}
+											user={user}
+											onClick={handleUserSelect}
+											isSelected={
+												selectedCustomer?.id === user.id
+											}
+										/>
+									))
+								)}
+							</div>
+						</ScrollArea>
 					</div>
 				)}
 			</div>

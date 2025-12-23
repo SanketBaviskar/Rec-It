@@ -5,17 +5,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { AddNewEquipmentFormProps, Equipment } from "../../types";
 import { createEquipment } from "@/services/Api/Admin/Equipment/createEquipment";
-import {
-	Form,
-	FormControl,
-	FormDescription,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
 import {
 	Dialog,
 	DialogContent,
@@ -28,28 +18,11 @@ import { useToast } from "@/components/ui/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { updateEquipment } from "@/services/Api/Admin/Equipment/updateEquipment";
 import { deleteEquipmentById } from "@/services/Api/Admin/Equipment/deleteEquipment";
+import { equipmentFormSchema } from "../../schemas";
+import { EquipmentBasicDetails } from "./Partials/EquipmentBasicDetails";
+import { EquipmentPricingAndStock } from "./Partials/EquipmentPricingAndStock";
 
-const formSchema = z.object({
-	equipmentName: z
-		.string()
-		.min(2, { message: "Equipment name must be at least 2 characters." }),
-	equipmentCode: z
-		.string()
-		.min(1, { message: "Equipment code is required." }),
-	equipmentImage: z.string().optional(),
-	description: z
-		.string()
-		.min(10, { message: "Description must be at least 10 characters." }),
-	quantity: z.number().min(1, { message: "Quantity must be at least 1." }),
-	price: z.number().min(0, { message: "Price must be a positive value." }),
-	replacementFees: z
-		.number()
-		.min(0, { message: "Replacement fees must be a positive value." }),
-	inventoryName: z.string(),
-	location: z
-		.string()
-		.min(2, { message: "Location must be at least 2 characters." }),
-});
+const formSchema = equipmentFormSchema;
 
 export default function AddNewEquipmentForm({
 	onComplete,
@@ -139,7 +112,7 @@ export default function AddNewEquipmentForm({
 					variant: "success",
 				});
 				form.reset();
-				onComplete();
+				onComplete(response.data);
 			}
 		} catch (error: any) {
 			toast({
@@ -190,192 +163,10 @@ export default function AddNewEquipmentForm({
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					<FormField
-						control={form.control}
-						name="equipmentName"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Equipment Name</FormLabel>
-								<FormControl>
-									<Input
-										placeholder="Enter equipment name"
-										{...field}
-									/>
-								</FormControl>
-								<FormDescription>
-									Name of the equipment within the inventory.
-								</FormDescription>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="equipmentCode"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Equipment Code</FormLabel>
-								<FormControl>
-									<Input
-										placeholder="Enter equipment code"
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="equipmentImage"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Equipment Image</FormLabel>
-								<FormControl>
-									<Input
-										id="picture"
-										type="file"
-										placeholder="Upload equipment image"
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="quantity"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Quantity</FormLabel>
-								<FormControl>
-									<Input
-										type="number"
-										placeholder="Enter quantity"
-										{...field}
-										onChange={(e) =>
-											field.onChange(
-												parseInt(e.target.value)
-											)
-										}
-										min={1}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="price"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Price</FormLabel>
-								<FormControl>
-									<Input
-										type="number"
-										placeholder="Enter price"
-										{...field}
-										onChange={(e) =>
-											field.onChange(
-												parseFloat(e.target.value)
-											)
-										}
-										min={0}
-										step="0.01"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="replacementFees"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Replacement Fees</FormLabel>
-								<FormControl>
-									<Input
-										type="number"
-										placeholder="Enter replacement fees"
-										{...field}
-										onChange={(e) =>
-											field.onChange(
-												parseFloat(e.target.value)
-											)
-										}
-										min={0}
-										step="0.01"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="description"
-						render={({ field }) => (
-							<FormItem className="col-span-1 md:col-span-2 lg:col-span-3">
-								<FormLabel>Description</FormLabel>
-								<FormControl>
-									<Textarea
-										placeholder="Describe the equipment"
-										{...field}
-									/>
-								</FormControl>
-								<FormDescription>
-									Provide a brief description of the
-									equipment.
-								</FormDescription>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="inventoryName"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>inventoryName</FormLabel>
-								<FormControl>
-									<Input
-										value={
-											mode === "create"
-												? inventoryName
-												: field.value
-										}
-										disabled
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="location"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Location</FormLabel>
-								<FormControl>
-									<Input
-										placeholder="Enter location"
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
+					<EquipmentBasicDetails />
+					<EquipmentPricingAndStock
+						mode={mode}
+						inventoryName={inventoryName}
 					/>
 				</div>
 

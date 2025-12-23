@@ -8,6 +8,8 @@ import {
 	CreditCard,
 	Users,
 	DollarSign,
+	Loader2,
+	RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,22 +43,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import AddMembershipTypeForm, {
 	MembershipFormValues,
 } from "./AddMembershipTypeForm";
-import MultiVisitPassList from "./MultiVisitPassList";
-import GuestPassConfig from "./GuestPassConfig";
+import PassesManager from "./PassesManager";
 import HouseholdManager from "./HouseholdManager";
 import MembershipLayout from "./Layout/MembershipLayout";
-
-type MembershipType = {
-	id: string;
-	name: string;
-	description: string;
-	duration: "Monthly" | "Semester" | "Annual" | "One-Time";
-	price: number;
-	status: "Active" | "Archived";
-	accessLevel: "Full" | "Limited" | "Student-Only";
-	isFamilyPlan: boolean;
-	maxYouthAge: number | null;
-};
+import { useMemberships } from "./hooks/useMemberships";
+import { Membership } from "@/services/Api/Membership/membershipApi";
 
 interface MembershipSettingsProps {
 	onComplete?: () => void;
@@ -64,100 +55,78 @@ interface MembershipSettingsProps {
 
 const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 	const [activeSection, setActiveSection] = useState("plans");
-	const [membershipTypes, setMembershipTypes] = useState<MembershipType[]>([
-		{
-			id: "1",
-			name: "Basic Monthly",
-			description:
-				"Access to basic facilities including gym and cardio deck.",
-			duration: "Monthly",
-			price: 29.99,
-			status: "Active",
-			accessLevel: "Full",
-			isFamilyPlan: false,
-			maxYouthAge: null,
-		},
-		{
-			id: "2",
-			name: "Student Semester",
-			description:
-				"Discounted rate for enrolled students. Valid for one semester.",
-			duration: "Semester",
-			price: 120.0,
-			status: "Active",
-			accessLevel: "Student-Only",
-			isFamilyPlan: false,
-			maxYouthAge: null,
-		},
-		{
-			id: "3",
-			name: "Family Annual",
-			description:
-				"Full access for the whole family. Includes up to 4 dependents.",
-			duration: "Annual",
-			price: 599.0,
-			status: "Active",
-			accessLevel: "Full",
-			isFamilyPlan: true,
-			maxYouthAge: 18,
-		},
-		{
-			id: "4",
-			name: "Summer Pass",
-			description: "Limited summer access for community members.",
-			duration: "One-Time",
-			price: 150.0,
-			status: "Archived",
-			accessLevel: "Limited",
-			isFamilyPlan: false,
-			maxYouthAge: null,
-		},
-	]);
-
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [editingMembership, setEditingMembership] =
-		useState<MembershipType | null>(null);
+		useState<Membership | null>(null);
+
+	// Use the API hook instead of static state
+	const {
+		memberships,
+		isLoading,
+		error,
+		refetch,
+		addMembership,
+		editMembership,
+		removeMembership,
+	} = useMemberships();
 
 	// Calculate statistics
 	const stats = useMemo(() => {
-		const activePlans = membershipTypes.filter(
-			(m) => m.status === "Active"
-		);
+		const activePlans = memberships.filter((m) => m.status === "Active");
 		const monthlyRevenue = activePlans.reduce((sum, m) => {
-			if (m.duration === "Monthly") return sum + m.price;
-			if (m.duration === "Annual") return sum + m.price / 12;
-			if (m.duration === "Semester") return sum + m.price / 4;
+			const price = m.price || 0;
+			if (m.duration === "Monthly") return sum + price;
+			if (m.duration === "Annual") return sum + price / 12;
+			if (m.duration === "Semester") return sum + price / 4;
 			return sum;
 		}, 0);
 
 		return {
-			totalPlans: membershipTypes.length,
+			totalPlans: memberships.length,
 			activePlans: activePlans.length,
 			monthlyRevenue: monthlyRevenue.toFixed(2),
 		};
-	}, [membershipTypes]);
+	}, [memberships]);
 
-	const handleFormSubmit = (values: MembershipFormValues) => {
-		const newMembership: MembershipType = {
-			id: editingMembership?.id || Date.now().toString(),
+	const handleFormSubmit = async (values: MembershipFormValues) => {
+		const membershipData = {
 			name: values.name,
 			description: values.description,
-			duration: values.duration,
 			price: values.price,
+			duration: values.duration,
 			status: values.status,
 			accessLevel: values.accessLevel,
 			isFamilyPlan: values.isFamilyPlan,
 			maxYouthAge: values.maxYouthAge,
+			// Billing & Renewal
+			billingType: values.billingType,
+			isAutoRenew: values.isAutoRenew,
+			renewalReminderDays: values.renewalReminderDays,
+			gracePeriodDays: values.gracePeriodDays,
+			prorationEnabled: values.prorationEnabled,
+			// Rules & Security
+			requiresWaiver: values.requiresWaiver,
+			allowGuestPasses: values.allowGuestPasses,
+			maxGuestsPerVisit: values.maxGuestsPerVisit,
+			requiresPhotoId: values.requiresPhotoId,
+			allowsPlusOne: values.allowsPlusOne,
+			// Access Hours
+			hasRestrictedHours: values.hasRestrictedHours,
+			allowedDays: values.allowedDays,
+			accessStartTime: values.accessStartTime,
+			accessEndTime: values.accessEndTime,
+			// Kiosk Settings
+			kioskCheckInEnabled: values.kioskCheckInEnabled,
+			kioskSelfRegistration: values.kioskSelfRegistration,
+			kioskDisplayMessage: values.kioskDisplayMessage,
+			// Access Zones
+			accessAllZones: values.accessAllZones,
 		};
 
 		if (editingMembership) {
-			setMembershipTypes(
-				membershipTypes.map((m) =>
-					m.id === editingMembership.id ? newMembership : m
-				)
-			);
+			await editMembership(editingMembership.id, membershipData);
 		} else {
-			setMembershipTypes([...membershipTypes, newMembership]);
+			await addMembership(membershipData);
 		}
 
 		setIsDialogOpen(false);
@@ -165,28 +134,60 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 		if (onComplete) onComplete();
 	};
 
-	const handleEdit = (membership: MembershipType) => {
+	const handleEdit = (membership: Membership) => {
 		setEditingMembership(membership);
 		setIsDialogOpen(true);
 	};
 
-	const handleDelete = (id: string) => {
-		setMembershipTypes(membershipTypes.filter((m) => m.id !== id));
+	const handleDelete = async (id: number) => {
+		await removeMembership(id);
 		if (onComplete) onComplete();
 	};
 
-	const handleToggleArchive = (id: string) => {
-		setMembershipTypes(
-			membershipTypes.map((m) =>
-				m.id === id
-					? {
-							...m,
-							status:
-								m.status === "Active" ? "Archived" : "Active",
-					  }
-					: m
-			)
-		);
+	const handleToggleArchive = async (membership: Membership) => {
+		const newStatus =
+			membership.status === "Active" ? "Archived" : "Active";
+		await editMembership(membership.id, { status: newStatus });
+	};
+
+	// Convert Membership to form values for editing
+	const getFormInitialData = (
+		membership: Membership | null
+	): Partial<MembershipFormValues> | undefined => {
+		if (!membership) return undefined;
+		return {
+			name: membership.name,
+			description: membership.description || "",
+			duration: membership.duration,
+			price: membership.price || 0,
+			status: membership.status,
+			accessLevel: membership.accessLevel,
+			isFamilyPlan: membership.isFamilyPlan,
+			maxYouthAge: membership.maxYouthAge,
+			// Billing & Renewal
+			billingType: membership.billingType,
+			isAutoRenew: membership.isAutoRenew,
+			renewalReminderDays: membership.renewalReminderDays,
+			gracePeriodDays: membership.gracePeriodDays,
+			prorationEnabled: membership.prorationEnabled,
+			// Rules & Security
+			requiresWaiver: membership.requiresWaiver,
+			allowGuestPasses: membership.allowGuestPasses,
+			maxGuestsPerVisit: membership.maxGuestsPerVisit,
+			requiresPhotoId: membership.requiresPhotoId,
+			allowsPlusOne: membership.allowsPlusOne,
+			// Access Hours
+			hasRestrictedHours: membership.hasRestrictedHours,
+			allowedDays: membership.allowedDays,
+			accessStartTime: membership.accessStartTime,
+			accessEndTime: membership.accessEndTime,
+			// Kiosk Settings
+			kioskCheckInEnabled: membership.kioskCheckInEnabled,
+			kioskSelfRegistration: membership.kioskSelfRegistration,
+			kioskDisplayMessage: membership.kioskDisplayMessage,
+			// Access Zones
+			accessAllZones: membership.accessAllZones,
+		};
 	};
 
 	const renderContent = () => {
@@ -205,40 +206,61 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 									pricing.
 								</p>
 							</div>
-							<Dialog
-								open={isDialogOpen}
-								onOpenChange={(open) => {
-									setIsDialogOpen(open);
-									if (!open) setEditingMembership(null);
-								}}
-							>
-								<DialogTrigger asChild>
-									<Button>
-										<Plus className="w-4 h-4 mr-2" />
-										Add Plan
-									</Button>
-								</DialogTrigger>
-								<DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-									<DialogHeader>
-										<DialogTitle className="text-lg font-semibold">
-											{editingMembership
-												? "Edit Membership Plan"
-												: "Create New Membership Plan"}
-										</DialogTitle>
-									</DialogHeader>
-									<AddMembershipTypeForm
-										onSubmit={handleFormSubmit}
-										onCancel={() => {
-											setIsDialogOpen(false);
-											setEditingMembership(null);
-										}}
-										initialData={
-											editingMembership || undefined
-										}
+							<div className="flex gap-2">
+								<Button
+									variant="outline"
+									size="icon"
+									onClick={() => refetch()}
+									disabled={isLoading}
+								>
+									<RefreshCw
+										className={`w-4 h-4 ${
+											isLoading ? "animate-spin" : ""
+										}`}
 									/>
-								</DialogContent>
-							</Dialog>
+								</Button>
+								<Dialog
+									open={isDialogOpen}
+									onOpenChange={(open) => {
+										setIsDialogOpen(open);
+										if (!open) setEditingMembership(null);
+									}}
+								>
+									<DialogTrigger asChild>
+										<Button>
+											<Plus className="w-4 h-4 mr-2" />
+											Add Plan
+										</Button>
+									</DialogTrigger>
+									<DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+										<DialogHeader>
+											<DialogTitle className="text-lg font-semibold">
+												{editingMembership
+													? "Edit Membership Plan"
+													: "Create New Membership Plan"}
+											</DialogTitle>
+										</DialogHeader>
+										<AddMembershipTypeForm
+											onSubmit={handleFormSubmit}
+											onCancel={() => {
+												setIsDialogOpen(false);
+												setEditingMembership(null);
+											}}
+											initialData={getFormInitialData(
+												editingMembership
+											)}
+										/>
+									</DialogContent>
+								</Dialog>
+							</div>
 						</div>
+
+						{/* Error Message */}
+						{error && (
+							<div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+								{error}
+							</div>
+						)}
 
 						{/* Statistics Cards */}
 						<div className="grid gap-4 md:grid-cols-3">
@@ -307,7 +329,16 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{membershipTypes.length === 0 ? (
+									{isLoading ? (
+										<TableRow>
+											<TableCell
+												colSpan={6}
+												className="h-32 text-center"
+											>
+												<Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+											</TableCell>
+										</TableRow>
+									) : memberships.length === 0 ? (
 										<TableRow>
 											<TableCell
 												colSpan={6}
@@ -326,7 +357,7 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 											</TableCell>
 										</TableRow>
 									) : (
-										membershipTypes.map((membership) => (
+										memberships.map((membership) => (
 											<TableRow
 												key={membership.id}
 												className={
@@ -372,9 +403,9 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 												</TableCell>
 												<TableCell className="font-medium">
 													$
-													{membership.price.toFixed(
-														2
-													)}
+													{(
+														membership.price || 0
+													).toFixed(2)}
 												</TableCell>
 												<TableCell>
 													<Badge
@@ -407,7 +438,7 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 															size="icon"
 															onClick={() =>
 																handleToggleArchive(
-																	membership.id
+																	membership
 																)
 															}
 															title={
@@ -487,9 +518,7 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 					</div>
 				);
 			case "passes":
-				return <MultiVisitPassList />;
-			case "guest":
-				return <GuestPassConfig />;
+				return <PassesManager />;
 			case "households":
 				return <HouseholdManager />;
 			default:
@@ -502,8 +531,7 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps = {}) => {
 			activeSection={activeSection}
 			onSectionChange={setActiveSection}
 			counts={{
-				plans: membershipTypes.filter((m) => m.status === "Active")
-					.length,
+				plans: memberships.filter((m) => m.status === "Active").length,
 			}}
 		>
 			{renderContent()}

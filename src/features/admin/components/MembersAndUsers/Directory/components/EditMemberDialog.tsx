@@ -17,23 +17,13 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
-
-// Mock Member Interface
-interface Member {
-	id: number;
-	firstName: string;
-	lastName: string;
-	email: string;
-	phoneNumber: string;
-	membershipType: string;
-	status: "Active" | "Inactive" | "Suspended" | "Expired";
-}
+import { User } from "@/services/Api/User/userApi";
 
 interface EditMemberDialogProps {
-	member: Member | null;
+	member: User | null;
 	isOpen: boolean;
 	onClose: () => void;
-	onSave: (updatedMember: Member) => void;
+	onSave: (updatedMember: User) => void;
 }
 
 export default function EditMemberDialog({
@@ -42,7 +32,7 @@ export default function EditMemberDialog({
 	onClose,
 	onSave,
 }: EditMemberDialogProps) {
-	const [formData, setFormData] = useState<Member | null>(null);
+	const [formData, setFormData] = useState<User | null>(null);
 
 	useEffect(() => {
 		if (member) {
@@ -50,7 +40,7 @@ export default function EditMemberDialog({
 		}
 	}, [member]);
 
-	const handleChange = (field: keyof Member, value: string) => {
+	const handleChange = (field: keyof User, value: any) => {
 		if (formData) {
 			setFormData({ ...formData, [field]: value });
 		}
@@ -116,44 +106,20 @@ export default function EditMemberDialog({
 						/>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="phone" className="text-right">
+						<Label htmlFor="phoneNumber" className="text-right">
 							Phone
 						</Label>
 						<Input
-							id="phone"
-							value={formData.phoneNumber}
+							id="phoneNumber"
+							value={formData.phoneNumber || ""}
 							onChange={(e) =>
 								handleChange("phoneNumber", e.target.value)
 							}
 							className="col-span-3"
 						/>
 					</div>
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="membership" className="text-right">
-							Membership
-						</Label>
-						<Select
-							value={formData.membershipType}
-							onValueChange={(val) =>
-								handleChange("membershipType", val)
-							}
-						>
-							<SelectTrigger className="col-span-3">
-								<SelectValue placeholder="Select plan" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="Gold Membership">
-									Gold Membership
-								</SelectItem>
-								<SelectItem value="Student Monthly">
-									Student Monthly
-								</SelectItem>
-								<SelectItem value="Day Pass">
-									Day Pass
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
+
+					{/* Status Selection */}
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label htmlFor="status" className="text-right">
 							Status
@@ -166,14 +132,39 @@ export default function EditMemberDialog({
 								<SelectValue placeholder="Select status" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="Active">Active</SelectItem>
-								<SelectItem value="Inactive">
+								<SelectItem value="active">Active</SelectItem>
+								<SelectItem value="inactive">
 									Inactive
 								</SelectItem>
-								<SelectItem value="Suspended">
+								<SelectItem value="suspended">
 									Suspended
 								</SelectItem>
-								<SelectItem value="Expired">Expired</SelectItem>
+								<SelectItem value="expired">Expired</SelectItem>
+								<SelectItem value="banned">Banned</SelectItem>
+								<SelectItem value="archived">
+									Archived
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Role Selection */}
+					<div className="grid grid-cols-4 items-center gap-4">
+						<Label htmlFor="role" className="text-right">
+							Role
+						</Label>
+						<Select
+							value={formData.role.toString()}
+							onValueChange={(val) => handleChange("role", val)}
+						>
+							<SelectTrigger className="col-span-3">
+								<SelectValue placeholder="Select role" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="0">Member</SelectItem>
+								<SelectItem value="1">Staff Level 1</SelectItem>
+								<SelectItem value="2">Staff Level 2</SelectItem>
+								<SelectItem value="3">Admin</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>

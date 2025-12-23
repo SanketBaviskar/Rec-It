@@ -1,22 +1,15 @@
 import { useEffect, useState } from "react";
-import { Plus, Search, MoreHorizontal, PackageOpen } from "lucide-react";
+import { Plus, Search, PackageOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
 	Table,
 	TableBody,
-	TableCell,
 	TableHead,
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ProductRow } from "./components/ProductRow";
 import {
 	fetchEquipments,
 	Equipment,
@@ -44,32 +37,74 @@ export function ProductGrid({
 	const [loading, setLoading] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 
+	// Pagination state
+	const [cursor, setCursor] = useState<number | null>(null);
+	const [hasMore, setHasMore] = useState(false);
+	const [pageStack, setPageStack] = useState<number[]>([]); // To handle "Previous" navigation by storing start cursor of each page
+	const LIMIT = 100;
+
+	// Reset pagination on category change or search change (if we were doing server-side search, but search is client-side for now? Wait, plan implies we just paginate the fetch. But search is currently client-side filtering.)
+	// Ideally search should be server-side too for true cursor pagination, but the request was "cursor based pagination".
+	// If I keep client-side search, I must fetch ALL items or search will be broken (only searching loaded page).
+	// But usually "cursor pagination" implies we don't fetch all.
+	// For this task, I will assume we paginate the main list. Search will only filter the *current page* unless I move search to backend.
+	// However, moving search to backend was not effectively scoped. I will paginate the *fetch*.
+	// WARNING: Client-side search on paginated data is bad UX (misses items).
+	// I will PROCEED with paginating the fetch.
+	// ALSO RESET when category changes.
 	useEffect(() => {
-		const loadProducts = async () => {
+		setCursor(null);
+		setPageStack([]);
+		setProducts([]);
+	}, [selectedCategoryId]);
+
+	// We need to store the `nextForwardCursor` to know where to go next
+	// State `cursor` is the cursor used to fetch the CURRENT page.
+	// So we need another state `nextPageCursor`.
+	const [nextPageCursor, setNextPageCursor] = useState<number | null>(null);
+
+	useEffect(() => {
+		const fetchPage = async () => {
+			setLoading(true);
 			try {
-				// Only show loading skeleton if we have no products (initial load or empty)
-				if (products.length === 0) {
-					setLoading(true);
-				}
-				// Pass selectedCategoryId (InventoryId) to fetcher. If null, it likely fetches all.
 				const response = await fetchEquipments(
-					selectedCategoryId || undefined
+					selectedCategoryId || undefined,
+					cursor || undefined,
+					LIMIT
 				);
-				// Backend format maps 'data' to { items: [...] } for arrays
-				const responseData = response.data as any;
-				const items = responseData?.items || responseData || [];
-				setProducts(Array.isArray(items) ? items : []);
-			} catch (error) {
-				console.error("Failed to load products", error);
-				setProducts([]);
+				if (response.status === "success" && response.data) {
+					// response.data is PaginatedResponse<Equipment>
+					setProducts(response.data.items || []);
+					setNextPageCursor(response.data.nextCursor);
+					setHasMore(response.data.hasMore);
+				} else {
+					setProducts([]);
+				}
+			} catch (err) {
+				console.error(err);
 			} finally {
 				setLoading(false);
 			}
 		};
-		loadProducts();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [selectedCategoryId, refreshTrigger]);
+		fetchPage();
+	}, [selectedCategoryId, cursor, refreshTrigger]);
 
+	const handleNext = () => {
+		if (nextPageCursor) {
+			setPageStack((prev) => [...prev, cursor || 0]); // Store current cursor (0 for null/start)
+			setCursor(nextPageCursor);
+		}
+	};
+
+	const handlePrev = () => {
+		if (pageStack.length > 0) {
+			const prevCursor = pageStack[pageStack.length - 1];
+			setPageStack((prev) => prev.slice(0, -1));
+			setCursor(prevCursor === 0 ? null : prevCursor);
+		}
+	};
+
+	// Local filtering of the current page for search
 	const filteredProducts = products.filter(
 		(p) =>
 			p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -157,96 +192,41 @@ export function ProductGrid({
 							</TableHeader>
 							<TableBody>
 								{filteredProducts.map((product) => (
-									<TableRow key={product.id}>
-										<TableCell>
-											<div className="h-10 w-10 rounded-md bg-slate-100 flex items-center justify-center overflow-hidden">
-												{product.image ? (
-													<img
-														src={product.image}
-														alt={product.name}
-														className="h-full w-full object-cover"
-													/>
-												) : (
-													<PackageOpen className="h-5 w-5 text-slate-300" />
-												)}
-											</div>
-										</TableCell>
-										<TableCell className="font-medium">
-											{product.name}
-										</TableCell>
-										<TableCell className="font-mono text-xs text-muted-foreground">
-											{product.code}
-										</TableCell>
-										<TableCell>
-											{product.location}
-										</TableCell>
-										<TableCell className="text-right">
-											<Badge
-												variant={
-													product.quantity > 0
-														? "secondary"
-														: "destructive"
-												}
-											>
-												{product.quantity > 0
-													? `${product.quantity} in stock`
-													: "Out of Stock"}
-											</Badge>
-										</TableCell>
-										<TableCell className="text-right">
-											{product.price
-												? `$${product.price.toFixed(2)}`
-												: "-"}
-										</TableCell>
-										<TableCell>
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button
-														variant="ghost"
-														size="icon"
-														className="h-8 w-8"
-													>
-														<MoreHorizontal className="w-4 h-4" />
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent align="end">
-													<DropdownMenuItem
-														onClick={() =>
-															onEditProduct(
-																product
-															)
-														}
-													>
-														Edit Details
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={() =>
-															onViewItems(product)
-														}
-													>
-														View Items
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={() =>
-															onReportDamage(
-																product
-															)
-														}
-													>
-														Report Damage
-													</DropdownMenuItem>
-													<DropdownMenuItem className="text-red-600">
-														Delete Product
-													</DropdownMenuItem>
-												</DropdownMenuContent>
-											</DropdownMenu>
-										</TableCell>
-									</TableRow>
+									<ProductRow
+										key={product.id}
+										product={product}
+										onEditProduct={onEditProduct}
+										onReportDamage={onReportDamage}
+										onViewItems={onViewItems}
+									/>
 								))}
 							</TableBody>
 						</Table>
 					</div>
 				)}
+			</div>
+
+			{/* Pagination Controls */}
+			<div className="p-4 border-t bg-background flex items-center justify-between">
+				<Button
+					variant="outline"
+					onClick={handlePrev}
+					disabled={pageStack.length === 0 || loading}
+				>
+					Previous
+				</Button>
+				<div className="text-sm text-muted-foreground">
+					{loading
+						? "Loading..."
+						: `Showing ${filteredProducts.length} items`}
+				</div>
+				<Button
+					variant="outline"
+					onClick={handleNext}
+					disabled={!hasMore || loading}
+				>
+					Next
+				</Button>
 			</div>
 		</div>
 	);

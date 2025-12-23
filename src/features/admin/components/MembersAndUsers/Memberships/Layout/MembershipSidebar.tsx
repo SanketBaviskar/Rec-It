@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { CreditCard, Ticket, UserPlus, Users } from "lucide-react";
+import { CreditCard, Ticket, Users } from "lucide-react";
 
 interface MembershipSidebarProps {
 	activeSection: string;
@@ -15,8 +15,7 @@ interface MembershipSidebarProps {
 
 const sidebarItems = [
 	{ id: "plans", label: "Memberships", icon: CreditCard, countKey: "plans" },
-	{ id: "passes", label: "Punch Cards", icon: Ticket, countKey: "passes" },
-	{ id: "guest", label: "Guest Passes", icon: UserPlus, countKey: null },
+	{ id: "passes", label: "Passes", icon: Ticket, countKey: "passes" },
 	{
 		id: "households",
 		label: "Households",

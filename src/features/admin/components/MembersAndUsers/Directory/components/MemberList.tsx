@@ -62,31 +62,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import EditMemberDialog from "./EditMemberDialog";
-import apiClient from "@/services/Utils/apiClient";
-
-// Member Type Definition
-interface UserMembership {
-	id: number;
-	membership: {
-		id: number;
-		name: string;
-		price: number | null;
-	};
-	startDate: string;
-	endDate: string | null;
-}
-
-interface Member {
-	id: number;
-	firstName: string;
-	lastName: string;
-	email: string;
-	phone: string;
-	status: string;
-	createdAt: string;
-	role: string;
-	memberships?: UserMembership[];
-}
+import {
+	getAllUsers,
+	createUser,
+	updateUser,
+	deleteUser,
+	updateUserStatus,
+	User,
+} from "@/services/Api/User/userApi";
+import {
+	getAllMemberships,
+	Membership,
+} from "@/services/Api/Membership/membershipApi";
+import { toast } from "sonner";
 
 interface PaginationState {
 	cursors: (number | null)[]; // Stack of cursors for each page
@@ -96,11 +84,11 @@ interface PaginationState {
 const ITEMS_PER_PAGE = 100;
 
 export default function MemberList() {
-	const [members, setMembers] = useState<Member[]>([]);
+	const [members, setMembers] = useState<User[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
-	const [editingMember, setEditingMember] = useState<Member | null>(null);
+	const [editingMember, setEditingMember] = useState<User | null>(null);
 	const [isEditOpen, setIsEditOpen] = useState(false);
 	const [isAddOpen, setIsAddOpen] = useState(false);
 	const [totalCount, setTotalCount] = useState(0);
@@ -111,12 +99,15 @@ export default function MemberList() {
 		currentPage: 1,
 	});
 
+	// Dynamic membership types
+	const [membershipTypes, setMembershipTypes] = useState<Membership[]>([]);
+
 	const [newMember, setNewMember] = useState({
 		firstName: "",
 		lastName: "",
 		email: "",
 		phoneNumber: "",
-		membershipType: "Gold Membership",
+		membershipId: "",
 	});
 
 	// Fetch members from API
@@ -124,27 +115,17 @@ export default function MemberList() {
 		async (cursor: number | null = null, search: string = "") => {
 			setLoading(true);
 			try {
-				const params = new URLSearchParams();
-				params.append("limit", String(ITEMS_PER_PAGE));
-				if (cursor) params.append("cursor", String(cursor));
-				if (search) params.append("search", search);
+				const data = await getAllUsers({
+					limit: ITEMS_PER_PAGE,
+					cursor,
+					search,
+					status: statusFilter !== "all" ? statusFilter : undefined,
+				});
 
-				const response = await apiClient.get(
-					`/users?${params.toString()}`
-				);
-
-				const data = response.data?.data || response.data;
-
-				// Handle both old format {items: [...]} and new format {users: [...], nextCursor, hasMore, totalCount}
-				const users = data?.users || data?.items || [];
-				const total = data?.totalCount || users.length;
-				const more = data?.hasMore || false;
-				const nextCur = data?.nextCursor || null;
-
-				setMembers(users);
-				setTotalCount(total);
-				setHasMore(more);
-				setNextCursor(nextCur);
+				setMembers(data.users);
+				setTotalCount(data.totalCount);
+				setHasMore(data.hasMore);
+				setNextCursor(data.nextCursor);
 			} catch (error) {
 				console.error("Failed to fetch members:", error);
 				setMembers([]);
@@ -152,18 +133,35 @@ export default function MemberList() {
 				setLoading(false);
 			}
 		},
-		[]
+		[statusFilter]
 	);
 
-	// Initial fetch and when search changes
+	// Initial fetch - load memberships and members
 	useEffect(() => {
-		const debounceTimer = setTimeout(() => {
+		const loadData = async () => {
+			try {
+				// Load members
+				await fetchMembers(null, searchTerm);
+				// Load memberships for dropdown
+				const memberships = await getAllMemberships();
+				setMembershipTypes(memberships);
+			} catch (err) {
+				console.error("Error loading initial data", err);
+			}
+		};
+
+		loadData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // Run once on mount
+
+	// Debounced search
+	useEffect(() => {
+		const timer = setTimeout(() => {
 			setPagination({ cursors: [null], currentPage: 1 });
 			fetchMembers(null, searchTerm);
-		}, 300);
-
-		return () => clearTimeout(debounceTimer);
-	}, [searchTerm, fetchMembers]);
+		}, 500);
+		return () => clearTimeout(timer);
+	}, [searchTerm, fetchMembers]); // Removed fetchMembers from dependency to avoid loop if it changes (though it shouldn't)
 
 	// Handle page navigation
 	const goToNextPage = () => {
@@ -206,41 +204,79 @@ export default function MemberList() {
 		return members.filter((member) => member.status === statusFilter);
 	}, [members, statusFilter]);
 
-	const handleDelete = (id: number) => {
-		setMembers(members.filter((m) => m.id !== id));
+	const handleDelete = async (id: number) => {
+		try {
+			await deleteUser(id);
+			setMembers((prev) => prev.filter((m) => m.id !== id));
+			toast.success("Member deleted successfully");
+		} catch {
+			toast.error("Failed to delete member");
+		}
 	};
 
-	const handleEditClick = (member: Member) => {
+	const handleEditClick = (member: User) => {
 		setEditingMember(member);
 		setIsEditOpen(true);
 	};
 
-	const handleSaveEdit = (updatedMember: Member) => {
-		setMembers(
-			members.map((m) => (m.id === updatedMember.id ? updatedMember : m))
-		);
+	const handleSaveEdit = async (updatedMember: User) => {
+		try {
+			const updated = await updateUser(updatedMember.id, {
+				firstName: updatedMember.firstName,
+				lastName: updatedMember.lastName,
+				email: updatedMember.email,
+				phoneNumber: updatedMember.phoneNumber,
+				status: updatedMember.status,
+			});
+			setMembers((prev) =>
+				prev.map((m) => (m.id === updated.id ? updated : m))
+			);
+			toast.success("Member updated successfully");
+		} catch {
+			toast.error("Failed to update member");
+		}
 	};
 
-	const handleAddMember = () => {
-		if (!newMember.firstName || !newMember.email) return;
+	const handleAddMember = async () => {
+		if (!newMember.firstName || !newMember.email) {
+			toast.error("Please fill in required fields");
+			return;
+		}
 
-		// TODO: Call API to add member
-		setIsAddOpen(false);
-		setNewMember({
-			firstName: "",
-			lastName: "",
-			email: "",
-			phoneNumber: "",
-			membershipType: "Gold Membership",
-		});
-		// Refresh the list
-		fetchMembers(null, searchTerm);
+		try {
+			await createUser({
+				firstName: newMember.firstName,
+				lastName: newMember.lastName,
+				email: newMember.email,
+				phoneNumber: newMember.phoneNumber,
+				membershipId: newMember.membershipId
+					? parseInt(newMember.membershipId)
+					: undefined,
+			});
+
+			setIsAddOpen(false);
+			setNewMember({
+				firstName: "",
+				lastName: "",
+				email: "",
+				phoneNumber: "",
+				membershipId: "",
+			});
+			toast.success("Member added successfully");
+			fetchMembers(null, searchTerm);
+		} catch {
+			toast.error("Failed to add member");
+		}
 	};
 
-	const handleStatusChange = (id: number, newStatus: string) => {
-		setMembers(
-			members.map((m) => (m.id === id ? { ...m, status: newStatus } : m))
-		);
+	const handleStatusChange = async (id: number, newStatus: string) => {
+		try {
+			const updated = await updateUserStatus(id, newStatus);
+			setMembers((prev) => prev.map((m) => (m.id === id ? updated : m)));
+			toast.success(`Member status updated to ${newStatus}`);
+		} catch {
+			toast.error("Failed to update status");
+		}
 	};
 
 	const handleExportCSV = () => {
@@ -258,7 +294,7 @@ export default function MemberList() {
 			m.firstName,
 			m.lastName,
 			m.email,
-			m.phone || "",
+			m.phoneNumber || "",
 			m.status,
 			m.createdAt,
 		]);
@@ -460,7 +496,8 @@ export default function MemberList() {
 													{member.lastName}
 												</span>
 												<span className="text-xs text-muted-foreground">
-													{member.phone || "No phone"}
+													{member.phoneNumber ||
+														"No phone"}
 												</span>
 											</div>
 										</div>
@@ -732,29 +769,31 @@ export default function MemberList() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="membership">Membership Type</Label>
+							<Label htmlFor="membership">Membership Plan</Label>
 							<Select
-								value={newMember.membershipType}
+								value={newMember.membershipId}
 								onValueChange={(v) =>
 									setNewMember({
 										...newMember,
-										membershipType: v,
+										membershipId: v,
 									})
 								}
 							>
 								<SelectTrigger id="membership">
-									<SelectValue />
+									<SelectValue placeholder="Select a plan" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="Gold Membership">
-										Gold Membership
+									<SelectItem value="none">
+										No Membership
 									</SelectItem>
-									<SelectItem value="Student Monthly">
-										Student Monthly
-									</SelectItem>
-									<SelectItem value="Day Pass">
-										Day Pass
-									</SelectItem>
+									{membershipTypes.map((plan) => (
+										<SelectItem
+											key={plan.id}
+											value={plan.id.toString()}
+										>
+											{plan.name} (${plan.price})
+										</SelectItem>
+									))}
 								</SelectContent>
 							</Select>
 						</div>

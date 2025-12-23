@@ -1,72 +1,40 @@
 import { useState } from "react";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import {
 	Save,
 	RotateCcw,
 	Clock,
 	DollarSign,
 	AlertTriangle,
+	Shield,
+	Key,
+	RefreshCw,
+	Layers,
+	Bell,
 } from "lucide-react";
 import { useToast } from "@/components/ui/hooks/use-toast";
+import { useEquipmentPolicy } from "./useEquipmentPolicy";
 
-const DEFAULT_CONFIG = {
-	// Checkout Limits
-	defaultCheckoutHours: 6,
-	maxCheckoutHours: 24,
-	allowExtensions: true,
-	maxExtensions: 2,
-	extensionHours: 2,
-
-	// Late Fee Policy
-	lateFeeEnabled: true,
-	graceMinutes: 15,
-	lateFeePerHour: 2.5,
-	maxLateFee: 25.0,
-
-	// Hold/Suspension Policy
-	autoSuspendEnabled: true,
-	suspendAfterHours: 48,
-	requirePaymentBeforeReturn: false,
-
-	// Damage Assessment
-	damageAssessmentRequired: true,
-	photoRequired: true,
-	damageCategories: "minor,moderate,severe,lost",
-
-	// Notifications
-	reminderEnabled: true,
-	reminderMinutesBefore: 30,
-	overdueNotificationEnabled: true,
-	overdueNotificationInterval: 60, // minutes
-};
+// Components
+import CheckoutDuration from "./components/CheckoutDuration";
+import LateFeePolicy from "./components/LateFeePolicy";
+import SuspensionPolicy from "./components/SuspensionPolicy";
+import EligibilityRules from "./components/EligibilityRules";
+import CollateralPolicy from "./components/CollateralPolicy";
+import NotificationSettings from "./components/NotificationSettings";
+import RenewalRules from "./components/RenewalRules";
+import CategoryOverrides from "./components/CategoryOverrides";
 
 export default function EquipmentPolicyConfig() {
-	const [config, setConfig] = useState(DEFAULT_CONFIG);
+	const { resetConfig } = useEquipmentPolicy();
+	const [activeSection, setActiveSection] = useState("checkout");
 	const [isSaving, setIsSaving] = useState(false);
 	const { toast } = useToast();
 
 	const handleSave = async () => {
 		setIsSaving(true);
+		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 500));
-		console.log("Saving equipment policy config:", config);
 		setIsSaving(false);
 		toast({
 			title: "Settings Saved",
@@ -75,401 +43,152 @@ export default function EquipmentPolicyConfig() {
 	};
 
 	const handleReset = () => {
-		setConfig(DEFAULT_CONFIG);
-		toast({
-			title: "Settings Reset",
-			description: "Equipment policies restored to defaults.",
-		});
+		if (
+			confirm(
+				"Are you sure you want to reset all settings to defaults? This action cannot be undone."
+			)
+		) {
+			resetConfig();
+			toast({
+				title: "Settings Reset",
+				description: "Equipment policies restored to defaults.",
+			});
+		}
 	};
 
+	const sidebarItems = [
+		{
+			id: "checkout",
+			label: "Checkout Duration",
+			icon: Clock,
+			description: "Manage checkout limits and extensions.",
+		},
+		{
+			id: "lateFees",
+			label: "Late Fees",
+			icon: DollarSign,
+			description: "Configure penalties for overdue equipment.",
+		},
+		{
+			id: "suspension",
+			label: "Suspension",
+			icon: AlertTriangle,
+			description: "Manage automatic holds and suspensions.",
+		},
+		{
+			id: "eligibility",
+			label: "Eligibility",
+			icon: Shield,
+			description: "Define user rules and limits.",
+		},
+		{
+			id: "collateral",
+			label: "Collateral",
+			icon: Key,
+			description: "Set collateral requirements.",
+		},
+		{
+			id: "notifications",
+			label: "Notifications",
+			icon: Bell,
+			description: "Configure automated alerts.",
+		},
+		{
+			id: "renewal",
+			label: "Renewal Rules",
+			icon: RefreshCw,
+			description: "Manage renewals and reservations.",
+		},
+		{
+			id: "overrides",
+			label: "Category Overrides",
+			icon: Layers,
+			description: "Set specific rules for equipment categories.",
+		},
+	];
+
 	return (
-		<div className="space-y-6">
-			{/* Action Buttons */}
-			<div className="flex justify-end gap-2">
-				<Button variant="outline" onClick={handleReset}>
-					<RotateCcw className="w-4 h-4 mr-2" />
-					Reset
-				</Button>
-				<Button onClick={handleSave} disabled={isSaving}>
-					<Save className="w-4 h-4 mr-2" />
-					{isSaving ? "Saving..." : "Save Settings"}
-				</Button>
-			</div>
+		<div className="flex h-[calc(100vh-64px)] bg-background overflow-hidden relative">
+			{/* Secondary Sidebar */}
+			<nav className="w-64 bg-card border-r h-full overflow-y-auto flex-shrink-0">
+				<div className="p-4">
+					<h2 className="text-lg font-semibold mb-4 px-2 text-foreground">
+						Equipment Policy
+					</h2>
+					<div className="space-y-1">
+						{sidebarItems.map((item) => {
+							const Icon = item.icon;
+							const isActive = activeSection === item.id;
+							return (
+								<Button
+									key={item.id}
+									variant="ghost"
+									className={`w-full justify-start ${
+										isActive
+											? "bg-primary/10 text-primary hover:bg-primary/20"
+											: "text-muted-foreground hover:bg-muted hover:text-foreground"
+									}`}
+									onClick={() => setActiveSection(item.id)}
+								>
+									<Icon className="h-4 w-4 mr-3" />
+									{item.label}
+								</Button>
+							);
+						})}
+					</div>
+				</div>
+			</nav>
 
-			{/* Checkout Duration Limits */}
-			<Card>
-				<CardHeader>
-					<div className="flex items-center gap-2">
-						<Clock className="h-5 w-5 text-primary" />
+			{/* Main Content Area */}
+			<main className="flex-1 overflow-y-auto p-6">
+				<div className="mx-auto w-full max-w-4xl pb-10">
+					{/* Header with Actions */}
+					<div className="flex justify-between items-center mb-6">
 						<div>
-							<CardTitle>Checkout Duration</CardTitle>
-							<CardDescription>
-								Configure how long members can borrow equipment.
-							</CardDescription>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="grid grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<Label htmlFor="default-checkout">
-								Default Checkout Duration (hours)
-							</Label>
-							<Input
-								id="default-checkout"
-								type="number"
-								value={config.defaultCheckoutHours}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										defaultCheckoutHours:
-											parseInt(e.target.value) || 0,
-									})
+							<h1 className="text-2xl font-bold tracking-tight">
+								{
+									sidebarItems.find(
+										(i) => i.id === activeSection
+									)?.label
 								}
-							/>
-							<p className="text-xs text-muted-foreground">
-								Standard return time for equipment loans.
-							</p>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="max-checkout">
-								Maximum Checkout Duration (hours)
-							</Label>
-							<Input
-								id="max-checkout"
-								type="number"
-								value={config.maxCheckoutHours}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										maxCheckoutHours:
-											parseInt(e.target.value) || 0,
-									})
+							</h1>
+							<p className="text-sm text-muted-foreground mt-1">
+								{
+									sidebarItems.find(
+										(i) => i.id === activeSection
+									)?.description
 								}
-							/>
-							<p className="text-xs text-muted-foreground">
-								Absolute maximum, even with extensions.
 							</p>
 						</div>
-					</div>
-
-					<Separator />
-
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label>Allow Extensions</Label>
-							<p className="text-xs text-muted-foreground">
-								Members can request additional time.
-							</p>
-						</div>
-						<Switch
-							checked={config.allowExtensions}
-							onCheckedChange={(c) =>
-								setConfig({ ...config, allowExtensions: c })
-							}
-						/>
-					</div>
-
-					{config.allowExtensions && (
-						<div className="grid grid-cols-2 gap-4 pt-2">
-							<div className="space-y-2">
-								<Label htmlFor="max-extensions">
-									Max Extensions Allowed
-								</Label>
-								<Input
-									id="max-extensions"
-									type="number"
-									value={config.maxExtensions}
-									onChange={(e) =>
-										setConfig({
-											...config,
-											maxExtensions:
-												parseInt(e.target.value) || 0,
-										})
-									}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="extension-hours">
-									Hours Per Extension
-								</Label>
-								<Input
-									id="extension-hours"
-									type="number"
-									value={config.extensionHours}
-									onChange={(e) =>
-										setConfig({
-											...config,
-											extensionHours:
-												parseInt(e.target.value) || 0,
-										})
-									}
-								/>
-							</div>
-						</div>
-					)}
-				</CardContent>
-			</Card>
-
-			{/* Late Fee Policy */}
-			<Card>
-				<CardHeader>
-					<div className="flex items-center gap-2">
-						<DollarSign className="h-5 w-5 text-primary" />
-						<div>
-							<CardTitle>Late Fee Policy</CardTitle>
-							<CardDescription>
-								Configure penalties for overdue equipment.
-							</CardDescription>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label>Enable Late Fees</Label>
-							<p className="text-xs text-muted-foreground">
-								Charge members for overdue returns.
-							</p>
-						</div>
-						<Switch
-							checked={config.lateFeeEnabled}
-							onCheckedChange={(c) =>
-								setConfig({ ...config, lateFeeEnabled: c })
-							}
-						/>
-					</div>
-
-					{config.lateFeeEnabled && (
-						<>
-							<Separator />
-							<div className="grid grid-cols-3 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="grace-minutes">
-										Grace Period (minutes)
-									</Label>
-									<Input
-										id="grace-minutes"
-										type="number"
-										value={config.graceMinutes}
-										onChange={(e) =>
-											setConfig({
-												...config,
-												graceMinutes:
-													parseInt(e.target.value) ||
-													0,
-											})
-										}
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="fee-per-hour">
-										Fee Per Hour ($)
-									</Label>
-									<Input
-										id="fee-per-hour"
-										type="number"
-										step="0.01"
-										value={config.lateFeePerHour}
-										onChange={(e) =>
-											setConfig({
-												...config,
-												lateFeePerHour:
-													parseFloat(
-														e.target.value
-													) || 0,
-											})
-										}
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="max-fee">
-										Maximum Late Fee ($)
-									</Label>
-									<Input
-										id="max-fee"
-										type="number"
-										step="0.01"
-										value={config.maxLateFee}
-										onChange={(e) =>
-											setConfig({
-												...config,
-												maxLateFee:
-													parseFloat(
-														e.target.value
-													) || 0,
-											})
-										}
-									/>
-								</div>
-							</div>
-						</>
-					)}
-				</CardContent>
-			</Card>
-
-			{/* Suspension Policy */}
-			<Card>
-				<CardHeader>
-					<div className="flex items-center gap-2">
-						<AlertTriangle className="h-5 w-5 text-destructive" />
-						<div>
-							<CardTitle>Hold / Suspension Policy</CardTitle>
-							<CardDescription>
-								Configure automatic holds for serious overdue
-								cases.
-							</CardDescription>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label>Auto-Suspend Members</Label>
-							<p className="text-xs text-muted-foreground">
-								Automatically block access for severe overdue
-								cases.
-							</p>
-						</div>
-						<Switch
-							checked={config.autoSuspendEnabled}
-							onCheckedChange={(c) =>
-								setConfig({ ...config, autoSuspendEnabled: c })
-							}
-						/>
-					</div>
-
-					{config.autoSuspendEnabled && (
-						<>
-							<Separator />
-							<div className="space-y-2">
-								<Label htmlFor="suspend-after">
-									Suspend After (hours overdue)
-								</Label>
-								<Input
-									id="suspend-after"
-									type="number"
-									value={config.suspendAfterHours}
-									onChange={(e) =>
-										setConfig({
-											...config,
-											suspendAfterHours:
-												parseInt(e.target.value) || 0,
-										})
-									}
-									className="w-32"
-								/>
-							</div>
-						</>
-					)}
-
-					<Separator />
-
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label>Require Payment Before Return</Label>
-							<p className="text-xs text-muted-foreground">
-								Member must pay late fees before returning
-								equipment.
-							</p>
-						</div>
-						<Switch
-							checked={config.requirePaymentBeforeReturn}
-							onCheckedChange={(c) =>
-								setConfig({
-									...config,
-									requirePaymentBeforeReturn: c,
-								})
-							}
-						/>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Notifications */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Automated Notifications</CardTitle>
-					<CardDescription>
-						Configure email/SMS alerts for equipment borrowers.
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label>Reminder Before Due</Label>
-							<p className="text-xs text-muted-foreground">
-								Notify member before equipment is due.
-							</p>
-						</div>
-						<div className="flex items-center gap-4">
-							<Input
-								type="number"
-								value={config.reminderMinutesBefore}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										reminderMinutesBefore:
-											parseInt(e.target.value) || 0,
-									})
-								}
-								className="w-20"
-								disabled={!config.reminderEnabled}
-							/>
-							<span className="text-sm text-muted-foreground">
-								min
-							</span>
-							<Switch
-								checked={config.reminderEnabled}
-								onCheckedChange={(c) =>
-									setConfig({ ...config, reminderEnabled: c })
-								}
-							/>
+						<div className="flex gap-2">
+							<Button variant="outline" onClick={handleReset}>
+								<RotateCcw className="w-4 h-4 mr-2" />
+								Reset Defaults
+							</Button>
+							<Button onClick={handleSave} disabled={isSaving}>
+								<Save className="w-4 h-4 mr-2" />
+								{isSaving ? "Saving..." : "Save Settings"}
+							</Button>
 						</div>
 					</div>
 
-					<Separator />
-
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label>Overdue Notifications</Label>
-							<p className="text-xs text-muted-foreground">
-								Send periodic reminders for overdue items.
-							</p>
-						</div>
-						<div className="flex items-center gap-4">
-							<span className="text-sm text-muted-foreground">
-								Every
-							</span>
-							<Input
-								type="number"
-								value={config.overdueNotificationInterval}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										overdueNotificationInterval:
-											parseInt(e.target.value) || 0,
-									})
-								}
-								className="w-20"
-								disabled={!config.overdueNotificationEnabled}
-							/>
-							<span className="text-sm text-muted-foreground">
-								min
-							</span>
-							<Switch
-								checked={config.overdueNotificationEnabled}
-								onCheckedChange={(c) =>
-									setConfig({
-										...config,
-										overdueNotificationEnabled: c,
-									})
-								}
-							/>
-						</div>
+					{/* Content Routes */}
+					<div className="animate-in fade-in-50 duration-300">
+						{activeSection === "checkout" && <CheckoutDuration />}
+						{activeSection === "lateFees" && <LateFeePolicy />}
+						{activeSection === "suspension" && <SuspensionPolicy />}
+						{activeSection === "eligibility" && (
+							<EligibilityRules />
+						)}
+						{activeSection === "collateral" && <CollateralPolicy />}
+						{activeSection === "notifications" && (
+							<NotificationSettings />
+						)}
+						{activeSection === "renewal" && <RenewalRules />}
+						{activeSection === "overrides" && <CategoryOverrides />}
 					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</main>
 		</div>
 	);
 }

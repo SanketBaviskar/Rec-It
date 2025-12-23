@@ -1,16 +1,16 @@
-import apiClient from "@/Services/Utils/apiClient";
+import apiClient from "@/services/Utils/apiClient";
 
 export const searchUsers = async (query: string): Promise<any[]> => {
-  if (!query.trim()) {
-    return [];
-  }
-  try {
-    const response = await apiClient.get("/users/", {
-      params: { search: query },
-    });
-    return response.data.data.items
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw error; // Let the interceptor handle global errors
-  }
+	if (!query.trim()) {
+		return [];
+	}
+	try {
+		const response = await apiClient.get("/users/", {
+			params: { search: query },
+		});
+		return response.data.data.users || response.data.data.items || [];
+	} catch (error) {
+		console.error("Error fetching users:", error);
+		throw error; // Let the interceptor handle global errors
+	}
 };

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { CatalogSidebar } from "./CatalogSidebar";
-import { ProductGrid } from "./ProductGrid";
+import { CategorySidebar } from "./components/CategorySidebar";
+import { ProductList } from "./components/ProductList";
 import AddNewInventoryForm from "./components/Forms/AddNewInventory";
 import AddNewEquipmentForm from "./components/Forms/AddNewEquipment";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -9,11 +9,34 @@ import { ReportDamageDialog } from "./components/Forms/ReportDamageDialog";
 import { ProductItemsDialog } from "./components/ProductItemsDialog";
 
 import { Equipment } from "@/services/Api/Equipment/fetchEquipments";
+import { useProductCatalog } from "./useProductCatalog";
 
 export default function ProductCatalog() {
-	const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-		null
-	);
+	const {
+		// Category Data
+		categories,
+		isCategoriesLoading,
+		selectedCategoryId,
+		setSelectedCategoryId,
+		deleteCategory,
+
+		// Product Data
+		products,
+		isProductsLoading,
+		searchQuery,
+		setSearchQuery,
+
+		// Pagination
+		hasMore,
+		hasPrev,
+		handleNextPage,
+		handlePrevPage,
+		totalItems,
+
+		// Actions
+		refresh,
+	} = useProductCatalog();
+
 	const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
 	const [isAddProductOpen, setIsAddProductOpen] = useState(false);
 	const [editingProduct, setEditingProduct] = useState<Equipment | null>(
@@ -24,25 +47,26 @@ export default function ProductCatalog() {
 	const [viewItemsProduct, setViewItemsProduct] = useState<Equipment | null>(
 		null
 	);
-	const [refreshKey, setRefreshKey] = useState(0);
-
-	const handleRefresh = () => {
-		setRefreshKey((prev) => prev + 1);
-	};
 
 	return (
 		<div className="flex h-full w-full overflow-hidden border rounded-lg shadow-sm bg-background">
 			{/* Left Sidebar */}
-			<CatalogSidebar
+			<CategorySidebar
+				categories={categories}
 				selectedCategoryId={selectedCategoryId}
 				onSelectCategory={setSelectedCategoryId}
 				onAddCategory={() => setIsAddCategoryOpen(true)}
-				refreshTrigger={refreshKey}
+				onDeleteCategory={deleteCategory}
+				isLoading={isCategoriesLoading}
 			/>
 
 			{/* Main Content */}
 			<div className="flex-1 min-w-0">
-				<ProductGrid
+				<ProductList
+					products={products}
+					loading={isProductsLoading}
+					searchQuery={searchQuery}
+					onSearchChange={setSearchQuery}
 					selectedCategoryId={selectedCategoryId}
 					onAddProduct={() => {
 						setEditingProduct(null);
@@ -52,13 +76,13 @@ export default function ProductCatalog() {
 						setEditingProduct(product);
 						setIsAddProductOpen(true);
 					}}
-					onReportDamage={(product) => {
-						setReportDamageProduct(product);
-					}}
-					onViewItems={(product) => {
-						setViewItemsProduct(product);
-					}}
-					refreshTrigger={refreshKey}
+					onReportDamage={setReportDamageProduct}
+					onViewItems={setViewItemsProduct}
+					hasPrev={hasPrev}
+					hasNext={hasMore}
+					onPrevPage={handlePrevPage}
+					onNextPage={handleNextPage}
+					totalItems={totalItems}
 				/>
 			</div>
 
@@ -73,7 +97,7 @@ export default function ProductCatalog() {
 					<AddNewInventoryForm
 						onComplete={() => {
 							setIsAddCategoryOpen(false);
-							handleRefresh();
+							refresh();
 						}}
 					/>
 				</DialogContent>
@@ -88,10 +112,14 @@ export default function ProductCatalog() {
 						mode={editingProduct ? "edit" : "create"}
 						equipment={editingProduct || undefined}
 						equipmentId={editingProduct?.id?.toString() || ""}
-						onComplete={() => {
+						onComplete={(newEquipment?: any) => {
 							setIsAddProductOpen(false);
 							setEditingProduct(null);
-							handleRefresh();
+							refresh();
+							// Optional: open items view if created new
+							if (newEquipment && !editingProduct) {
+								setViewItemsProduct(newEquipment);
+							}
 						}}
 					/>
 				</DialogContent>
@@ -104,7 +132,7 @@ export default function ProductCatalog() {
 				onOpenChange={(open) => {
 					if (!open) setReportDamageProduct(null);
 				}}
-				onComplete={handleRefresh}
+				onComplete={refresh}
 			/>
 
 			{/* Product Items Dialog */}

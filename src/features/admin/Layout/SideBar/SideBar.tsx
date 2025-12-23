@@ -10,6 +10,8 @@ import {
 	Shield,
 	Megaphone,
 	Settings,
+	Banknote,
+	CreditCard,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
@@ -55,30 +57,72 @@ const Sidebar: React.FC<SidebarProps> = () => {
 			subItems: [],
 		},
 		{
-			name: "Operations",
-			icon: Zap,
+			name: "Commerce",
+			icon: ShoppingBag,
 			subItems: [
-				{ type: "header", name: "Access Control" },
-				{ type: "link", name: "Live Entry Feed", path: "#" },
-				{ type: "link", name: "Gate Status", path: "#" },
-				{ type: "link", name: "Banned User List", path: "suspension" },
-				{ type: "link", name: "Validation Rules", path: "access" },
-
-				{ type: "header", name: "Point of Sale (POS)" },
-				{ type: "link", name: "POS Settings", path: "pos-config" },
-
-				{ type: "header", name: "Equipment Desk" },
+				{ type: "header", name: "Inventory (Retail)" },
+				{ type: "link", name: "Product Catalog", path: "inventory" },
 				{
 					type: "link",
 					name: "Equipment Policy",
 					path: "equipment-config",
 				},
-				{ type: "link", name: "Inventory Audit", path: "inventory" },
+				{ type: "link", name: "Stock Intake", path: "#" },
+				{ type: "link", name: "Vendor Orders", path: "#" },
+			],
+		},
+		{
+			name: "Engagement",
+			icon: Megaphone,
+			subItems: [
+				{ type: "header", name: "Marketing" },
+				{ type: "link", name: "Marketing Config", path: "marketing" },
 
-				{ type: "header", name: "Guest Management" },
-				{ type: "link", name: "Sell Guest Pass", path: "#" },
-				{ type: "link", name: "Guest History", path: "#" },
-				{ type: "link", name: "Kiosk Config", path: "#" },
+				{ type: "header", name: "Content Management" },
+				{ type: "link", name: "Mobile App Banners", path: "#" },
+				{ type: "link", name: "Digital Signage", path: "#" },
+
+				{ type: "header", name: "Surveys" },
+				{ type: "link", name: "Feedback", path: "#" },
+			],
+		},
+		{
+			name: "Facilities & Assets",
+			icon: Building2,
+			subItems: [
+				{ type: "header", name: "Scheduling" },
+				{ type: "link", name: "Scheduling Config", path: "scheduling" },
+
+				{ type: "header", name: "Space Management" },
+				{ type: "link", name: "Spaces & Zones", path: "facilities" },
+
+				{ type: "link", name: "Visual Map Builder", path: "#" },
+				{ type: "link", name: "Operating Hours", path: "#" },
+
+				{ type: "header", name: "Locker Services" },
+				{ type: "link", name: "Locker Config", path: "lockers" },
+
+				{ type: "header", name: "Parking Management" },
+				{ type: "link", name: "Permits", path: "#" },
+				{ type: "link", name: "Enforcement", path: "#" },
+
+				{ type: "header", name: "Maintenance" },
+				{ type: "link", name: "Work Orders", path: "#" },
+				{ type: "link", name: "Vendor List", path: "#" },
+			],
+		},
+		{
+			name: "Finance",
+			icon: Banknote,
+			subItems: [
+				{ type: "header", name: "Financials" },
+				{ type: "link", name: "GL Codes", path: "#" },
+				{ type: "link", name: "Revenue Reports", path: "#" },
+				{ type: "link", name: "Tax Settings", path: "#" },
+
+				{ type: "header", name: "Discounts" },
+				{ type: "link", name: "Promo Codes", path: "#" },
+				{ type: "link", name: "Automatic Rules", path: "#" },
 			],
 		},
 		{
@@ -98,6 +142,25 @@ const Sidebar: React.FC<SidebarProps> = () => {
 
 				{ type: "header", name: "Tags & Attributes" },
 				{ type: "link", name: "Tag Manager", path: "#" },
+			],
+		},
+		{
+			name: "Operations",
+			icon: Zap,
+			subItems: [
+				{ type: "header", name: "Access Control" },
+				{ type: "link", name: "Live Entry Feed", path: "#" },
+				{ type: "link", name: "Gate Status", path: "#" },
+				{ type: "link", name: "Banned User List", path: "suspension" },
+				{ type: "link", name: "Validation Rules", path: "access" },
+
+				{ type: "header", name: "Equipment Desk" },
+				{ type: "link", name: "Inventory Audit", path: "inventory" },
+
+				{ type: "header", name: "Guest Management" },
+				{ type: "link", name: "Sell Guest Pass", path: "#" },
+				{ type: "link", name: "Guest History", path: "#" },
+				{ type: "link", name: "Kiosk Config", path: "#" },
 			],
 		},
 		{
@@ -133,54 +196,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
 			],
 		},
 		{
-			name: "Facilities & Assets",
-			icon: Building2,
-			subItems: [
-				{ type: "header", name: "Scheduling" },
-				{ type: "link", name: "Scheduling Config", path: "scheduling" },
-
-				{ type: "header", name: "Space Management" },
-				{ type: "link", name: "Spaces & Zones", path: "facilities" },
-				{
-					type: "link",
-					name: "Facility Categories",
-					path: "facility-categories",
-				},
-				{ type: "link", name: "Visual Map Builder", path: "#" },
-				{ type: "link", name: "Operating Hours", path: "#" },
-
-				{ type: "header", name: "Locker Services" },
-				{ type: "link", name: "Locker Config", path: "lockers" },
-
-				{ type: "header", name: "Parking Management" },
-				{ type: "link", name: "Permits", path: "#" },
-				{ type: "link", name: "Enforcement", path: "#" },
-
-				{ type: "header", name: "Maintenance" },
-				{ type: "link", name: "Work Orders", path: "#" },
-				{ type: "link", name: "Vendor List", path: "#" },
-			],
-		},
-		{
-			name: "Commerce & Finance",
-			icon: ShoppingBag,
-			subItems: [
-				{ type: "header", name: "Inventory (Retail)" },
-				{ type: "link", name: "Product Catalog", path: "inventory" },
-				{ type: "link", name: "Stock Intake", path: "#" },
-				{ type: "link", name: "Vendor Orders", path: "#" },
-
-				{ type: "header", name: "Financials" },
-				{ type: "link", name: "GL Codes", path: "#" },
-				{ type: "link", name: "Revenue Reports", path: "#" },
-				{ type: "link", name: "Tax Settings", path: "#" },
-
-				{ type: "header", name: "Discounts" },
-				{ type: "link", name: "Promo Codes", path: "#" },
-				{ type: "link", name: "Automatic Rules", path: "#" },
-			],
-		},
-		{
 			name: "Risk & Compliance",
 			icon: Shield,
 			subItems: [
@@ -199,18 +214,19 @@ const Sidebar: React.FC<SidebarProps> = () => {
 			],
 		},
 		{
-			name: "Engagement",
-			icon: Megaphone,
+			name: "Sales",
+			icon: CreditCard,
 			subItems: [
-				{ type: "header", name: "Marketing" },
-				{ type: "link", name: "Marketing Config", path: "marketing" },
-
-				{ type: "header", name: "Content Management" },
-				{ type: "link", name: "Mobile App Banners", path: "#" },
-				{ type: "link", name: "Digital Signage", path: "#" },
-
-				{ type: "header", name: "Surveys" },
-				{ type: "link", name: "Feedback", path: "#" },
+				{ type: "header", name: "Configuration" },
+				{ type: "link", name: "POS Settings", path: "pos-config" },
+				{
+					type: "link",
+					name: "Quick Items Layout",
+					path: "pos-config?tab=layout",
+				}, // Linking to same page but indicating intent
+				{ type: "header", name: "Reporting" },
+				{ type: "link", name: "Transactions", path: "#" },
+				{ type: "link", name: "End of Day", path: "#" },
 			],
 		},
 		{
@@ -238,7 +254,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 	];
 
 	return (
-		<div className="h-[calc(100vh-64px)] scrollbar-none bg-card text-card-foreground p-4 overflow-y-auto border-r custom-scrollbar">
+		<div className="h-[calc(100vh-64px)] bg-card text-card-foreground p-4 overflow-y-auto border-r scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
 			<ul className="space-y-2">
 				{menuItems.map((item) => (
 					<li key={item.name}>

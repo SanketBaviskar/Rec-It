@@ -9,7 +9,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Package, Loader2, AlertCircle } from "lucide-react";
+import {
+	Search,
+	Package,
+	Loader2,
+	AlertCircle,
+	ChevronLeft,
+	ChevronRight,
+} from "lucide-react";
 import { EquipmentItem, IndividualEquipment } from "./types";
 import { EquipmentDetailDialog } from "./EquipmentDetailDialog";
 import React from "react";
@@ -29,6 +36,8 @@ interface EquipmentInventoryProps {
 	refreshTrigger?: number;
 }
 
+const ITEMS_PER_PAGE = 100;
+
 export function EquipmentInventory({
 	categoryId,
 	selectedMember,
@@ -39,6 +48,7 @@ export function EquipmentInventory({
 	const [equipments, setEquipments] = useState<EquipmentItem[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [currentPage, setCurrentPage] = useState(1);
 
 	const [selectedEquipment, setSelectedEquipment] =
 		useState<EquipmentItem | null>(null);
@@ -90,6 +100,18 @@ export function EquipmentInventory({
 			),
 		[equipments, searchQuery]
 	);
+
+	// Reset to page 1 when search query or category changes
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [searchQuery, categoryId]);
+
+	// Pagination calculations
+	const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+	const paginatedItems = useMemo(() => {
+		const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+		return filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+	}, [filteredItems, currentPage]);
 
 	const handleCardClick = async (item: EquipmentItem) => {
 		setSelectedEquipment(item);
@@ -194,7 +216,7 @@ export function EquipmentInventory({
 					</div>
 				) : (
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-						{filteredItems.map((item) => (
+						{paginatedItems.map((item) => (
 							<EquipmentCard
 								key={item.id}
 								item={item}
@@ -204,6 +226,42 @@ export function EquipmentInventory({
 					</div>
 				)}
 			</div>
+
+			{/* Pagination Footer */}
+			{!isLoading &&
+				!error &&
+				filteredItems.length > 0 &&
+				totalPages > 1 && (
+					<div className="p-4 border-t bg-card flex items-center justify-between">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() =>
+								setCurrentPage((p) => Math.max(1, p - 1))
+							}
+							disabled={currentPage === 1}
+						>
+							<ChevronLeft className="h-4 w-4 mr-1" />
+							Previous
+						</Button>
+						<span className="text-sm text-muted-foreground">
+							Page {currentPage} of {totalPages}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() =>
+								setCurrentPage((p) =>
+									Math.min(totalPages, p + 1)
+								)
+							}
+							disabled={currentPage === totalPages}
+						>
+							Next
+							<ChevronRight className="h-4 w-4 ml-1" />
+						</Button>
+					</div>
+				)}
 
 			{/* Equipment Detail Dialog */}
 			{selectedEquipment && (

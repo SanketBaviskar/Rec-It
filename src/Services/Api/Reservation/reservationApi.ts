@@ -1,4 +1,4 @@
-import apiClient from "@/Services/Utils/apiClient";
+import apiClient from "@/services/Utils/apiClient";
 
 export interface Reservation {
 	id: number;

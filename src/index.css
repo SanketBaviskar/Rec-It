@@ -179,7 +179,7 @@ button:focus-visible {
 
 /* custom scrollbar */
 ::-webkit-scrollbar {
-	width: 20px;
+	width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -189,7 +189,7 @@ button:focus-visible {
 ::-webkit-scrollbar-thumb {
 	background-color: #d6dee1;
 	border-radius: 20px;
-	border: 6px solid transparent;
+	border: 2px solid transparent;
 	background-clip: content-box;
 }
 

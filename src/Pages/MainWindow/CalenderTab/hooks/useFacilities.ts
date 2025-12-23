@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Facility, FacilityCategory } from "../types";
-import { fetchFacilities } from "@/services/Api/Facility/facilityApi";
-import { getFacilityCategories } from "@/services/Api/FacilityCategory/facilityCategoryApi";
+import { getAllSpaces } from "@/services/Api/Space/spaceApi";
+import { getAllZones } from "@/services/Api/Zone/zoneApi";
 
 export const useFacilities = () => {
 	const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -23,38 +23,36 @@ export const useFacilities = () => {
 				"#84cc16",
 			];
 
-			const [facilitiesData, categoriesData] = await Promise.all([
-				fetchFacilities(type === "all" ? undefined : type),
-				getFacilityCategories(),
+			const [spacesData, zonesData] = await Promise.all([
+				getAllSpaces(type === "all" ? undefined : type),
+				getAllZones(),
 			]);
 
-			// Map categories
-			const mappedCategories: FacilityCategory[] = categoriesData.map(
-				(c) => ({
-					id: c.id.toString(),
-					name: c.name,
-					description: c.description,
-				})
-			);
+			// Map categories (Zones)
+			const mappedCategories: FacilityCategory[] = zonesData.map((z) => ({
+				id: z.id.toString(),
+				name: z.name,
+				description: z.description || "",
+			}));
 			setCategories(mappedCategories);
 
-			// Map facilities with colors
-			const mapped: Facility[] = facilitiesData.map((f, index) => {
+			// Map facilities (Spaces) with colors
+			const mapped: Facility[] = spacesData.map((s, index) => {
 				const color = FACILITY_COLORS[index % FACILITY_COLORS.length];
 				return {
-					id: f.id.toString(),
-					categoryId: f.categoryId?.toString() || "",
-					name: f.name,
-					description: f.description,
-					capacity: f.capacity,
-					location: f.location,
-					status: (f.status as Facility["status"]) || "available",
+					id: s.id.toString(),
+					categoryId: s.zoneId?.toString() || "",
+					name: s.name,
+					description: s.description || "",
+					capacity: s.capacity || 0,
+					location: s.location || "",
+					status: (s.status as Facility["status"]) || "available",
 					color: color,
-					category: f.category
+					category: s.zone
 						? {
-								id: f.category.id.toString(),
-								name: f.category.name,
-								description: f.category.description,
+								id: s.zone.id.toString(),
+								name: s.zone.name,
+								description: s.zone.description || "",
 						  }
 						: undefined,
 				};

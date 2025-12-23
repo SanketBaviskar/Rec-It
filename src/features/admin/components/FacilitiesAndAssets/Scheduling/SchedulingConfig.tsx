@@ -1,69 +1,35 @@
 import { useState } from "react";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Save, RotateCcw, Calendar, Clock, Users } from "lucide-react";
+	Save,
+	RotateCcw,
+	Calendar,
+	Ban,
+	Repeat,
+	Users,
+	Shuffle,
+	DollarSign,
+} from "lucide-react";
 import { useToast } from "@/components/ui/hooks/use-toast";
+import { useSchedulingConfig } from "./useSchedulingConfig";
 
-const DEFAULT_CONFIG = {
-	// Booking Window
-	advanceBookingDays: 14,
-	minBookingHours: 1,
-	maxBookingHours: 4,
-	sameDayBookingAllowed: true,
-	sameDayBookingCutoffHours: 2,
-
-	// Cancellation Policy
-	freeCancellationHours: 24,
-	lateCancelFee: 25.0,
-	noShowFee: 50.0,
-
-	// Recurring Bookings
-	recurringAllowed: true,
-	maxRecurringWeeks: 16,
-	requireApprovalForRecurring: true,
-
-	// Approval Workflow
-	requireApprovalAboveHours: 2,
-	autoApproveMembers: true,
-	autoApproveStaff: true,
-
-	// Conflict Resolution
-	allowOverlap: false,
-	bufferMinutes: 15,
-	prioritySystem: "firstComeFirstServed",
-
-	// Pricing
-	memberRate: 0,
-	nonMemberRate: 25.0,
-	peakHourMultiplier: 1.5,
-	peakHoursStart: "17:00",
-	peakHoursEnd: "21:00",
-};
+// Components
+import BookingWindow from "./components/BookingWindow";
+import CancellationPolicy from "./components/CancellationPolicy";
+import RecurringBookings from "./components/RecurringBookings";
+import ApprovalWorkflow from "./components/ApprovalWorkflow";
+import ConflictResolution from "./components/ConflictResolution";
+import PricingSettings from "./components/PricingSettings";
 
 export default function SchedulingConfig() {
-	const [config, setConfig] = useState(DEFAULT_CONFIG);
+	const { resetConfig } = useSchedulingConfig();
+	const [activeSection, setActiveSection] = useState("booking");
 	const [isSaving, setIsSaving] = useState(false);
 	const { toast } = useToast();
 
 	const handleSave = async () => {
 		setIsSaving(true);
+		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 500));
 		setIsSaving(false);
 		toast({
@@ -73,477 +39,136 @@ export default function SchedulingConfig() {
 	};
 
 	const handleReset = () => {
-		setConfig(DEFAULT_CONFIG);
-		toast({
-			title: "Settings Reset",
-			description: "Scheduling settings restored to defaults.",
-		});
+		if (
+			confirm(
+				"Are you sure you want to reset all settings to defaults? This action cannot be undone."
+			)
+		) {
+			resetConfig();
+			toast({
+				title: "Settings Reset",
+				description: "Scheduling settings restored to defaults.",
+			});
+		}
 	};
 
+	const sidebarItems = [
+		{
+			id: "booking",
+			label: "Booking Window",
+			icon: Calendar,
+			description: "Configure advance booking and duration limits.",
+		},
+		{
+			id: "cancellation",
+			label: "Cancellation",
+			icon: Ban,
+			description: "Set cancellation windows and fees.",
+		},
+		{
+			id: "recurring",
+			label: "Recurring",
+			icon: Repeat,
+			description: "Configure recurring reservation rules.",
+		},
+		{
+			id: "approval",
+			label: "Approval",
+			icon: Users,
+			description: "Manage approval workflow settings.",
+		},
+		{
+			id: "conflict",
+			label: "Conflicts",
+			icon: Shuffle,
+			description: "Configure priority and buffer times.",
+		},
+		{
+			id: "pricing",
+			label: "Pricing",
+			icon: DollarSign,
+			description: "Set rates and peak hour pricing.",
+		},
+	];
+
 	return (
-		<div className="p-6 space-y-6">
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold">Facility Scheduling</h1>
-					<p className="text-muted-foreground mt-1">
-						Configure booking rules, approval workflows, and
-						pricing.
-					</p>
+		<div className="flex h-[calc(100vh-64px)] bg-background overflow-hidden relative">
+			{/* Secondary Sidebar */}
+			<nav className="w-64 bg-card border-r h-full overflow-y-auto flex-shrink-0">
+				<div className="p-4">
+					<h2 className="text-lg font-semibold mb-4 px-2 text-foreground">
+						Scheduling
+					</h2>
+					<div className="space-y-1">
+						{sidebarItems.map((item) => {
+							const Icon = item.icon;
+							const isActive = activeSection === item.id;
+							return (
+								<Button
+									key={item.id}
+									variant="ghost"
+									className={`w-full justify-start ${
+										isActive
+											? "bg-primary/10 text-primary hover:bg-primary/20"
+											: "text-muted-foreground hover:bg-muted hover:text-foreground"
+									}`}
+									onClick={() => setActiveSection(item.id)}
+								>
+									<Icon className="h-4 w-4 mr-3" />
+									{item.label}
+								</Button>
+							);
+						})}
+					</div>
 				</div>
-				<div className="flex gap-2">
-					<Button variant="outline" onClick={handleReset}>
-						<RotateCcw className="w-4 h-4 mr-2" />
-						Reset
-					</Button>
-					<Button onClick={handleSave} disabled={isSaving}>
-						<Save className="w-4 h-4 mr-2" />
-						{isSaving ? "Saving..." : "Save Settings"}
-					</Button>
-				</div>
-			</div>
+			</nav>
 
-			{/* Booking Window */}
-			<Card>
-				<CardHeader>
-					<div className="flex items-center gap-2">
-						<Calendar className="h-5 w-5 text-primary" />
+			{/* Main Content Area */}
+			<main className="flex-1 overflow-y-auto p-6">
+				<div className="mx-auto w-full max-w-4xl pb-10">
+					{/* Header with Actions */}
+					<div className="flex justify-between items-center mb-6">
 						<div>
-							<CardTitle>Booking Window</CardTitle>
-							<CardDescription>
-								Configure how far in advance bookings can be
-								made.
-							</CardDescription>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="grid grid-cols-3 gap-4">
-						<div className="space-y-2">
-							<Label>Advance Booking (days)</Label>
-							<Input
-								type="number"
-								value={config.advanceBookingDays}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										advanceBookingDays:
-											parseInt(e.target.value) || 0,
-									})
+							<h1 className="text-2xl font-bold tracking-tight">
+								{
+									sidebarItems.find(
+										(i) => i.id === activeSection
+									)?.label
 								}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label>Min Booking Duration (hours)</Label>
-							<Input
-								type="number"
-								value={config.minBookingHours}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										minBookingHours:
-											parseInt(e.target.value) || 0,
-									})
+							</h1>
+							<p className="text-sm text-muted-foreground mt-1">
+								{
+									sidebarItems.find(
+										(i) => i.id === activeSection
+									)?.description
 								}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label>Max Booking Duration (hours)</Label>
-							<Input
-								type="number"
-								value={config.maxBookingHours}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										maxBookingHours:
-											parseInt(e.target.value) || 0,
-									})
-								}
-							/>
-						</div>
-					</div>
-
-					<Separator />
-
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label>Allow Same-Day Booking</Label>
-							<p className="text-xs text-muted-foreground">
-								Users can book facilities on the same day.
 							</p>
 						</div>
-						<Switch
-							checked={config.sameDayBookingAllowed}
-							onCheckedChange={(c) =>
-								setConfig({
-									...config,
-									sameDayBookingAllowed: c,
-								})
-							}
-						/>
-					</div>
-
-					{config.sameDayBookingAllowed && (
-						<div className="space-y-2">
-							<Label>Same-Day Cutoff (hours before)</Label>
-							<Input
-								type="number"
-								value={config.sameDayBookingCutoffHours}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										sameDayBookingCutoffHours:
-											parseInt(e.target.value) || 0,
-									})
-								}
-								className="w-32"
-							/>
-						</div>
-					)}
-				</CardContent>
-			</Card>
-
-			{/* Cancellation Policy */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Cancellation Policy</CardTitle>
-					<CardDescription>
-						Configure cancellation windows and fees.
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label>Free Cancellation Window (hours before)</Label>
-						<Input
-							type="number"
-							value={config.freeCancellationHours}
-							onChange={(e) =>
-								setConfig({
-									...config,
-									freeCancellationHours:
-										parseInt(e.target.value) || 0,
-								})
-							}
-							className="w-32"
-						/>
-					</div>
-
-					<div className="grid grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<Label>Late Cancellation Fee ($)</Label>
-							<Input
-								type="number"
-								step="0.01"
-								value={config.lateCancelFee}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										lateCancelFee:
-											parseFloat(e.target.value) || 0,
-									})
-								}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label>No-Show Fee ($)</Label>
-							<Input
-								type="number"
-								step="0.01"
-								value={config.noShowFee}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										noShowFee:
-											parseFloat(e.target.value) || 0,
-									})
-								}
-							/>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Recurring Bookings */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Recurring Bookings</CardTitle>
-					<CardDescription>
-						Configure recurring reservation settings.
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label>Allow Recurring Bookings</Label>
-							<p className="text-xs text-muted-foreground">
-								Users can schedule weekly/monthly recurring
-								reservations.
-							</p>
-						</div>
-						<Switch
-							checked={config.recurringAllowed}
-							onCheckedChange={(c) =>
-								setConfig({ ...config, recurringAllowed: c })
-							}
-						/>
-					</div>
-
-					{config.recurringAllowed && (
-						<>
-							<div className="space-y-2">
-								<Label>Max Recurring Duration (weeks)</Label>
-								<Input
-									type="number"
-									value={config.maxRecurringWeeks}
-									onChange={(e) =>
-										setConfig({
-											...config,
-											maxRecurringWeeks:
-												parseInt(e.target.value) || 0,
-										})
-									}
-									className="w-32"
-								/>
-							</div>
-
-							<div className="flex items-center justify-between">
-								<div className="space-y-0.5">
-									<Label>
-										Require Approval for Recurring
-									</Label>
-									<p className="text-xs text-muted-foreground">
-										Admin must approve recurring
-										reservations.
-									</p>
-								</div>
-								<Switch
-									checked={config.requireApprovalForRecurring}
-									onCheckedChange={(c) =>
-										setConfig({
-											...config,
-											requireApprovalForRecurring: c,
-										})
-									}
-								/>
-							</div>
-						</>
-					)}
-				</CardContent>
-			</Card>
-
-			{/* Approval Workflow */}
-			<Card>
-				<CardHeader>
-					<div className="flex items-center gap-2">
-						<Users className="h-5 w-5 text-primary" />
-						<div>
-							<CardTitle>Approval Workflow</CardTitle>
-							<CardDescription>
-								Configure when bookings require admin approval.
-							</CardDescription>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label>
-							Require Approval for Bookings Over (hours)
-						</Label>
-						<Input
-							type="number"
-							value={config.requireApprovalAboveHours}
-							onChange={(e) =>
-								setConfig({
-									...config,
-									requireApprovalAboveHours:
-										parseInt(e.target.value) || 0,
-								})
-							}
-							className="w-32"
-						/>
-					</div>
-
-					<Separator />
-
-					<div className="grid grid-cols-2 gap-4">
-						<div className="flex items-center justify-between">
-							<Label>Auto-Approve Members</Label>
-							<Switch
-								checked={config.autoApproveMembers}
-								onCheckedChange={(c) =>
-									setConfig({
-										...config,
-										autoApproveMembers: c,
-									})
-								}
-							/>
-						</div>
-						<div className="flex items-center justify-between">
-							<Label>Auto-Approve Staff</Label>
-							<Switch
-								checked={config.autoApproveStaff}
-								onCheckedChange={(c) =>
-									setConfig({
-										...config,
-										autoApproveStaff: c,
-									})
-								}
-							/>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Conflict Resolution */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Conflict Resolution</CardTitle>
-					<CardDescription>
-						Configure how overlapping bookings are handled.
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label>Priority System</Label>
-						<Select
-							value={config.prioritySystem}
-							onValueChange={(v) =>
-								setConfig({ ...config, prioritySystem: v })
-							}
-						>
-							<SelectTrigger className="w-64">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="firstComeFirstServed">
-									First Come, First Served
-								</SelectItem>
-								<SelectItem value="memberPriority">
-									Member Priority
-								</SelectItem>
-								<SelectItem value="staffPriority">
-									Staff Priority
-								</SelectItem>
-								<SelectItem value="departmentPriority">
-									Department Priority
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="space-y-2">
-						<Label>Buffer Time Between Bookings (minutes)</Label>
-						<Input
-							type="number"
-							value={config.bufferMinutes}
-							onChange={(e) =>
-								setConfig({
-									...config,
-									bufferMinutes:
-										parseInt(e.target.value) || 0,
-								})
-							}
-							className="w-32"
-						/>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Pricing */}
-			<Card>
-				<CardHeader>
-					<div className="flex items-center gap-2">
-						<Clock className="h-5 w-5 text-primary" />
-						<div>
-							<CardTitle>Pricing</CardTitle>
-							<CardDescription>
-								Configure hourly rates and peak pricing.
-							</CardDescription>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="grid grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<Label>Member Hourly Rate ($)</Label>
-							<Input
-								type="number"
-								step="0.01"
-								value={config.memberRate}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										memberRate:
-											parseFloat(e.target.value) || 0,
-									})
-								}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label>Non-Member Hourly Rate ($)</Label>
-							<Input
-								type="number"
-								step="0.01"
-								value={config.nonMemberRate}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										nonMemberRate:
-											parseFloat(e.target.value) || 0,
-									})
-								}
-							/>
+						<div className="flex gap-2">
+							<Button variant="outline" onClick={handleReset}>
+								<RotateCcw className="w-4 h-4 mr-2" />
+								Reset Defaults
+							</Button>
+							<Button onClick={handleSave} disabled={isSaving}>
+								<Save className="w-4 h-4 mr-2" />
+								{isSaving ? "Saving..." : "Save Settings"}
+							</Button>
 						</div>
 					</div>
 
-					<Separator />
-
-					<div className="space-y-2">
-						<Label>Peak Hour Multiplier</Label>
-						<Input
-							type="number"
-							step="0.1"
-							value={config.peakHourMultiplier}
-							onChange={(e) =>
-								setConfig({
-									...config,
-									peakHourMultiplier:
-										parseFloat(e.target.value) || 1,
-								})
-							}
-							className="w-32"
-						/>
+					{/* Content Routes */}
+					<div className="animate-in fade-in-50 duration-300">
+						{activeSection === "booking" && <BookingWindow />}
+						{activeSection === "cancellation" && (
+							<CancellationPolicy />
+						)}
+						{activeSection === "recurring" && <RecurringBookings />}
+						{activeSection === "approval" && <ApprovalWorkflow />}
+						{activeSection === "conflict" && <ConflictResolution />}
+						{activeSection === "pricing" && <PricingSettings />}
 					</div>
-
-					<div className="grid grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<Label>Peak Hours Start</Label>
-							<Input
-								type="time"
-								value={config.peakHoursStart}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										peakHoursStart: e.target.value,
-									})
-								}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label>Peak Hours End</Label>
-							<Input
-								type="time"
-								value={config.peakHoursEnd}
-								onChange={(e) =>
-									setConfig({
-										...config,
-										peakHoursEnd: e.target.value,
-									})
-								}
-							/>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</main>
 		</div>
 	);
 }

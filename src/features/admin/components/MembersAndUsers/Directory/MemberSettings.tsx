@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import MemberList from "./components/MemberList";
 import MemberSettingsLayout from "./Layout/MemberSettingsLayout";
-import MembershipConfig from "./components/MembershipConfig";
 import RegistrationConfig from "./components/RegistrationConfig";
 import AccessRulesConfig from "./components/AccessRulesConfig";
 import FinancialConfig from "./components/FinancialConfig";
@@ -12,10 +11,6 @@ const SECTION_TITLES: Record<string, { title: string; description: string }> = {
 	database: {
 		title: "Member Database",
 		description: "View and manage all registered members.",
-	},
-	membership: {
-		title: "Membership Types",
-		description: "Define the products and plans available for purchase.",
 	},
 	registration: {
 		title: "Registration & Onboarding",
@@ -56,8 +51,6 @@ export default function MemberSettings() {
 		switch (activeSection) {
 			case "database":
 				return <MemberList />;
-			case "membership":
-				return <MembershipConfig />;
 			case "registration":
 				return <RegistrationConfig />;
 			case "access":

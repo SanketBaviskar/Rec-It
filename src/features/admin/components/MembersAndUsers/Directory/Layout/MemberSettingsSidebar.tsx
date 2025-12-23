@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-	Users,
 	UserPlus,
 	ShieldAlert,
 	Receipt,
@@ -24,12 +23,6 @@ const sidebarItems = [
 		label: "Member Database",
 		icon: Database,
 		countKey: "members",
-	},
-	{
-		id: "membership",
-		label: "Membership Types",
-		icon: Users,
-		countKey: null,
 	},
 	{
 		id: "registration",
