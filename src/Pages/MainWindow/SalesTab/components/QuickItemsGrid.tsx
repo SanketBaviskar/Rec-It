@@ -15,11 +15,11 @@ import {
 	Shirt,
 	RefreshCw,
 } from "lucide-react";
-import { usePOSConfig } from "@/features/admin/components/Operations/POSConfig/usePOSConfig";
 import {
-	getAllMemberships,
-	Membership,
-} from "@/services/Api/Membership/membershipApi";
+	usePOSConfig,
+	BUILTIN_CATEGORIES,
+} from "@/features/admin/components/Operations/POSConfig/usePOSConfig";
+import { useMemberships } from "@/features/admin/components/Operations/POSConfig/components/hooks/useMemberships";
 import { getAllPasses, Pass } from "@/services/Api/Pass/passApi";
 
 // Icon mapping helper
@@ -71,61 +71,48 @@ interface Category {
 	id: string;
 	label: string;
 	iconName: string;
-	isSystem?: boolean;
 }
-
-const SYSTEM_CATEGORIES: Category[] = [
-	{
-		id: "memberships",
-		label: "Memberships",
-		iconName: "CreditCard",
-		isSystem: true,
-	},
-	{ id: "passes", label: "Passes", iconName: "Ticket", isSystem: true },
-];
 
 export function QuickItemsGrid({ onAddItem, disabled }: QuickItemsGridProps) {
 	const [activeTab, setActiveTab] = useState("memberships");
 	const [searchQuery, setSearchQuery] = useState("");
 
-	// Backend data
-	const [memberships, setMemberships] = useState<Membership[]>([]);
-	const [passes, setPasses] = useState<Pass[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
+	// Membership data via shared hook (same as MembershipsManager)
+	const { memberships, isLoading: membershipsLoading } = useMemberships();
 
-	// Load config from hook (for custom merchandise)
+	// Custom POS items + categories from config
 	const { items: posItems, categories: posCategories } = usePOSConfig();
 
-	// Fetch backend data on mount
+	// Pass data fetched directly
+	const [passes, setPasses] = useState<Pass[]>([]);
+	const [passesLoading, setPassesLoading] = useState(true);
+
+	const isLoading = membershipsLoading || passesLoading;
+
+	// Fetch passes on mount
 	useEffect(() => {
-		fetchBackendData();
+		fetchPasses();
 	}, []);
 
-	const fetchBackendData = async () => {
-		setIsLoading(true);
+	const fetchPasses = async () => {
+		setPassesLoading(true);
 		try {
-			const [membershipData, passData] = await Promise.all([
-				getAllMemberships(),
-				getAllPasses(),
-			]);
-			setMemberships(membershipData.filter((m) => m.status === "Active"));
+			const passData = await getAllPasses();
 			setPasses(passData.filter((p) => p.active));
 		} catch (error) {
-			console.error("Error fetching data:", error);
+			console.error("Error fetching passes:", error);
 		} finally {
-			setIsLoading(false);
+			setPassesLoading(false);
 		}
 	};
 
-	// System category IDs that we manage via backend
-	const SYSTEM_CATEGORY_IDS = ["memberships", "passes"];
+	const fetchBackendData = fetchPasses;
 
-	// Combine system categories with custom POS categories (filtering out duplicates)
+	// Build full category list: BUILTIN first, then user-defined (skip duplicates for safety)
+	const BUILTIN_IDS = new Set(BUILTIN_CATEGORIES.map((c) => c.id));
 	const allCategories: Category[] = [
-		...SYSTEM_CATEGORIES,
-		...posCategories
-			.filter((c) => !SYSTEM_CATEGORY_IDS.includes(c.id))
-			.map((c) => ({ ...c, isSystem: false })),
+		...BUILTIN_CATEGORIES,
+		...posCategories.filter((c) => !BUILTIN_IDS.has(c.id)),
 	];
 
 	// Get items for current category
@@ -135,7 +122,9 @@ export function QuickItemsGrid({ onAddItem, disabled }: QuickItemsGridProps) {
 				.filter(
 					(m) =>
 						!searchQuery ||
-						m.name.toLowerCase().includes(searchQuery.toLowerCase())
+						m.name
+							.toLowerCase()
+							.includes(searchQuery.toLowerCase()),
 				)
 				.map((m) => ({
 					id: `membership-${m.id}`,
@@ -155,7 +144,9 @@ export function QuickItemsGrid({ onAddItem, disabled }: QuickItemsGridProps) {
 				.filter(
 					(p) =>
 						!searchQuery ||
-						p.name.toLowerCase().includes(searchQuery.toLowerCase())
+						p.name
+							.toLowerCase()
+							.includes(searchQuery.toLowerCase()),
 				)
 				.map((p) => ({
 					id: `pass-${p.id}`,
@@ -176,7 +167,7 @@ export function QuickItemsGrid({ onAddItem, disabled }: QuickItemsGridProps) {
 			.filter(
 				(item) =>
 					!searchQuery ||
-					item.name.toLowerCase().includes(searchQuery.toLowerCase())
+					item.name.toLowerCase().includes(searchQuery.toLowerCase()),
 			)
 			.map((item) => ({
 				...item,
@@ -237,10 +228,10 @@ export function QuickItemsGrid({ onAddItem, disabled }: QuickItemsGridProps) {
 								cat.id === "memberships"
 									? memberships.length
 									: cat.id === "passes"
-									? passes.length
-									: posItems.filter(
-											(i) => i.category === cat.id
-									  ).length;
+										? passes.length
+										: posItems.filter(
+												(i) => i.category === cat.id,
+											).length;
 
 							return (
 								<Button
@@ -257,12 +248,15 @@ export function QuickItemsGrid({ onAddItem, disabled }: QuickItemsGridProps) {
 									<span className="truncate flex-1 text-left">
 										{cat.label}
 									</span>
-									{cat.isSystem && (
+									{itemCount > 0 && (
 										<Badge
 											variant="outline"
 											className="text-[10px] h-5 px-1.5"
 										>
-											{isLoading ? "..." : itemCount}
+											{isLoading &&
+											BUILTIN_IDS.has(cat.id)
+												? "..."
+												: itemCount}
 										</Badge>
 									)}
 								</Button>
@@ -341,7 +335,7 @@ export function QuickItemsGrid({ onAddItem, disabled }: QuickItemsGridProps) {
 												{/* Type Badge */}
 												<span
 													className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${getTypeBadgeStyle(
-														item.type
+														item.type,
 													)}`}
 												>
 													{getTypeLabel(item.type)}
@@ -383,9 +377,9 @@ export function QuickItemsGrid({ onAddItem, disabled }: QuickItemsGridProps) {
 									{searchQuery
 										? "Try different search terms"
 										: activeTab === "memberships" ||
-										  activeTab === "passes"
-										? "Configure items in admin settings"
-										: "Add items in POS Configuration"}
+											  activeTab === "passes"
+											? "Configure items in admin settings"
+											: "Add items in POS Configuration"}
 								</p>
 							</div>
 						)}

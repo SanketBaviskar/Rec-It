@@ -1,53 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AlertCircle, CheckCircle2, User, XCircle } from "lucide-react";
 import {
-	AlertCircle,
-	CheckCircle2,
-	Clock,
-	Gift,
-	User,
-	XCircle,
-} from "lucide-react";
+	getUserMemberships,
+	Membership,
+} from "@/services/Api/Membership/membershipApi";
+import { User as UserType } from "@/services/Api/User/userApi";
 
 interface UserPanelProps {
-	selectedUser: any | null;
-	onSelectUser: (user: any) => void;
+	selectedUser: UserType | null;
+	onSelectUser: (user: UserType) => void;
 	onClearUser: () => void;
 }
 
-// Mock eligibility data - in production this would come from API
-const getMockEligibility = (user: any) => {
-	if (!user) return null;
-	return {
-		status: "active" as "active" | "warning" | "blocked",
-		membership: "Student Premium",
-		memberSince: "Aug 2023",
-		alerts: [
-			{
-				id: 1,
-				type: "warning",
-				icon: Clock,
-				message: "Waiver expires in 3 days",
-			},
-			{
-				id: 2,
-				type: "info",
-				icon: Gift,
-				message: "Birthday today! 🎂",
-			},
-		],
-		// For equipment checkout context
-		overdueItems: [],
-		canCheckout: true,
-	};
-};
-
-const statusConfig = {
+const statusConfig: Record<
+	"active" | "warning" | "blocked",
+	{
+		color: string;
+		textColor: string;
+		bgLight: string;
+		label: string;
+		icon: any;
+	}
+> = {
 	active: {
 		color: "bg-emerald-500",
 		textColor: "text-emerald-500",
@@ -71,13 +51,84 @@ const statusConfig = {
 	},
 };
 
+interface Eligibility {
+	status: "active" | "warning" | "blocked";
+	membership: string;
+	memberSince: string;
+	alerts: {
+		id: number;
+		type: string;
+		icon: any;
+		message: string;
+	}[];
+	canCheckout: boolean;
+}
+
 export function UserPanel({
 	selectedUser,
 	onSelectUser,
 	onClearUser,
 }: UserPanelProps) {
-	const eligibility = getMockEligibility(selectedUser);
 	const [searchResults, setSearchResults] = useState<any[]>([]);
+	const [eligibility, setEligibility] = useState<Eligibility | null>(null);
+
+	useEffect(() => {
+		const fetchEligibility = async () => {
+			if (!selectedUser) {
+				setEligibility(null);
+				return;
+			}
+			try {
+				const memberships = await getUserMemberships(selectedUser.id);
+				const activeMembership = memberships.find(
+					(m: Membership) => m.status === "Active",
+				);
+
+				setEligibility({
+					status:
+						selectedUser.status === "banned" ||
+						selectedUser.status === "suspended"
+							? "blocked"
+							: activeMembership
+								? "active"
+								: "warning",
+					membership: activeMembership
+						? activeMembership.name
+						: "None",
+					memberSince: new Date(
+						selectedUser.createdAt,
+					).toLocaleDateString(undefined, {
+						month: "short",
+						year: "numeric",
+					}),
+					alerts: !activeMembership
+						? [
+								{
+									id: 1,
+									type: "warning",
+									icon: AlertCircle,
+									message: "No active membership",
+								},
+							]
+						: [],
+					canCheckout:
+						selectedUser.status !== "banned" &&
+						selectedUser.status !== "suspended",
+				});
+			} catch (error) {
+				console.error("Error fetching user memberships:", error);
+				setEligibility({
+					status: "warning",
+					membership: "Unknown",
+					memberSince: "Unknown",
+					alerts: [],
+					canCheckout: false,
+				});
+			}
+		};
+
+		fetchEligibility();
+	}, [selectedUser]);
 
 	return (
 		<div className="flex flex-col h-full gap-4">
@@ -187,21 +238,23 @@ export function UserPanel({
 								<p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
 									Alerts
 								</p>
-								{eligibility.alerts.map((alert) => (
-									<div
-										key={alert.id}
-										className={`flex items-center gap-2 p-2 rounded-md text-sm ${
-											alert.type === "warning"
-												? "bg-amber-500/10 text-amber-500"
-												: alert.type === "danger"
-												? "bg-red-500/10 text-red-500"
-												: "bg-blue-500/10 text-blue-500"
-										}`}
-									>
-										<alert.icon className="h-4 w-4 flex-shrink-0" />
-										<span>{alert.message}</span>
-									</div>
-								))}
+								{eligibility.alerts.map(
+									(alert: Eligibility["alerts"][0]) => (
+										<div
+											key={alert.id}
+											className={`flex items-center gap-2 p-2 rounded-md text-sm ${
+												alert.type === "warning"
+													? "bg-amber-500/10 text-amber-500"
+													: alert.type === "danger"
+														? "bg-red-500/10 text-red-500"
+														: "bg-blue-500/10 text-blue-500"
+											}`}
+										>
+											<alert.icon className="h-4 w-4 flex-shrink-0" />
+											<span>{alert.message}</span>
+										</div>
+									),
+								)}
 							</div>
 						)}
 
@@ -238,7 +291,7 @@ export function UserPanel({
 					</div>
 					<ScrollArea className="flex-1 min-h-0">
 						<div className="p-3 space-y-2">
-							{searchResults.map((user: any) => (
+							{searchResults.map((user: UserType) => (
 								<button
 									key={user.id}
 									className="w-full flex items-center gap-3 p-3 rounded-lg transition-all bg-background hover:bg-muted border-2 border-transparent hover:border-muted-foreground/20"

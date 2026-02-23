@@ -134,12 +134,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
 				{ type: "link", name: "Family Groups", path: "#" },
 				{ type: "link", name: "Staff Directory", path: "staff" },
 
-				{ type: "header", name: "Memberships" },
-				{ type: "link", name: "Plans & Passes", path: "memberships" },
-				{ type: "link", name: "Sold Memberships", path: "passes" },
-				{ type: "link", name: "Renewal Automation", path: "#" },
-				{ type: "link", name: "Proration Rules", path: "#" },
-
 				{ type: "header", name: "Tags & Attributes" },
 				{ type: "link", name: "Tag Manager", path: "#" },
 			],
@@ -254,7 +248,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
 	];
 
 	return (
-		<div className="h-[calc(100vh-64px)] bg-card text-card-foreground p-4 overflow-y-auto border-r scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+		<div className="h-[calc(100vh-64px)] bg-card text-card-foreground p-4 overflow-y-auto border-r">
 			<ul className="space-y-2">
 				{menuItems.map((item) => (
 					<li key={item.name}>

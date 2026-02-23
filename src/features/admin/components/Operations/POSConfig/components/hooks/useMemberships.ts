@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import {
 	getAllMemberships,
-	createMembership,
-	updateMembership,
-	deleteMembership,
 	Membership,
 	CreateMembershipDTO,
 	UpdateMembershipDTO,
 } from "@/services/Api/Membership/membershipApi";
+import {
+	createMembership,
+	updateMembership,
+	deleteMembership,
+} from "@/services/Api/Admin/Membership/membershipAdminApi";
 import { toast } from "sonner";
 
 interface UseMembershipsReturn {
@@ -18,7 +20,7 @@ interface UseMembershipsReturn {
 	addMembership: (data: CreateMembershipDTO) => Promise<Membership | null>;
 	editMembership: (
 		id: number,
-		data: UpdateMembershipDTO
+		data: UpdateMembershipDTO,
 	) => Promise<Membership | null>;
 	removeMembership: (id: number) => Promise<boolean>;
 }
@@ -49,7 +51,7 @@ export const useMemberships = (): UseMembershipsReturn => {
 	}, [fetchMemberships]);
 
 	const addMembership = async (
-		data: CreateMembershipDTO
+		data: CreateMembershipDTO,
 	): Promise<Membership | null> => {
 		try {
 			const newMembership = await createMembership(data);
@@ -64,12 +66,12 @@ export const useMemberships = (): UseMembershipsReturn => {
 
 	const editMembership = async (
 		id: number,
-		data: UpdateMembershipDTO
+		data: UpdateMembershipDTO,
 	): Promise<Membership | null> => {
 		try {
 			const updated = await updateMembership(id, data);
 			setMemberships((prev) =>
-				prev.map((m) => (m.id === id ? updated : m))
+				prev.map((m) => (m.id === id ? updated : m)),
 			);
 			toast.success("Membership plan updated successfully");
 			return updated;

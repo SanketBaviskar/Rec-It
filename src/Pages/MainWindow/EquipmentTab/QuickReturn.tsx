@@ -65,7 +65,7 @@ const calculateLateFee = (dueAt: string | null): number => {
 	const now = new Date();
 	const diffHours = Math.max(
 		0,
-		(now.getTime() - due.getTime()) / (1000 * 60 * 60)
+		(now.getTime() - due.getTime()) / (1000 * 60 * 60),
 	);
 	return Math.min(50, diffHours * 2.5);
 };
@@ -89,7 +89,7 @@ interface QuickReturnProps {
 	onReturnComplete: (
 		item: ReturnItem,
 		condition: ConditionRating,
-		notes: string
+		notes: string,
 	) => void;
 }
 
@@ -100,7 +100,7 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 	const [damageNotes, setDamageNotes] = useState("");
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [activeCheckouts, setActiveCheckouts] = useState<CheckoutRecord[]>(
-		[]
+		[],
 	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isLoading, setIsLoading] = useState(true);
@@ -113,7 +113,11 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 			const response = await fetchCheckouts(undefined, true);
 			if (response.status === "success" && response.data) {
 				const responseData = response.data as any;
-				const data = responseData.items || responseData || [];
+				const data =
+					responseData.data ||
+					responseData.items ||
+					responseData ||
+					[];
 				setActiveCheckouts(Array.isArray(data) ? data : []);
 			} else {
 				setActiveCheckouts([]);
@@ -165,8 +169,8 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 			collateralType: serialNumber.startsWith("RW")
 				? "id_card"
 				: serialNumber.startsWith("KEY")
-				? "keys"
-				: "none",
+					? "keys"
+					: "none",
 		};
 
 		setScannedItem(returnItem);
@@ -210,7 +214,7 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 						description: `${
 							scannedItem.name
 						} returned. Late fee: $${scannedItem.lateFee.toFixed(
-							2
+							2,
 						)}`,
 						variant: "destructive",
 					});
@@ -321,7 +325,7 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 							<TableBody>
 								{filteredCheckouts.map((checkout) => {
 									const daysOverdue = calculateDaysOverdue(
-										checkout.dueAt
+										checkout.dueAt,
 									);
 									const isOverdueItem = daysOverdue > 0;
 
@@ -361,8 +365,8 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 											<TableCell>
 												{checkout.dueAt
 													? new Date(
-															checkout.dueAt
-													  ).toLocaleDateString()
+															checkout.dueAt,
+														).toLocaleDateString()
 													: "N/A"}
 											</TableCell>
 											<TableCell>
@@ -385,7 +389,7 @@ export function QuickReturn({ onReturnComplete }: QuickReturnProps) {
 													size="sm"
 													onClick={() =>
 														selectItemForReturn(
-															checkout
+															checkout,
 														)
 													}
 													disabled={isProcessing}

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Ticket, Package, Sparkles, CreditCard } from "lucide-react";
 
 export interface POSCategory {
 	id: string;
@@ -50,12 +49,17 @@ export interface POSGeneralConfig {
 	prorationMethod: "daily" | "weekly" | "halfMonth" | "none";
 }
 
-const DEFAULT_CATEGORIES: POSCategory[] = [
+// Built-in categories — always shown, not stored in localStorage
+export const BUILTIN_CATEGORIES: POSCategory[] = [
+	{ id: "memberships", label: "Memberships", iconName: "CreditCard" },
 	{ id: "passes", label: "Passes", iconName: "Ticket" },
+];
+
+// User-defined custom categories stored in localStorage (excludes built-ins)
+const DEFAULT_CATEGORIES: POSCategory[] = [
 	{ id: "rentals", label: "Rentals", iconName: "Package" },
 	{ id: "services", label: "Services", iconName: "Sparkles" },
-	{ id: "memberships", label: "Memberships", iconName: "CreditCard" },
-	{ id: "gear", label: "Gear Shop", iconName: "Shirt" }, // Added for products example
+	{ id: "gear", label: "Gear Shop", iconName: "Shirt" },
 ];
 
 const DEFAULT_ITEMS: POSItem[] = [
@@ -131,7 +135,7 @@ export function usePOSConfig() {
 		useState<POSCategory[]>(DEFAULT_CATEGORIES);
 	const [items, setItems] = useState<POSItem[]>(DEFAULT_ITEMS);
 	const [generalConfig, setGeneralConfig] = useState<POSGeneralConfig>(
-		DEFAULT_GENERAL_CONFIG
+		DEFAULT_GENERAL_CONFIG,
 	);
 
 	useEffect(() => {
@@ -145,11 +149,11 @@ export function usePOSConfig() {
 					(item: any) => ({
 						...item,
 						type: item.type || "goods", // Default to goods if missing
-					})
+					}),
 				);
 				setItems(loadedItems);
 				setGeneralConfig(
-					parsed.generalConfig || DEFAULT_GENERAL_CONFIG
+					parsed.generalConfig || DEFAULT_GENERAL_CONFIG,
 				);
 			} catch (e) {
 				console.error("Failed to parse POS config", e);
@@ -160,7 +164,7 @@ export function usePOSConfig() {
 	const saveConfig = (
 		newCategories: POSCategory[],
 		newItems: POSItem[],
-		newGeneralConfig: POSGeneralConfig
+		newGeneralConfig: POSGeneralConfig,
 	) => {
 		setCategories(newCategories);
 		setItems(newItems);
@@ -171,7 +175,7 @@ export function usePOSConfig() {
 				categories: newCategories,
 				items: newItems,
 				generalConfig: newGeneralConfig,
-			})
+			}),
 		);
 	};
 
@@ -183,7 +187,7 @@ export function usePOSConfig() {
 		saveConfig(
 			categories,
 			items.filter((i) => i.id !== id),
-			generalConfig
+			generalConfig,
 		);
 	};
 
@@ -195,7 +199,7 @@ export function usePOSConfig() {
 		saveConfig(
 			categories.filter((c) => c.id !== id),
 			items.filter((i) => i.category !== id), // Also remove items in that category? Or keep them orphaned? Ideally remove or reassign. Removing safe for now.
-			generalConfig
+			generalConfig,
 		);
 	};
 
@@ -203,17 +207,17 @@ export function usePOSConfig() {
 		saveConfig(
 			categories,
 			items.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
-			generalConfig
+			generalConfig,
 		);
 	};
 
 	const updateCategory = (updatedCategory: POSCategory) => {
 		saveConfig(
 			categories.map((c) =>
-				c.id === updatedCategory.id ? updatedCategory : c
+				c.id === updatedCategory.id ? updatedCategory : c,
 			),
 			items,
-			generalConfig
+			generalConfig,
 		);
 	};
 

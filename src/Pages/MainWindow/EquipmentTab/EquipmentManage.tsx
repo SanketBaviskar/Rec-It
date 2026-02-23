@@ -36,7 +36,7 @@ interface EquipmentManagementProps {
 
 export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 	const [checkouts, setCheckouts] = useState<CheckoutRecord[]>(
-		initialItems || []
+		initialItems || [],
 	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isLoading, setIsLoading] = useState(!initialItems);
@@ -53,7 +53,11 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 			if (response.status === "success" && response.data) {
 				// Ensure data is an array
 				const responseData = response.data as any;
-				const data = responseData.items || responseData || [];
+				const data =
+					responseData.data ||
+					responseData.items ||
+					responseData ||
+					[];
 				setCheckouts(Array.isArray(data) ? data : []);
 			} else {
 				setCheckouts([]);
@@ -123,7 +127,7 @@ export function EquipmentManage({ initialItems }: EquipmentManagementProps) {
 			});
 			if (response.status === "success") {
 				setCheckouts((prev) =>
-					prev.filter((checkout) => checkout.id !== checkoutId)
+					prev.filter((checkout) => checkout.id !== checkoutId),
 				);
 				toast({
 					title: "Item Checked In",

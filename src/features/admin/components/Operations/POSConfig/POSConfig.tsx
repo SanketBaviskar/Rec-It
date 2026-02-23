@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import {
 	Plus,
 	Package,
@@ -15,9 +13,6 @@ import {
 	FolderPlus,
 	Search,
 	CreditCard,
-	RefreshCw,
-	Lock,
-	ExternalLink,
 } from "lucide-react";
 import {
 	DropdownMenu,
@@ -53,23 +48,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { usePOSConfig, POSItem, POSCategory } from "./usePOSConfig";
 import {
-	getAllMemberships,
-	Membership,
-} from "@/services/Api/Membership/membershipApi";
-import { getAllPasses, Pass } from "@/services/Api/Pass/passApi";
-
-// System categories that are fetched from backend (read-only)
-const SYSTEM_CATEGORIES = [
-	{
-		id: "memberships",
-		label: "Memberships",
-		iconName: "CreditCard",
-		isSystem: true,
-	},
-	{ id: "passes", label: "Passes", iconName: "Ticket", isSystem: true },
-];
+	usePOSConfig,
+	POSItem,
+	POSCategory,
+	BUILTIN_CATEGORIES,
+} from "./usePOSConfig";
+import MembershipsManager from "./components/MembershipsManager";
+import PassesManager from "./components/PassesManager";
 
 export default function POSConfig() {
 	const {
@@ -79,15 +65,9 @@ export default function POSConfig() {
 		removeCategory,
 		updateCategory,
 		addItem,
-		removeItem,
 		updateItem,
 	} = usePOSConfig();
 	const { toast } = useToast();
-
-	// Backend data
-	const [memberships, setMemberships] = useState<Membership[]>([]);
-	const [passes, setPasses] = useState<Pass[]>([]);
-	const [isLoadingBackend, setIsLoadingBackend] = useState(false);
 
 	// Selected Category
 	const [selectedCategoryId, setSelectedCategoryId] =
@@ -96,7 +76,7 @@ export default function POSConfig() {
 	// Category Dialog State
 	const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 	const [editingCategory, setEditingCategory] = useState<POSCategory | null>(
-		null
+		null,
 	);
 	const [categoryForm, setCategoryForm] = useState<Partial<POSCategory>>({
 		label: "",
@@ -105,7 +85,7 @@ export default function POSConfig() {
 
 	// Item Dialog State
 	const [itemDialogOpen, setItemDialogOpen] = useState(false);
-	const [editingItem, setEditingItem] = useState<POSItem | null>(null);
+	const [editingItem] = useState<POSItem | null>(null);
 	const [itemForm, setItemForm] = useState<Partial<POSItem>>({
 		name: "",
 		price: 0,
@@ -117,42 +97,10 @@ export default function POSConfig() {
 	// Search
 	const [searchQuery, setSearchQuery] = useState("");
 
-	// Fetch backend data on mount
-	useEffect(() => {
-		fetchBackendData();
-	}, []);
+	const allCategories = [...BUILTIN_CATEGORIES, ...categories];
 
-	const fetchBackendData = async () => {
-		setIsLoadingBackend(true);
-		try {
-			const [membershipData, passData] = await Promise.all([
-				getAllMemberships(),
-				getAllPasses(),
-			]);
-			setMemberships(membershipData);
-			setPasses(passData);
-		} catch (error) {
-			console.error("Error fetching backend data:", error);
-			toast({
-				title: "Error",
-				description:
-					"Failed to load memberships and passes from server.",
-				variant: "destructive",
-			});
-		} finally {
-			setIsLoadingBackend(false);
-		}
-	};
-
-	// Combine system and custom categories
-	const allCategories = [
-		...SYSTEM_CATEGORIES,
-		...categories.map((c) => ({ ...c, isSystem: false })),
-	];
-
-	// Check if selected category is system (read-only)
-	const isSystemCategory = SYSTEM_CATEGORIES.some(
-		(c) => c.id === selectedCategoryId
+	const isBuiltinCategory = BUILTIN_CATEGORIES.some(
+		(c) => c.id === selectedCategoryId,
 	);
 
 	// --- Category Handlers ---
@@ -194,30 +142,12 @@ export default function POSConfig() {
 	const handleDeleteCategory = (id: string) => {
 		if (confirm("Delete this category and all its items?")) {
 			removeCategory(id);
-			setSelectedCategoryId("memberships"); // Reset to system category
+			setSelectedCategoryId("memberships");
 			toast({ title: "Category Deleted" });
 		}
 	};
 
 	// --- Item Handlers (only for custom categories) ---
-	const openAddItem = () => {
-		if (!selectedCategoryId || isSystemCategory) return;
-		setEditingItem(null);
-		setItemForm({
-			name: "",
-			price: 0,
-			requiresCollateral: false,
-			isMembership: false,
-			type: "goods",
-		});
-		setItemDialogOpen(true);
-	};
-
-	const openEditItem = (item: POSItem) => {
-		setEditingItem(item);
-		setItemForm({ ...item });
-		setItemDialogOpen(true);
-	};
 
 	const handleSaveItem = () => {
 		if (!itemForm.name || !selectedCategoryId) return;
@@ -246,36 +176,6 @@ export default function POSConfig() {
 	};
 
 	// --- Helpers ---
-	const getTypeLabel = (type: string) => {
-		switch (type) {
-			case "goods":
-				return "Goods";
-			case "service":
-				return "Service";
-			case "access":
-				return "Access";
-			case "rental":
-				return "Rental";
-			default:
-				return type;
-		}
-	};
-
-	const getTypeColorClass = (type: string) => {
-		switch (type) {
-			case "goods":
-				return "bg-blue-50 text-blue-700 border-blue-200";
-			case "service":
-				return "bg-purple-50 text-purple-700 border-purple-200";
-			case "access":
-				return "bg-teal-50 text-teal-700 border-teal-200";
-			case "rental":
-				return "bg-amber-50 text-amber-700 border-amber-200";
-			default:
-				return "bg-gray-50 text-gray-700";
-		}
-	};
-
 	const getIcon = (iconName?: string) => {
 		switch (iconName) {
 			case "Ticket":
@@ -295,40 +195,11 @@ export default function POSConfig() {
 
 	// Get items for selected category (backend or local)
 	const getDisplayItems = () => {
-		if (selectedCategoryId === "memberships") {
-			return memberships
-				.filter((m) => m.status === "Active")
-				.filter(
-					(m) =>
-						!searchQuery ||
-						m.name.toLowerCase().includes(searchQuery.toLowerCase())
-				)
-				.map((m) => ({
-					id: `membership-${m.id}`,
-					name: m.name,
-					price: m.price || 0,
-					type: "membership" as const,
-					duration: m.duration,
-					description: m.description,
-				}));
-		}
-
-		if (selectedCategoryId === "passes") {
-			return passes
-				.filter((p) => p.active)
-				.filter(
-					(p) =>
-						!searchQuery ||
-						p.name.toLowerCase().includes(searchQuery.toLowerCase())
-				)
-				.map((p) => ({
-					id: `pass-${p.id}`,
-					name: p.name,
-					price: p.price,
-					type: "pass" as const,
-					passCategory: p.passCategory,
-					visits: p.visits,
-				}));
+		if (
+			selectedCategoryId === "memberships" ||
+			selectedCategoryId === "passes"
+		) {
+			return []; // Managed by their own components
 		}
 
 		// Custom category items
@@ -337,23 +208,19 @@ export default function POSConfig() {
 			.filter(
 				(item) =>
 					!searchQuery ||
-					item.name.toLowerCase().includes(searchQuery.toLowerCase())
+					item.name.toLowerCase().includes(searchQuery.toLowerCase()),
 			);
 	};
 
 	const displayItems = getDisplayItems();
 	const selectedCategory = allCategories.find(
-		(c) => c.id === selectedCategoryId
+		(c) => c.id === selectedCategoryId,
 	);
 
-	// Get item count for a category
+	// Get item count for a category (system categories omit the numbers as they manage their own lists)
 	const getCategoryItemCount = (categoryId: string) => {
-		if (categoryId === "memberships") {
-			return memberships.filter((m) => m.status === "Active").length;
-		}
-		if (categoryId === "passes") {
-			return passes.filter((p) => p.active).length;
-		}
+		if (categoryId === "memberships" || categoryId === "passes")
+			return null;
 		return items.filter((i) => i.category === categoryId).length;
 	};
 
@@ -372,22 +239,19 @@ export default function POSConfig() {
 
 				<ScrollArea className="flex-1">
 					<div className="p-2 space-y-1">
-						{/* System Categories */}
-						<p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-							<Lock className="w-3 h-3" />
-							System Categories
-						</p>
-
-						{SYSTEM_CATEGORIES.map((category) => {
+						{allCategories.map((category) => {
 							const Icon = getIcon(category.iconName);
 							const itemCount = getCategoryItemCount(category.id);
+							const isBuiltin = BUILTIN_CATEGORIES.some(
+								(c) => c.id === category.id,
+							);
 							return (
 								<div
 									key={category.id}
 									className={cn(
 										"group flex items-center w-full rounded-md hover:bg-accent/50",
 										selectedCategoryId === category.id &&
-											"bg-accent text-accent-foreground"
+											"bg-accent text-accent-foreground",
 									)}
 								>
 									<Button
@@ -395,7 +259,7 @@ export default function POSConfig() {
 										className={cn(
 											"flex-1 justify-start font-normal pl-4 h-10 hover:bg-transparent",
 											selectedCategoryId ===
-												category.id && "font-medium"
+												category.id && "font-medium",
 										)}
 										onClick={() =>
 											setSelectedCategoryId(category.id)
@@ -403,356 +267,125 @@ export default function POSConfig() {
 									>
 										<Icon className="w-4 h-4 mr-2" />
 										{category.label}
-										<span className="ml-auto text-xs text-muted-foreground">
-											{isLoadingBackend
-												? "..."
-												: itemCount}
-										</span>
+										{itemCount !== null && (
+											<span className="ml-auto text-xs text-muted-foreground">
+												{itemCount}
+											</span>
+										)}
 									</Button>
-								</div>
-							);
-						})}
-
-						<Separator className="my-3" />
-
-						{/* Custom Categories */}
-						<p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-							Custom Categories
-						</p>
-
-						{categories.map((category) => {
-							const Icon = getIcon(category.iconName);
-							const itemCount = getCategoryItemCount(category.id);
-							return (
-								<div
-									key={category.id}
-									className={cn(
-										"group flex items-center w-full rounded-md hover:bg-accent/50",
-										selectedCategoryId === category.id &&
-											"bg-accent text-accent-foreground"
+									{!isBuiltin && (
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity mr-1"
+												>
+													<MoreHorizontal className="w-4 h-4" />
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent align="end">
+												<DropdownMenuItem
+													onClick={() =>
+														openEditCategory(
+															category as POSCategory,
+														)
+													}
+												>
+													<Pencil className="w-4 h-4 mr-2" />
+													Edit
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onClick={() =>
+														handleDeleteCategory(
+															category.id,
+														)
+													}
+													className="text-red-600 focus:text-red-600"
+												>
+													<Trash2 className="w-4 h-4 mr-2" />
+													Delete
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
 									)}
-								>
-									<Button
-										variant="ghost"
-										className={cn(
-											"flex-1 justify-start font-normal pl-4 h-10 hover:bg-transparent",
-											selectedCategoryId ===
-												category.id && "font-medium"
-										)}
-										onClick={() =>
-											setSelectedCategoryId(category.id)
-										}
-									>
-										<Icon className="w-4 h-4 mr-2" />
-										{category.label}
-										<span className="ml-auto text-xs text-muted-foreground">
-											{itemCount}
-										</span>
-									</Button>
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button
-												variant="ghost"
-												size="icon"
-												className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity mr-1"
-											>
-												<MoreHorizontal className="w-4 h-4" />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
-											<DropdownMenuItem
-												onClick={() =>
-													openEditCategory(category)
-												}
-											>
-												<Pencil className="w-4 h-4 mr-2" />
-												Edit
-											</DropdownMenuItem>
-											<DropdownMenuItem
-												onClick={() =>
-													handleDeleteCategory(
-														category.id
-													)
-												}
-												className="text-red-600 focus:text-red-600"
-											>
-												<Trash2 className="w-4 h-4 mr-2" />
-												Delete
-											</DropdownMenuItem>
-										</DropdownMenuContent>
-									</DropdownMenu>
 								</div>
 							);
 						})}
-
-						{categories.length === 0 && (
-							<div className="p-4 text-sm text-center text-muted-foreground">
-								No custom categories yet.
-							</div>
-						)}
 					</div>
 				</ScrollArea>
 			</div>
 
 			{/* Main Content - Items List */}
-			<div className="flex-1 min-w-0 flex flex-col">
-				{/* Header */}
-				<div className="p-6 border-b bg-card">
-					<div className="flex justify-between items-center">
-						<div>
-							<div className="flex items-center gap-2">
-								<h1 className="text-2xl font-bold tracking-tight">
-									{selectedCategory?.label || "Items"}
-								</h1>
-								{isSystemCategory && (
-									<Badge
-										variant="secondary"
-										className="text-xs"
-									>
-										<Lock className="w-3 h-3 mr-1" />
-										Read-only
-									</Badge>
-								)}
+			{selectedCategoryId === "memberships" ? (
+				<MembershipsManager />
+			) : selectedCategoryId === "passes" ? (
+				<PassesManager />
+			) : (
+				<div className="flex-1 min-w-0 flex flex-col">
+					{/* Header */}
+					<div className="p-6 border-b bg-card">
+						<div className="flex justify-between items-center">
+							<div>
+								<div className="flex items-center gap-2">
+									<h1 className="text-2xl font-bold tracking-tight">
+										{selectedCategory?.label || "Items"}
+									</h1>
+								</div>
+								<p className="text-sm text-muted-foreground mt-1">
+									{displayItems.length} items
+								</p>
 							</div>
-							<p className="text-sm text-muted-foreground mt-1">
-								{displayItems.length} items
-								{isSystemCategory &&
-									" • Managed in dedicated admin section"}
-							</p>
 						</div>
-						<div className="flex gap-2">
-							{isSystemCategory ? (
-								<>
-									<Button
-										variant="outline"
-										onClick={fetchBackendData}
-										disabled={isLoadingBackend}
-									>
-										<RefreshCw
-											className={cn(
-												"w-4 h-4 mr-2",
-												isLoadingBackend &&
-													"animate-spin"
-											)}
-										/>
-										Refresh
-									</Button>
-									<Button variant="outline" asChild>
-										<a
-											href={
-												selectedCategoryId ===
-												"memberships"
-													? "/admin/memberships"
-													: "/admin/passes"
-											}
-										>
-											<ExternalLink className="w-4 h-4 mr-2" />
-											Manage {selectedCategory?.label}
-										</a>
-									</Button>
-								</>
-							) : (
-								<Button onClick={openAddItem}>
-									<Plus className="w-4 h-4 mr-2" />
-									Add Item
-								</Button>
-							)}
+
+						{/* Search */}
+						<div className="relative mt-4 max-w-md">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder="Search items..."
+								className="pl-9 bg-background"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+							/>
 						</div>
 					</div>
-					{/* Search */}
-					<div className="relative mt-4 max-w-md">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-						<Input
-							placeholder="Search items..."
-							className="pl-9 bg-background"
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-						/>
-					</div>
-				</div>
 
-				{/* Items Table */}
-				<ScrollArea className="flex-1 p-6">
-					<div className="rounded-md border bg-card">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Name</TableHead>
-									<TableHead>Type</TableHead>
-									<TableHead>Price</TableHead>
-									<TableHead>Details</TableHead>
-									{!isSystemCategory && (
-										<TableHead className="text-right">
-											Actions
-										</TableHead>
-									)}
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{/* Memberships View */}
-								{selectedCategoryId === "memberships" &&
-									displayItems.map((item: any) => (
-										<TableRow key={item.id}>
-											<TableCell className="font-medium">
-												{item.name}
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant="outline"
-													className="bg-indigo-50 text-indigo-700 border-0"
-												>
-													Membership
-												</Badge>
-											</TableCell>
-											<TableCell>
-												{item.price
-													? `$${item.price.toFixed(
-															2
-													  )}`
-													: "Free"}
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant="secondary"
-													className="text-xs"
-												>
-													{item.duration}
-												</Badge>
-											</TableCell>
-										</TableRow>
-									))}
-
-								{/* Passes View */}
-								{selectedCategoryId === "passes" &&
-									displayItems.map((item: any) => (
-										<TableRow key={item.id}>
-											<TableCell className="font-medium">
-												{item.name}
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant="outline"
-													className="bg-teal-50 text-teal-700 border-0"
-												>
-													{item.passCategory?.replace(
-														"_",
-														" "
-													)}
-												</Badge>
-											</TableCell>
-											<TableCell>
-												${item.price.toFixed(2)}
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant="secondary"
-													className="text-xs"
-												>
-													{item.visits} visits
-												</Badge>
-											</TableCell>
-										</TableRow>
-									))}
-
-								{/* Custom Items View */}
-								{!isSystemCategory &&
-									displayItems.map((item: any) => (
-										<TableRow key={item.id}>
-											<TableCell className="font-medium">
-												{item.name}
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant="outline"
-													className={`border-0 ${getTypeColorClass(
-														item.type
-													)}`}
-												>
-													{getTypeLabel(item.type)}
-												</Badge>
-											</TableCell>
-											<TableCell>
-												${item.price.toFixed(2)}
-											</TableCell>
-											<TableCell>
-												<div className="flex gap-1.5 flex-wrap">
-													{item.requiresCollateral && (
-														<Badge
-															variant="secondary"
-															className="text-[10px] h-5"
-														>
-															ID Required
-														</Badge>
-													)}
-													{item.isMembership && (
-														<Badge
-															variant="secondary"
-															className="text-[10px] h-5 bg-blue-50 text-blue-700"
-														>
-															Subscription
-														</Badge>
-													)}
-												</div>
-											</TableCell>
-											<TableCell className="text-right">
-												<DropdownMenu>
-													<DropdownMenuTrigger
-														asChild
-													>
-														<Button
-															variant="ghost"
-															className="h-8 w-8 p-0"
-														>
-															<MoreHorizontal className="h-4 w-4" />
-														</Button>
-													</DropdownMenuTrigger>
-													<DropdownMenuContent align="end">
-														<DropdownMenuItem
-															onClick={() =>
-																openEditItem(
-																	item
-																)
-															}
-														>
-															<Pencil className="mr-2 h-4 w-4" />
-															Edit
-														</DropdownMenuItem>
-														<DropdownMenuItem
-															onClick={() =>
-																removeItem(
-																	item.id
-																)
-															}
-															className="text-red-600"
-														>
-															<Trash2 className="mr-2 h-4 w-4" />
-															Delete
-														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenu>
-											</TableCell>
-										</TableRow>
-									))}
-
-								{displayItems.length === 0 && (
+					{/* Items Table */}
+					<ScrollArea className="flex-1 p-6">
+						<div className="rounded-md border bg-card">
+							<Table>
+								<TableHeader>
 									<TableRow>
-										<TableCell
-											colSpan={isSystemCategory ? 4 : 5}
-											className="text-center py-10 text-muted-foreground"
-										>
-											{searchQuery
-												? "No items match your search."
-												: isSystemCategory
-												? `No active ${selectedCategory?.label.toLowerCase()} found. Create them in the dedicated admin section.`
-												: "No items in this category. Click 'Add Item' to create one."}
-										</TableCell>
+										<TableHead>Name</TableHead>
+										<TableHead>Type</TableHead>
+										<TableHead>Price</TableHead>
+										<TableHead>Details</TableHead>
+										{!isBuiltinCategory && (
+											<TableHead className="text-right">
+												Actions
+											</TableHead>
+										)}
 									</TableRow>
-								)}
-							</TableBody>
-						</Table>
-					</div>
-				</ScrollArea>
-			</div>
+								</TableHeader>
+								<TableBody>
+									{displayItems.length === 0 && (
+										<TableRow>
+											<TableCell
+												colSpan={5}
+												className="text-center py-10 text-muted-foreground"
+											>
+												{searchQuery
+													? "No items match your search."
+													: "No items in this category. Click 'Add Item' to create one."}
+											</TableCell>
+										</TableRow>
+									)}
+								</TableBody>
+							</Table>
+						</div>
+					</ScrollArea>
+				</div>
+			)}
 
 			{/* Category Dialog */}
 			<Dialog
@@ -783,31 +416,6 @@ export default function POSConfig() {
 								}
 								placeholder="e.g. Merchandise, Snacks, Rentals"
 							/>
-						</div>
-						<div className="space-y-2">
-							<Label>Icon</Label>
-							<Select
-								value={categoryForm.iconName}
-								onValueChange={(v) =>
-									setCategoryForm({
-										...categoryForm,
-										iconName: v,
-									})
-								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="Package">
-										Package
-									</SelectItem>
-									<SelectItem value="Tag">Tag</SelectItem>
-									<SelectItem value="Sparkles">
-										Sparkles
-									</SelectItem>
-								</SelectContent>
-							</Select>
 						</div>
 					</div>
 					<DialogFooter>

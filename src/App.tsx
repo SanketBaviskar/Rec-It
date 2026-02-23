@@ -14,8 +14,7 @@ import SpaceManagementTab from "@/features/admin/components/FacilitiesAndAssets/
 import ProductCatalog from "@/features/admin/components/CommerceAndFinance/ProductCatalog/ProductCatalog";
 import AccessSettingTab from "@/features/admin/components/Operations/Access/AccessSettingTab";
 import SuspensionSettingTab from "@/features/admin/components/Operations/Access/SuspensionSettingTab";
-import MembershipSettings from "@/features/admin/components/MembersAndUsers/Memberships/MembershipSettings";
-import MembershipAndPasses from "@/features/admin/components/MembersAndUsers/Memberships/MembershipAndPasses";
+
 import MemberSettings from "@/features/admin/components/MembersAndUsers/Directory/MemberSettings";
 import StaffList from "@/features/admin/components/MembersAndUsers/Staff/StaffList";
 import RoleManager from "@/features/admin/components/SystemSettings/StaffRoles/RoleManager";
@@ -83,14 +82,7 @@ function App() {
 								path="suspension"
 								element={<SuspensionSettingTab />}
 							/>
-							<Route
-								path="memberships"
-								element={<MembershipSettings />}
-							/>
-							<Route
-								path="passes"
-								element={<MembershipAndPasses />}
-							/>
+
 							<Route
 								path="member-settings"
 								element={<MemberSettings />}

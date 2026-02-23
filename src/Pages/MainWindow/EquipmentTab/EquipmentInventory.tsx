@@ -79,7 +79,7 @@ export function EquipmentInventory({
 						// category: item.inventory?.name || 'General', // This field is not part of EquipmentItem
 						quantity: item.quantity, // Assuming quantity is available count
 						photoUrl: item.image || "",
-					})
+					}),
 				);
 				setEquipments(mappedEquipment);
 			} catch (err) {
@@ -96,9 +96,9 @@ export function EquipmentInventory({
 	const filteredItems = useMemo(
 		() =>
 			equipments.filter((item) =>
-				item.name.toLowerCase().includes(searchQuery.toLowerCase())
+				item.name.toLowerCase().includes(searchQuery.toLowerCase()),
 			),
-		[equipments, searchQuery]
+		[equipments, searchQuery],
 	);
 
 	// Reset to page 1 when search query or category changes
@@ -121,7 +121,11 @@ export function EquipmentInventory({
 			const response = await fetchEquipmentItems(parseInt(item.id));
 			if (response.status === "success" && response.data) {
 				const responseData = response.data as any;
-				const itemsData = responseData.items || responseData || [];
+				const itemsData =
+					responseData.data ||
+					responseData.items ||
+					responseData ||
+					[];
 
 				const items: IndividualEquipment[] = itemsData.map(
 					(eqItem: any) => ({
@@ -133,7 +137,7 @@ export function EquipmentInventory({
 								? "available"
 								: "checked-out",
 						// We could also map 'maintenance' etc if UI supported it
-					})
+					}),
 				);
 				setSelectedEquipmentItems(items);
 				setDialogOpen(true);
@@ -252,7 +256,7 @@ export function EquipmentInventory({
 							size="sm"
 							onClick={() =>
 								setCurrentPage((p) =>
-									Math.min(totalPages, p + 1)
+									Math.min(totalPages, p + 1),
 								)
 							}
 							disabled={currentPage === totalPages}
