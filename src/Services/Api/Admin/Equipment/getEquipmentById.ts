@@ -1,6 +1,6 @@
 import apiClient from "@/Services/Utils/apiClient";
 
-export const getEquipmentById = async (equipmentId: string) => {
+export const getEquipmentById = async (equipmentId: number | string) => {
   try {
     const response = await apiClient.get(`/equipments/${equipmentId}`);
     return response.data;

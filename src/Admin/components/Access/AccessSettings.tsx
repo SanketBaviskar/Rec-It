@@ -18,12 +18,9 @@ export default function AccessManagementTab() {
   ); // Default to the first component
 
   const renderActiveComponent = () => {
-    const componentMap: Record<ActiveComponent, React.ReactNode> = {
-      accessSettingsTab: (
-        <AccessSettingsTab
-          onComplete={() => setActiveComponent("accessSettingsTab")}
-        />
-      ),
+    // accessProfiles and identificationTypes are not built yet
+    const componentMap: Partial<Record<ActiveComponent, React.ReactNode>> = {
+      accessSettingsTab: <AccessSettingsTab />,
       // accessProfiles: (
       //   <AccessProfiles
       //     onComplete={() => setActiveComponent("accessProfiles")}

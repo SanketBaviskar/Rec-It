@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Widget from './Widget';
-import { cn } from '@/lib/utils';
 
 const ClockWidget: React.FC<{ id: string }> = ({ id }) => {
   const [time, setTime] = useState(new Date());

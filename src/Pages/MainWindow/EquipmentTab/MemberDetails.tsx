@@ -2,10 +2,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
 import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Uncomment this for future use when the UserData type is defined
-// import { UserData } from "@/Interface/memberData";
+import { Member } from "./types";
 
-export default function MemberDetails({ userDetails }: any) {
+export default function MemberDetails({ userDetails }: { userDetails: Member | null }) {
 
   // Move equipment list outside the component to prevent re-creation on every render
   const equipmentList = [

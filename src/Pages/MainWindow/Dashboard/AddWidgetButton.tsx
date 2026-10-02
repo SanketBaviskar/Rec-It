@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { useDashboard } from './DashboardContext';
-import { WidgetType } from '@/types/dashboard';
 
 const AddWidgetButton: React.FC = () => {
   const { availableWidgets, addWidget } = useDashboard();

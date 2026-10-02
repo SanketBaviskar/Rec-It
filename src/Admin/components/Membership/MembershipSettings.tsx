@@ -1,4 +1,3 @@
-import type React from "react"
 import { useState } from "react"
 import { Edit, Trash2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -34,7 +33,7 @@ type MembershipType = {
 export const allAccessCategories: AccessCategory[] = ["Student", "AHEC Affiliate", "GT34", "Senior", "Adult", "Youth"]
 
 interface MembershipSettingsProps {
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
 const MembershipSettings = ({ onComplete }: MembershipSettingsProps) => {
@@ -92,7 +91,7 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps) => {
 
     setIsDialogOpen(false);
     setEditingMembership(null);
-    onComplete(); // Call onComplete after successful submission
+    onComplete?.(); // Call onComplete after successful submission
   };
 
   const handleEdit = (membership: MembershipType) => {
@@ -103,7 +102,7 @@ const MembershipSettings = ({ onComplete }: MembershipSettingsProps) => {
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this membership type?")) {
       setMembershipTypes(membershipTypes.filter((m) => m.id !== id))
-      onComplete(); // Call onComplete after successful deletion
+      onComplete?.(); // Call onComplete after successful deletion
     }
   }
 

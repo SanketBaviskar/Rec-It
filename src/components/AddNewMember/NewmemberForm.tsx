@@ -7,13 +7,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { addMember } from "@/Services/Api/addNewMember"; // Adjust the path as needed
 import { MemberData } from "@/Interface/memberData";
 
@@ -25,7 +18,6 @@ interface NewMemberFormProps {
 
 
 
-const MEMBERSHIP_TYPES = [{1:"Standard", 2:"Premium", 3:"Student", 4:"Senior", 5:"Family"}];
 
 export default function NewMemberForm({ isOpen, onClose }: NewMemberFormProps) {
   const [formData, setFormData] = useState<MemberData>({
@@ -60,7 +52,7 @@ export default function NewMemberForm({ isOpen, onClose }: NewMemberFormProps) {
     //setIsSubmitting(true);
     try {
       // Call the API to add a member
-      const response = await addMember(formData);
+      await addMember(formData);
       setSubmitMessage("Member added successfully!"); // Show success message
       //setIsSubmitting(false);
       onClose(); // Close the form

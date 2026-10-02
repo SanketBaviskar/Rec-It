@@ -1,5 +1,5 @@
 import { UserPlus } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import NewMemberForm from "../AddNewMember/NewmemberForm";
 
 export default function AddNewMemberBtn() {

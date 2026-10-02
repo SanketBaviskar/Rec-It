@@ -32,7 +32,7 @@ const formSchema = z.object({
 });
 
 interface SuspensionSettingsFormProps {
-  onComplete: () => void; // Callback for when form is cancelled or completed
+  onComplete?: () => void; // Callback for when form is cancelled or completed
 }
 
 export default function SuspensionSettingsTab({ onComplete }: SuspensionSettingsFormProps) {
@@ -52,8 +52,8 @@ export default function SuspensionSettingsTab({ onComplete }: SuspensionSettings
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    onComplete(); // Call onComplete after submitting
+  async function onSubmit(_values: z.infer<typeof formSchema>) {
+    onComplete?.(); // Call onComplete after submitting
   }
 
   return (

@@ -19,7 +19,6 @@ interface User {
 export default function EquipmentTab() {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
-  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const handleUserSelect = (user: User) => {
     setSelectedCustomer(user);

@@ -1,6 +1,6 @@
 import apiClient from "@/Services/Utils/apiClient";
 
-export const deleteEquipmentById = async (equipmentId: string) => {
+export const deleteEquipmentById = async (equipmentId: number | string) => {
   try {
     const response = await apiClient.delete(`/equipments/${equipmentId}`);
     return response.data;

@@ -1,6 +1,5 @@
 'use client'
 
-import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import {
@@ -39,6 +38,7 @@ interface NewOrgaAddProps {
 export function NewOrgaAdd({
   isOpen,
   onClose,
+  onSubmit,
   defaultValues = { name: '', description: '', email: '', phone: '' },
 }: NewOrgaAddProps) {
   const form = useForm<FormValues>({

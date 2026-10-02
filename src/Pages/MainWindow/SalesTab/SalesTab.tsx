@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ShoppingCart, X, Plus, Minus } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
+import { UserData } from "@/Interface/memberData";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 interface CartItem {
@@ -42,11 +44,11 @@ const quickItems = [
 
 export default function SalesTab() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState("quick");
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const handleSelectCustomer = (user: any) => {
+  const handleSelectCustomer = (user: UserData) => {
     setSelectedCustomer(user);
   };
 
@@ -172,10 +174,13 @@ export default function SalesTab() {
               {selectedCustomer && (
                 <div className="mb-4">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={selectedCustomer.image}
-                      className="w-10 h-10 rounded-full"
-                    />
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage
+                        src={selectedCustomer.avatarUrl}
+                        alt={`${selectedCustomer.firstName} ${selectedCustomer.lastName}`}
+                      />
+                      <AvatarFallback>{selectedCustomer.firstName.charAt(0)}</AvatarFallback>
+                    </Avatar>
                     <div>
                       <div className="font-medium">
                         {selectedCustomer.firstName} {selectedCustomer.lastName}

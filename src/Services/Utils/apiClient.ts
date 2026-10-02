@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 // Create an Axios instance
 const apiClient: AxiosInstance = axios.create({
-  baseURL: "http://54.153.65.57/api", // Set base URL from environment variables
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api",
   timeout: 10000, // Request timeout in milliseconds
   headers: {
     "Content-Type": "application/json", // Default content type for requests
@@ -36,11 +36,13 @@ apiClient.interceptors.response.use(
     if (error.response) {
       // Server responded with a status other than 2xx
       console.error("Response Error:", error.response);
-      if (error.response.status === 401) {
+      // A 401 from the login form means wrong credentials, not an expired session
+      const isLoginRequest = error.config?.url?.includes("/users/login");
+      if (error.response.status === 401 && !isLoginRequest) {
         // Handle Unauthorized (401) - Token expired or invalid
         alert("Session expired. Please log in again.");
         localStorage.removeItem("token");
-        window.location.href = "/login"; // Redirect to login page
+        window.location.href = "/"; // The login page is the root route
       } else if (error.response.status === 500) {
         // Handle server errors
         alert("A server error occurred. Please try again later.");

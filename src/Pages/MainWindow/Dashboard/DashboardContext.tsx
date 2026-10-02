@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { 
   DashboardContextValue, 
+  EntryEvent,
   Person
 } from './types/dashboard';
 import { 
@@ -37,7 +38,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const { widgets, availableWidgets, addWidget, removeWidget, toggleWidgetVisibility, updateWidgetPosition } = useWidgetActions();
   
   // Entry events state
-  const [entryEvents, setEntryEvents] = useState([]);
+  const [entryEvents, setEntryEvents] = useState<EntryEvent[]>([]);
   
   // Get person actions
   const { people, setPeople, addPerson, removePerson, updatePersonStatus } = usePersonActions(

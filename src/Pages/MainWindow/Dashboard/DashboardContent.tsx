@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useDashboard } from './DashboardContext';
 import WidgetFactory from './WidgetFactory';
 import AddWidgetButton from './AddWidgetButton';
@@ -10,8 +10,8 @@ interface DashboardContentProps {
   className?: string;
 }
 
-const DashboardContent: React.FC<DashboardContentProps> = ({ className }) => {
-  const { widgets, occupancyStats } = useDashboard();
+const DashboardContent: React.FC<DashboardContentProps> = () => {
+  const { widgets } = useDashboard();
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 

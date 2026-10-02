@@ -1,11 +1,8 @@
-import { useState } from "react";
-import { RegisteredComponents } from "../componentRegistry";
-
 interface MembershipAndPassesProps {
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
-export default function MembershipAndPasses({ onComplete }: MembershipAndPassesProps) {
+export default function MembershipAndPasses(_props: MembershipAndPassesProps) {
     
     
     return(

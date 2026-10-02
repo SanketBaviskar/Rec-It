@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -88,14 +89,14 @@ export default function AddNewEquipmentForm({
         quantity: equipment?.quantity || 1,
         price: equipment?.price || 0,
         replacementFees: equipment?.replacementFees || 0,
-        inventoryName: equipment?.inventory.name || "",
+        inventoryName: equipment?.inventory?.name || "",
         location: equipment?.location || "",
       });
       console.log("Form Values", form.getValues());
     }
   }, [mode, equipment, form]);
 
-  async function saveEdited(formVal: any) {
+  async function saveEdited(formVal: z.infer<typeof formSchema>) {
     try {
       const response = await updateEquipment(equipmentId, { formVal });
       if (response.status === "success") {
@@ -105,11 +106,11 @@ export default function AddNewEquipmentForm({
           variant: "success",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description:
-          error.response?.data?.message || "Failed to add or update equipment",
+          getErrorMessage(error, "Failed to add or update equipment"),
         variant: "destructive",
       });
     } finally {
@@ -140,11 +141,11 @@ export default function AddNewEquipmentForm({
         form.reset();
         onComplete();
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description:
-          error.response?.data?.message || "Failed to add or update equipment",
+          getErrorMessage(error, "Failed to add or update equipment"),
         variant: "destructive",
       });
     } finally {
@@ -172,11 +173,11 @@ export default function AddNewEquipmentForm({
           variant: "destructive",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description:
-          error.response?.data?.message || "Failed to add or update equipment",
+          getErrorMessage(error, "Failed to add or update equipment"),
         variant: "destructive",
       });
     } finally {
