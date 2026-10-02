@@ -1,9 +1,11 @@
+import { getErrorMessage } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import InventoryList from "./InventoryList";
 import { RegisteredComponents } from "../componentRegistry";
+import { Inventory } from "./InventorymanagementIntetrface";
 import RenderWindow from "@/Admin/Layout/RenderWindow";
 import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
 import { deleteInventory } from "@/Services/Api/Admin/Inventory/deleteInventory"; // Add this import
@@ -33,7 +35,7 @@ export default function InventoryManagementTab() {
   const [deletingInventory, setDeletingInventory] = useState<number | null>(null);
 
   // Add a handler for Inventory selection
-  const handleInventorySelect = (inventoryId: string) => {
+  const handleInventorySelect = (inventoryId: number) => {
     console.log("Selected Inventory ID:", inventoryId);
   };
 
@@ -52,11 +54,11 @@ export default function InventoryManagementTab() {
         variant: response.status === "success" ? "default" : "destructive",
       });
       await loadCategories();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description:
-          error.response?.data?.message || "Failed to delete inventory",
+          getErrorMessage(error, "Failed to delete inventory"),
         variant: "destructive",
       });
       console.error("Delete inventory error:", error);
@@ -68,8 +70,7 @@ export default function InventoryManagementTab() {
   // Update loadCategories to handle cache properly
   const loadCategories = async () => {
     try {
-      // Add cache-buster to prevent stale data
-      const response = await fetchInventoryCategories({ ts: Date.now() });
+      const response = await fetchInventoryCategories();
       if (response.status === "success") {
         setCategories(response.data?.items || []);
       }
@@ -98,6 +99,7 @@ export default function InventoryManagementTab() {
           categories={categories}
           onInventorySelect={handleInventorySelect}
           onComplete={loadCategories} // Pass loadCategories as onComplete callback
+          onDeleteEquipment={() => loadCategories()}
           onAddEquipment={(id, name) => {
             setActiveComponent("AddNewEquipmentForm");
             setComponentProps({ inventoryId: id, inventoryName: name , mode:"create"});

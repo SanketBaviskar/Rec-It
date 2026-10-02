@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { DumbbellIcon, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LoginFormValues } from '@/Interface/loginData';
-import { Toaster } from '@/components/ui/toaster';
+import { toast } from 'sonner';
+import { isAxiosError } from 'axios';
 
 export default function Login() {
   const {
@@ -20,14 +21,18 @@ export default function Login() {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       const response = await login(data.email, data.password);
+      toast.success(response.message ?? 'Logged in');
       navigate('/dashboard');
-      loginToast(response)
     } catch (error) {
-      console.error('Error during login:', error);
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ?? 'Unable to reach the server'
+        : 'Unable to log in';
+      toast.error(message);
     }
   };
 
   const handleExternalLogin = (provider: string) => {
+    toast.info(`${provider} sign-in is not available yet`);
   };
 
   return (
@@ -143,15 +148,3 @@ export default function Login() {
   );
 }
 
-
-function loginToast({ messege}) {
-  return (
-    <html lang="en">
-      <head />
-      <body>
-        <main>{messege}</main>
-        <Toaster />
-      </body>
-    </html>
-  )
-}

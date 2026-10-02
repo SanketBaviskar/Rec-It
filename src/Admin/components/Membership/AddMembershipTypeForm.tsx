@@ -17,7 +17,7 @@ const formSchema = z.object({
   categories: z.array(z.object({
     name: z.enum(memberType),
     price: z.number().min(0, "Price must be positive")
-  })).nonempty("Select at least one category")
+  })).min(1, "Select at least one category")
 });
 
 interface AddMembershipTypeFormProps {

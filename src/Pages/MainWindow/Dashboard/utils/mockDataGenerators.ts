@@ -1,5 +1,5 @@
 
-import { Person, Gate, EntryEvent, OccupancyStats, Alert, Widget } from '@/types/dashboard';
+import { Person, Gate, EntryEvent, OccupancyStats, Alert, Widget } from '../types/dashboard';
 
 // Define available widgets
 export const defaultAvailableWidgets: Widget[] = [

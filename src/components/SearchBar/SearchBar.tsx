@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, X } from "lucide-react";
-import data from "@/Data/UserData.json";
 import { searchUsers } from "@/Services/Api/User/searchUser";
+import { UserData } from "@/Interface/memberData";
 
 interface UserSearchProps {
-  onSelect: (user: any) => void;
+  onSelect: (user: UserData) => void;
   onClear: () => void;
-  onResults?: (results: any[]) => void;
+  onResults?: (results: UserData[]) => void;
   placeholder?: string;
   className?: string;
   variant?: "popup" | "inline";
@@ -26,7 +26,7 @@ export function SearchBar({
   variant = "popup",
 }: UserSearchProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<UserData[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +42,8 @@ export function SearchBar({
         if (onResults) {
           onResults(users);
         }
-      } catch (err: any) {
-        setError(err.message || "Something went wrong.");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong.");
         setResults([]);
       } finally {
         setLoading(false);
@@ -61,7 +61,7 @@ export function SearchBar({
     }
   };
 
-  const handleSelect = (user: any) => {
+  const handleSelect = (user: UserData) => {
     onSelect(user);
     setQuery(`${user.firstName} ${user.lastName}`);
     clearResults();
@@ -123,7 +123,7 @@ export function SearchBar({
             ) : error ? (
               <div className="text-center text-red-500 py-2">{error}</div>
             ) : results.length > 0 ? (
-              results.map((user: any) => (
+              results.map((user) => (
                 <div
                   key={user.id}
                   className="flex items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-accent hover:text-accent-foreground cursor-pointer"

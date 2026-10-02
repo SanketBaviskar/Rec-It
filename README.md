@@ -1,51 +1,28 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
 # Rec-It
+
+Front desk and admin app for a recreation center, built with React, Vite, Tailwind and Electron.
+The API lives in [Rec-It-backend](https://github.com/SanketBaviskar/Rec-It-backend).
+
+## Running locally
+
+1. Start the backend (see its README): `npm run dev` serves `http://localhost:3000/api`, and `npm run seed` creates the `admin@rec-it.com` / `admin123` login.
+2. Start the app:
+
+```bash
+npm install
+npm run dev:react   # web app on http://localhost:5123
+npm run dev         # web app + Electron window
+```
+
+`VITE_API_BASE_URL` picks the API: `.env` points at the local backend, and `.env.production` is used by `npm run build` and the Electron release builds.
+
+## Checks
+
+```bash
+npm run lint
+npm run build
+npm run test:unit   # Vitest
+npm run test:e2e    # Playwright, against the running backend
+```
+
+The e2e tests log in with `E2E_EMAIL` / `E2E_PASSWORD` (defaults to the seeded admin).

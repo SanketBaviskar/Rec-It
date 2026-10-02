@@ -9,14 +9,13 @@ const InventoryList: React.FC<InventoryListProps> = ({
   onDeleteEquipment,
   onDeleteInventory,
   onOpenEquipment,
-  onComplete,
   isLoading = false,
 }) => {
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [selectedInventory, setSelectedInventory] = useState<{
     name: string;
-    id: string;
+    id: number;
   } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +29,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = (id: number) => {
     setExpanded((prev) =>
       new Set(prev).has(id)
         ? new Set([...prev].filter((i) => i !== id))
@@ -115,14 +114,14 @@ const InventoryList: React.FC<InventoryListProps> = ({
           <div className="ml-4">
             {inventory.equipments?.map((equipment) => (
               <div
-                key={equipment.id}
+                key={equipment.id!}
                 className="flex items-center gap-1 px-2 py-1.5 hover:bg-accent cursor-pointer group"
                 
               >
                 <span
                   className="ml-4 flex-1"
                   onClick={() => {
-                    onOpenEquipment?.(equipment.id);
+                    onOpenEquipment?.(equipment.id!);
                   }}
                 >
                   {equipment.name}
@@ -132,8 +131,8 @@ const InventoryList: React.FC<InventoryListProps> = ({
                   onClick={async (e) => {
                     e.stopPropagation();
                     try {
-                      await deleteEquipmentById(equipment.id); // Call the API
-                      onDeleteEquipment?.(equipment.id); // Update the UI
+                      await deleteEquipmentById(equipment.id!); // Call the API
+                      onDeleteEquipment?.(equipment.id!); // Update the UI
                     } catch (error) {
                       console.error("Failed to delete equipment:", error);
                     }

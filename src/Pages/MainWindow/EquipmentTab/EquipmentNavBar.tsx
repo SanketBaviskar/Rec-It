@@ -10,6 +10,7 @@ import {
   PenTool,
   User,
   Loader2,
+  type LucideIcon,
 } from "lucide-react";
 import { fetchInventoryCategories } from "@/Services/Api/Equipment/inventorySidebar";
 
@@ -30,7 +31,7 @@ export default function EquipmentNavBar() {
   const [error, setError] = useState<string | null>(null);
 
   // Map of department names to Lucide icon components
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, LucideIcon> = {
     Sports: Volleyball,
     Rockwalls: Mountain,
     Keys: Key,
@@ -38,31 +39,32 @@ export default function EquipmentNavBar() {
     Staff: User,
   };
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetchInventoryCategories();
-        // Check if the response is successful
-        if (response.status === "success" && response.data?.items) {
-          setCategories(response.data.items);
-          // Set initial active category if none is selected
-          if (!activeCategory && response.data.items.length > 0) {
-            setActiveCategory(response.data.items[0].name);
-          }
-        } else {
-          throw new Error(response.message || "Failed to load departments");
+  const loadCategories = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await fetchInventoryCategories();
+      // Check if the response is successful
+      if (response.status === "success" && response.data?.items) {
+        setCategories(response.data.items);
+        // Set initial active category if none is selected
+        if (!activeCategory && response.data.items.length > 0) {
+          setActiveCategory(response.data.items[0].name);
         }
-      } catch (error) {
-        setError(error.message || "Failed to load departments");
-        console.error("Error loading departments:", error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        throw new Error(response.message || "Failed to load departments");
       }
-    };
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to load departments");
+      console.error("Error loading departments:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, []);
 
   // Add a retry function

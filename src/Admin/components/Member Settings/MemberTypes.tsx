@@ -38,17 +38,18 @@ const initialMemberTypes: MemberType[] = [
 ];
 
 interface MemberTypesProps {
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
-export default function MemberTypes({ onComplete }: MemberTypesProps) {
+export default function MemberTypes(_props: MemberTypesProps) {
   const [memberTypes, setMemberTypes] = useState<MemberType[]>(initialMemberTypes);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMemberType, setEditingMemberType] = useState<MemberType | null>(null);
   
-  const handleFormSubmit = (values: MemberType) => {
+  const handleFormSubmit = (values: Omit<MemberType, "id">) => {
     if (editingMemberType) {
-      setMemberTypes(memberTypes.map(mt => mt.id === editingMemberType.id ? values : mt));
+      // Keep the id: the form only edits the other fields
+      setMemberTypes(memberTypes.map(mt => mt.id === editingMemberType.id ? { ...values, id: mt.id } : mt));
     } else {
       setMemberTypes([...memberTypes, { ...values, id: Date.now().toString() }]);
     }
@@ -80,7 +81,7 @@ export default function MemberTypes({ onComplete }: MemberTypesProps) {
               </DialogTitle>
             </DialogHeader>
             <MemberTypeForm
-              initialData={editingMemberType}
+              initialData={editingMemberType ?? undefined}
               onSubmit={handleFormSubmit}
               onCancel={() => {
                 setIsDialogOpen(false);

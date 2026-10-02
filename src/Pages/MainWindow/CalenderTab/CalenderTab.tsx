@@ -21,10 +21,8 @@ import {
   addMonths,
   parseISO,
 } from "date-fns"
-import { ChevronLeft, ChevronRight, Plus, Search, Filter, Trash2, BookOpen, Users, Clock, PenToolIcon as Tool } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ChevronLeft, ChevronRight, Search, Filter, Trash2, BookOpen, Users, Clock, PenToolIcon as Tool } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {

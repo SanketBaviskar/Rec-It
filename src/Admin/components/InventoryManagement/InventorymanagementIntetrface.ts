@@ -1,13 +1,14 @@
 export interface Inventory {
-  id: string;
+  id: number;
   name: string;
   items: number;
   equipments?: Equipment[];
 }
 export interface Equipment {
+  id?: number; // Assigned by the backend
   name: string;
   code: string;
-  image?: any;
+  image?: string;
   quantity: number;
   price: number;
   replacementFees?: number;
@@ -17,13 +18,13 @@ export interface Equipment {
 }
 export interface InventoryListProps {
   categories: Inventory[];
-  onComplete:() => void;
-  onInventorySelect: (inventoryId: string) => void;
-  onAddEquipment?: (inventoryId: string, inventoryName: string) => void;
-  onEditEquipment?: (equipmentId: string) => void;
-  onDeleteEquipment?: (equipmentId: string) => void;
-  onDeleteInventory?: (inventoryId: string) => void;
-  onOpenEquipment?: (equipmentId: string) => void;
+  onComplete?: () => void;
+  onInventorySelect: (inventoryId: number) => void;
+  onAddEquipment?: (inventoryId: number, inventoryName: string) => void;
+  onEditEquipment?: (equipmentId: number) => void;
+  onDeleteEquipment?: (equipmentId: number) => void;
+  onDeleteInventory?: (inventoryId: number) => void;
+  onOpenEquipment?: (equipmentId: number) => void;
   isLoading?: boolean;
 }
 
@@ -32,6 +33,6 @@ export interface AddNewEquipmentFormProps {
   inventoryId?: string;
   inventoryName?: string;
   mode?: 'create' | 'edit' ;// Received from parent component
-  equipment:any;
+  equipment?: Equipment & { inventory?: { name: string } };
   equipmentId:string;
 }

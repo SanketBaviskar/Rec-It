@@ -33,7 +33,7 @@ app.on('ready', () => {
   });
 
   // IPC event to open a new window
-  ipcMain.on('open-new-window', (event, data) => {
+  ipcMain.on('open-new-window', (_event, data) => {
     if (childWindow) {
       return; // Prevent multiple child windows
     }
